@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Layout from './components/Layout'
 import Home from './screens/Home'
@@ -6,6 +6,8 @@ import Library from './screens/Library'
 import Builder from './screens/Builder'
 import ActiveWorkout from './screens/ActiveWorkout'
 import Progress from './screens/Progress'
+import Onboarding from './screens/Onboarding'
+import { useAppStore } from './store/useAppStore'
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -17,6 +19,15 @@ const pageTransition = { duration: 0.22, ease: [0.32, 0.72, 0, 1] as const }
 
 function AnimatedRoutes() {
   const location = useLocation()
+  const onboarded = useAppStore((s) => s.onboarded)
+
+  if (!onboarded && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />
+  }
+  if (onboarded && location.pathname === '/onboarding') {
+    return <Navigate to="/" replace />
+  }
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -83,6 +94,7 @@ function AnimatedRoutes() {
           />
         </Route>
         <Route path="/active" element={<ActiveWorkout />} />
+        <Route path="/onboarding" element={<Onboarding />} />
       </Routes>
     </AnimatePresence>
   )
