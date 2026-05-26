@@ -11,7 +11,7 @@ export type MuscleGroup =
 
 export type Equipment = 'barbell' | 'dumbbell' | 'cable' | 'machine' | 'bodyweight' | 'smith'
 
-export type ProgramTag = 'push' | 'pull' | 'legs' | 'upper'
+export type ProgramTag = 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full'
 
 export interface Exercise {
   id: string

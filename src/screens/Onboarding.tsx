@@ -296,10 +296,12 @@ function UnitStep({ unit, setUnit }: { unit: 'kg' | 'lb'; setUnit: (u: 'kg' | 'l
 function ReadyStep({ name, unit }: { name: string; unit: 'kg' | 'lb' }) {
   const displayName = name.trim() || 'You'
   const programs = [
-    { label: 'Push', color: '#E8856A', exercises: 11 },
-    { label: 'Pull', color: '#6A9CE8', exercises: 11 },
-    { label: 'Legs', color: '#7DD87D', exercises: 11 },
-    { label: 'Upper', color: '#C8A96E', exercises: 8 },
+    { label: 'Push', color: '#4DABF7', exercises: 6 },
+    { label: 'Pull', color: '#C084FC', exercises: 6 },
+    { label: 'Legs', color: '#4ADE80', exercises: 6 },
+    { label: 'Upper', color: '#FBBF24', exercises: 6 },
+    { label: 'Lower', color: '#FB923C', exercises: 7 },
+    { label: 'Full Body', color: '#2DD4BF', exercises: 7 },
   ]
 
   return (
@@ -315,7 +317,7 @@ function ReadyStep({ name, unit }: { name: string; unit: 'kg' | 'lb' }) {
         Ready, {displayName}.
       </h2>
       <p style={{ fontSize: 15, color: '#8A8680', marginBottom: 28, lineHeight: 1.5 }}>
-        57 exercises · 4 programmes · weights in {unit}
+        57 exercises · 6 programmes · weights in {unit}
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>

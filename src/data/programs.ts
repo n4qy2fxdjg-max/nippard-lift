@@ -61,4 +61,51 @@ export const featuredPrograms: Program[] = [
       { exerciseId: 'hammer-curl', sets: 3, reps: '10–12', weightKg: 18 },
     ],
   },
+  // ── Muscle Ladder programmes (Nippard) ──────────────────────────
+  {
+    id: 'lower-ml',
+    name: 'Lower Ladder',
+    tag: 'lower',
+    tagColor: '#FB923C',
+    estimatedMinutes: 85,
+    exercises: [
+      // Rung 1 — Quads: primary compound, lengthened overload
+      { exerciseId: 'barbell-squat', sets: 4, reps: '6–8', weightKg: 100 },
+      // Rung 2 — Hamstrings: hip hinge for full stretch
+      { exerciseId: 'romanian-deadlift', sets: 3, reps: '8–10', weightKg: 80 },
+      // Rung 1b — Quads: second compound for volume
+      { exerciseId: 'leg-press', sets: 3, reps: '10–12', weightKg: 140 },
+      // Rung 3 — Glutes: shortened-position isolation
+      { exerciseId: 'hip-thrust', sets: 3, reps: '10–12', weightKg: 80 },
+      // Rung 2b — Hamstrings: knee flexion angle
+      { exerciseId: 'lying-leg-curl', sets: 3, reps: '10–12', weightKg: 40 },
+      // Rung 1c — Quads: isolation, stretch overload
+      { exerciseId: 'leg-extension', sets: 3, reps: '12–15', weightKg: 50 },
+      // Calves
+      { exerciseId: 'standing-calf-raise', sets: 4, reps: '15–20', weightKg: 60 },
+    ],
+  },
+  {
+    id: 'full-ml',
+    name: 'Full Body Ladder',
+    tag: 'full',
+    tagColor: '#2DD4BF',
+    estimatedMinutes: 75,
+    exercises: [
+      // Rung 1 — Quads (highest ladder priority)
+      { exerciseId: 'barbell-squat', sets: 3, reps: '6–8', weightKg: 90 },
+      // Rung 2 — Hamstrings/Glutes: hip hinge
+      { exerciseId: 'romanian-deadlift', sets: 3, reps: '8–10', weightKg: 70 },
+      // Rung 3 — Lats: vertical pull
+      { exerciseId: 'weighted-pullup', sets: 3, reps: '6–8', weightKg: 10 },
+      // Rung 4 — Chest: horizontal push
+      { exerciseId: 'bench-press', sets: 3, reps: '8–10', weightKg: 75 },
+      // Rung 5 — Side delts (needs most isolation volume per ladder)
+      { exerciseId: 'cable-lateral-raise', sets: 3, reps: '15–20', weightKg: 10 },
+      // Rung 6 — Biceps: stretch position priority
+      { exerciseId: 'incline-db-curl', sets: 3, reps: '10–12', weightKg: 14 },
+      // Rung 7 — Triceps: long head/stretch priority
+      { exerciseId: 'overhead-tricep-ext', sets: 3, reps: '10–12', weightKg: 20 },
+    ],
+  },
 ]
