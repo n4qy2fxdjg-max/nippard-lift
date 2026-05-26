@@ -73,39 +73,35 @@ export default function Home() {
 
         {/* Header */}
         <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 24px 28px' }}>
-          <p style={{
-            fontSize: 11,
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '1.5px',
-            color: '#8A8680',
-            fontFamily: '"Outfit", system-ui, sans-serif',
-            marginBottom: 8,
-          }}>
-            {today}
-          </p>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
               <p style={{
-                fontSize: 15,
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px',
                 color: '#8A8680',
                 fontFamily: '"Outfit", system-ui, sans-serif',
-                marginBottom: 2,
+                marginBottom: 10,
               }}>
-                {prefix},
+                {today}
               </p>
+              {/* Editorial serif header — Elevate signature: italic accent line + bold name */}
               <h1 style={{
                 fontFamily: '"DM Serif Display", Georgia, serif',
                 fontSize: 40,
                 color: '#F0EDE8',
-                lineHeight: 1.0,
+                lineHeight: 1.1,
                 letterSpacing: '-0.5px',
               }}>
+                <em style={{ fontStyle: 'italic', color: '#8A8680', fontSize: 26, display: 'block', lineHeight: 1.3, marginBottom: 2 }}>
+                  {prefix},
+                </em>
                 {name}.
               </h1>
             </div>
             {streak > 0 && (
-              <div style={{ marginTop: 6 }}>
+              <div style={{ marginTop: 42 }}>
                 <StreakChip streak={streak} />
               </div>
             )}
@@ -115,16 +111,27 @@ export default function Home() {
         {/* Programmes */}
         <div style={{ marginBottom: 36 }}>
           <div style={{ padding: '0 24px', marginBottom: 14, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <p style={{
-              fontSize: 10,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1.5px',
-              color: '#8A8680',
-              fontFamily: '"Outfit", system-ui, sans-serif',
-            }}>
-              Programmes
-            </p>
+            {/* Elevate-style section header: serif italic + label */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <p style={{
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px',
+                color: '#8A8680',
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}>
+                Programmes
+              </p>
+              <em style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontStyle: 'italic',
+                fontSize: 13,
+                color: 'rgba(138,134,128,0.5)',
+              }}>
+                featured
+              </em>
+            </div>
             <p style={{
               fontSize: 11,
               color: 'rgba(138,134,128,0.6)',

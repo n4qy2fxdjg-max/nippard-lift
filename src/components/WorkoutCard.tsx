@@ -26,56 +26,45 @@ export default function WorkoutCard({ program, lastDate }: Props) {
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       onClick={handleStart}
       style={{
-        minWidth: 210,
-        height: 200,
+        minWidth: 220,
         background: '#161616',
-        borderRadius: 18,
-        padding: '18px 18px 16px',
+        borderRadius: 20,
         cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
-        gap: 0,
         flexShrink: 0,
         userSelect: 'none',
         position: 'relative',
         overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
       }}
     >
-      {/* Left color accent bar */}
-      <div style={{
-        position: 'absolute',
-        left: 0, top: 20, bottom: 20,
-        width: 3,
-        background: program.tagColor,
-        borderRadius: '0 2px 2px 0',
-        opacity: 0.8,
-      }} />
+      {/* Top accent strip — Elevate signature */}
+      <div style={{ height: 4, background: program.tagColor, width: '100%', flexShrink: 0 }} />
 
-      {/* Top row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'auto' }}>
-        <span style={{
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '1.8px',
-          color: program.tagColor,
-          textTransform: 'uppercase',
-          fontFamily: '"Outfit", system-ui, sans-serif',
-        }}>
-          {program.tag}
-        </span>
-        <span style={{
-          fontSize: 11,
-          color: '#8A8680',
-          fontFamily: '"Outfit", system-ui, sans-serif',
-        }}>
-          {program.estimatedMinutes}m
-        </span>
-      </div>
+      {/* Card body */}
+      <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {/* Category badge chip */}
+        <div style={{ marginBottom: 14 }}>
+          <span style={{
+            display: 'inline-block',
+            background: program.tagColor + '18',
+            border: `1px solid ${program.tagColor}38`,
+            borderRadius: 6,
+            padding: '3px 9px',
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '1.4px',
+            color: program.tagColor,
+            textTransform: 'uppercase',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            {program.tag}
+          </span>
+        </div>
 
-      {/* Program name */}
-      <div style={{ marginTop: 'auto' }}>
+        {/* Program name — serif */}
         <p style={{
           fontFamily: '"DM Serif Display", Georgia, serif',
           fontSize: 26,
@@ -85,22 +74,41 @@ export default function WorkoutCard({ program, lastDate }: Props) {
         }}>
           {program.name}
         </p>
+
+        {/* Italic subtitle — Elevate signature */}
         <p style={{
-          fontSize: 12,
+          fontFamily: '"DM Serif Display", Georgia, serif',
+          fontSize: 13,
+          fontStyle: 'italic',
           color: '#8A8680',
-          fontFamily: '"Outfit", system-ui, sans-serif',
-          marginBottom: 14,
+          marginBottom: 20,
         }}>
-          {program.exercises.length} exercises
+          {program.exercises.length} exercises · {program.estimatedMinutes}m
         </p>
-        <p style={{
-          fontSize: 10,
-          color: lastDate ? '#8A8680' : 'rgba(138,134,128,0.5)',
-          fontFamily: '"Outfit", system-ui, sans-serif',
-          letterSpacing: '0.3px',
-        }}>
-          {lastDate ? `Last ${format(parseISO(lastDate), 'MMM d')}` : 'Not started'}
-        </p>
+
+        {/* Bottom row: last date + start CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+          <p style={{
+            fontSize: 10,
+            color: lastDate ? '#8A8680' : 'rgba(138,134,128,0.4)',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            letterSpacing: '0.3px',
+          }}>
+            {lastDate ? `Last ${format(parseISO(lastDate), 'MMM d')}` : 'Not started'}
+          </p>
+          <div style={{
+            background: '#F0EDE8',
+            borderRadius: 8,
+            padding: '5px 14px',
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#0C0C0C',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            letterSpacing: '0.2px',
+          }}>
+            Start
+          </div>
+        </div>
       </div>
     </motion.div>
   )

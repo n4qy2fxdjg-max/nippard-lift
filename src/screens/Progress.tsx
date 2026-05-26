@@ -49,9 +49,10 @@ export default function Progress() {
         <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 24px 20px' }}>
           <h1 style={{
             fontFamily: '"DM Serif Display", Georgia, serif',
-            fontSize: 30, color: '#F0EDE8',
+            fontSize: 30, color: '#F0EDE8', lineHeight: 1.1,
           }}>
-            Progress
+            Your<br />
+            <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>progress</em>
           </h1>
         </div>
 
@@ -93,62 +94,76 @@ export default function Progress() {
           )}
         </AnimatePresence>
 
-        {/* Weekly stats — asymmetric editorial layout, not 3-col cards */}
+        {/* Weekly stats — Elevate-style: top strip card, serif big number, italic label */}
         <div style={{ padding: '0 24px 32px' }}>
           <p style={{
             fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 18,
+            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             This Week
           </p>
-          <div style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
-            {/* Sessions — primary stat, large */}
-            <div style={{ flex: 2, paddingRight: 24 }}>
-              <p style={{
-                fontSize: 56, fontWeight: 700, color: '#F0EDE8', lineHeight: 1,
-                fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-3px',
-              }}>
-                {weeklyStats.sessions}
-              </p>
-              <p style={{
-                fontSize: 11, color: '#8A8680', marginTop: 8,
-                fontFamily: '"Outfit", system-ui, sans-serif',
-              }}>
-                sessions
-              </p>
-            </div>
-            {/* Vertical divider */}
-            <div style={{ width: 1, background: 'rgba(255,255,255,0.07)' }} />
-            {/* Volume + Avg — stacked right */}
-            <div style={{ flex: 2, paddingLeft: 24, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
-              <div>
+          <div style={{
+            background: '#161616',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 20,
+            overflow: 'hidden',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)',
+          }}>
+            {/* Top accent strip */}
+            <div style={{ height: 4, background: '#C8A96E', width: '100%' }} />
+            <div style={{ padding: '20px 20px 20px', display: 'flex', alignItems: 'stretch' }}>
+              {/* Sessions — primary stat, serif large */}
+              <div style={{ flex: 2, paddingRight: 20 }}>
                 <p style={{
-                  fontSize: 24, fontWeight: 700, color: '#F0EDE8', lineHeight: 1,
-                  fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px',
+                  fontSize: 60, color: '#F0EDE8', lineHeight: 1,
+                  fontFamily: '"DM Serif Display", Georgia, serif',
+                  letterSpacing: '-2px',
                 }}>
-                  {weeklyStats.volume > 0 ? `${(weeklyStats.volume / 1000).toFixed(1)}t` : '—'}
+                  {weeklyStats.sessions}
                 </p>
-                <p style={{
-                  fontSize: 11, color: '#8A8680', marginTop: 5,
-                  fontFamily: '"Outfit", system-ui, sans-serif',
+                <em style={{
+                  fontFamily: '"DM Serif Display", Georgia, serif',
+                  fontStyle: 'italic',
+                  fontSize: 13, color: '#8A8680', marginTop: 6, display: 'block',
                 }}>
-                  volume
-                </p>
+                  sessions
+                </em>
               </div>
-              <div>
-                <p style={{
-                  fontSize: 24, fontWeight: 700, color: '#F0EDE8', lineHeight: 1,
-                  fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px',
-                }}>
-                  {weeklyStats.avgDuration > 0 ? formatDuration(weeklyStats.avgDuration) : '—'}
-                </p>
-                <p style={{
-                  fontSize: 11, color: '#8A8680', marginTop: 5,
-                  fontFamily: '"Outfit", system-ui, sans-serif',
-                }}>
-                  avg session
-                </p>
+              {/* Vertical divider */}
+              <div style={{ width: 1, background: 'rgba(255,255,255,0.07)' }} />
+              {/* Volume + Avg — stacked right */}
+              <div style={{ flex: 2, paddingLeft: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16 }}>
+                <div>
+                  <p style={{
+                    fontSize: 26, color: '#F0EDE8', lineHeight: 1,
+                    fontFamily: '"DM Serif Display", Georgia, serif',
+                  }}>
+                    {weeklyStats.volume > 0 ? `${(weeklyStats.volume / 1000).toFixed(1)}t` : '—'}
+                  </p>
+                  <em style={{
+                    fontFamily: '"DM Serif Display", Georgia, serif',
+                    fontStyle: 'italic',
+                    fontSize: 12, color: '#8A8680', marginTop: 4, display: 'block',
+                  }}>
+                    volume
+                  </em>
+                </div>
+                <div>
+                  <p style={{
+                    fontSize: 26, color: '#F0EDE8', lineHeight: 1,
+                    fontFamily: '"DM Serif Display", Georgia, serif',
+                  }}>
+                    {weeklyStats.avgDuration > 0 ? formatDuration(weeklyStats.avgDuration) : '—'}
+                  </p>
+                  <em style={{
+                    fontFamily: '"DM Serif Display", Georgia, serif',
+                    fontStyle: 'italic',
+                    fontSize: 12, color: '#8A8680', marginTop: 4, display: 'block',
+                  }}>
+                    avg session
+                  </em>
+                </div>
               </div>
             </div>
           </div>

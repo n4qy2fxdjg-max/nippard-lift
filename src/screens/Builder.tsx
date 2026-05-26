@@ -70,12 +70,13 @@ export default function Builder() {
           <div>
             <h1 style={{
               fontFamily: '"DM Serif Display", Georgia, serif',
-              fontSize: 30, color: '#F0EDE8',
+              fontSize: 30, color: '#F0EDE8', lineHeight: 1.1,
             }}>
-              Builder
+              Build your<br />
+              <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>routine</em>
             </h1>
             <p style={{
-              fontSize: 12, color: '#8A8680', marginTop: 2,
+              fontSize: 12, color: '#8A8680', marginTop: 4,
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}>
               {items.length} exercise{items.length !== 1 ? 's' : ''}
@@ -104,31 +105,81 @@ export default function Builder() {
       {/* Exercise list */}
       <div className="scroll-y" style={{ flex: 1, padding: '16px 16px 0' }}>
         {items.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 32px', color: '#8A8680' }}>
-            {/* Barbell SVG */}
-            <svg width="52" height="20" viewBox="0 0 52 20" fill="none" style={{ marginBottom: 20, opacity: 0.3 }}>
-              <rect x="16" y="7" width="20" height="6" rx="2" fill="#8A8680" />
-              <rect x="10" y="4" width="6" height="12" rx="2" fill="#8A8680" />
-              <rect x="36" y="4" width="6" height="12" rx="2" fill="#8A8680" />
-              <rect x="4" y="2" width="6" height="16" rx="2" fill="#8A8680" />
-              <rect x="42" y="2" width="6" height="16" rx="2" fill="#8A8680" />
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowPicker(true)}
+            style={{
+              width: '100%',
+              padding: '40px 24px',
+              background: 'transparent',
+              border: '1.5px dashed rgba(200,169,110,0.35)',
+              borderRadius: 20,
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 14,
+              marginTop: 8,
+            }}
+          >
+            <svg width="52" height="20" viewBox="0 0 52 20" fill="none" style={{ opacity: 0.3 }}>
+              <rect x="16" y="7" width="20" height="6" rx="2" fill="#C8A96E" />
+              <rect x="10" y="4" width="6" height="12" rx="2" fill="#C8A96E" />
+              <rect x="36" y="4" width="6" height="12" rx="2" fill="#C8A96E" />
+              <rect x="4" y="2" width="6" height="16" rx="2" fill="#C8A96E" />
+              <rect x="42" y="2" width="6" height="16" rx="2" fill="#C8A96E" />
             </svg>
-            <p style={{
-              fontSize: 16, fontWeight: 600, color: '#F0EDE8',
-              marginBottom: 8, fontFamily: '"Outfit", system-ui, sans-serif',
-            }}>
-              Start building
-            </p>
-            <p style={{ fontSize: 13, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
-              Tap Add to include exercises. Drag handles to reorder.
-            </p>
-          </div>
+            <div>
+              <p style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 22, color: '#F0EDE8', marginBottom: 6, lineHeight: 1,
+              }}>
+                Build your <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>routine</em>
+              </p>
+              <p style={{
+                fontSize: 13, color: '#8A8680',
+                fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.5,
+              }}>
+                Tap to add exercises
+              </p>
+            </div>
+          </motion.button>
         ) : (
-          <Reorder.Group axis="y" values={items} onReorder={setItems} style={{ listStyle: 'none', padding: 0 }}>
-            {items.map((item) => (
-              <BuilderItem key={item.uid} item={item} onUpdate={updateItem} onRemove={removeItem} />
-            ))}
-          </Reorder.Group>
+          <>
+            <Reorder.Group axis="y" values={items} onReorder={setItems} style={{ listStyle: 'none', padding: 0 }}>
+              {items.map((item) => (
+                <BuilderItem key={item.uid} item={item} onUpdate={updateItem} onRemove={removeItem} />
+              ))}
+            </Reorder.Group>
+            {/* Dashed "add more" button — Elevate signature */}
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowPicker(true)}
+              style={{
+                width: '100%',
+                padding: '14px 0',
+                background: 'transparent',
+                border: '1.5px dashed rgba(200,169,110,0.35)',
+                borderRadius: 14,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                marginTop: 4,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1v12M1 7h12" stroke="#C8A96E" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span style={{
+                fontSize: 13, color: '#8A8680',
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}>
+                Add exercise
+              </span>
+            </motion.button>
+          </>
         )}
         <div style={{ height: 180 }} />
       </div>
