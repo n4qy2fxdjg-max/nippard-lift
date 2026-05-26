@@ -1,26 +1,58 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Reorder, motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { useBuilderStore } from '../store/useBuilderStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
-import { exercises } from '../data/exercises'
-import BuilderItem from '../components/BuilderItem'
-import ExerciseDetailSheet from '../components/ExerciseDetailSheet'
-import type { BuilderItem as BuilderItemType, Exercise } from '../types'
+import { getExercisesByGroup, getExerciseById } from '../data/exercises'
+import type { BuilderItem as BuilderItemType, MuscleGroup, BodyGroup } from '../types'
+
+/* ── Muscle colour + label map (shared with ExerciseRow) ── */
+const muscleColors: Record<string, string> = {
+  chest: '#E87B6A', 'upper-chest': '#E87B6A',
+  lats: '#6A9CE8', 'mid-back': '#6A9CE8',
+  'rear-delts': '#7ABCE8', 'side-delts': '#C8A96E', 'front-delts': '#C8A96E',
+  shoulders: '#C8A96E', triceps: '#B06AE8',
+  biceps: '#7DD87D', forearms: '#7DD87D',
+  quads: '#E8C56A', hamstrings: '#E89A6A', glutes: '#E8886A', calves: '#6AE8C8',
+  adductors: '#E8886A', abs: '#A8E86A', obliques: '#A8E86A', 'lower-back': '#E8A06A',
+  traps: '#C8A96E', neck: '#A0A09E',
+}
+const muscleLabels: Record<string, string> = {
+  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
+  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
+  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
+  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
+  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
+  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
+}
+
+const groupTabs: { key: 'all' | BodyGroup; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'upper', label: 'Upper' },
+  { key: 'lower', label: 'Lower' },
+  { key: 'core', label: 'Core' },
+]
+
+function fmtKg(kg: number) {
+  return parseFloat(kg.toFixed(2)).toString()
+}
 
 export default function Builder() {
   const items = useBuilderStore((s) => s.currentItems)
   const setItems = useBuilderStore((s) => s.setCurrentItems)
   const addPlan = useBuilderStore((s) => s.addPlan)
+  const plans = useBuilderStore((s) => s.plans)
   const startSession = useWorkoutStore((s) => s.startSession)
   const navigate = useNavigate()
 
-  const [showPicker, setShowPicker] = useState(false)
-  const [pickerSelected, setPickerSelected] = useState<Exercise | null>(null)
-  const [showSaveModal, setShowSaveModal] = useState(false)
   const [planName, setPlanName] = useState('')
-  const [search, setSearch] = useState('')
+  const [showPicker, setShowPicker] = useState(false)
+  const [pickerGroup, setPickerGroup] = useState<'all' | BodyGroup>('all')
+  const [pickerMuscle, setPickerMuscle] = useState<MuscleGroup | null>(null)
+  const [saved, setSaved] = useState(false)
+
+  const canSave = planName.trim().length > 0 && items.length > 0
 
   function updateItem(uid: string, changes: Partial<BuilderItemType>) {
     setItems(items.map((i) => (i.uid === uid ? { ...i, ...changes } : i)))
@@ -30,17 +62,39 @@ export default function Builder() {
     setItems(items.filter((i) => i.uid !== uid))
   }
 
+  function addExercise(exId: string) {
+    const ex = getExerciseById(exId)
+    if (!ex) return
+    setItems([...items, {
+      uid: nanoid(),
+      exerciseId: exId,
+      sets: ex.defaultSets,
+      reps: parseInt(ex.defaultReps.split('–')[0]),
+      weightKg: 20,
+    }])
+    setShowPicker(false)
+  }
+
+  function selectGroup(g: 'all' | BodyGroup) {
+    setPickerGroup(g)
+    setPickerMuscle(null)
+  }
+
   function savePlan() {
-    if (!planName.trim() || items.length === 0) return
+    if (!canSave) return
     addPlan({ id: nanoid(), name: planName.trim(), createdAt: new Date().toISOString(), items })
-    setPlanName('')
-    setShowSaveModal(false)
-    setItems([])
+    setSaved(true)
+    setTimeout(() => {
+      setSaved(false)
+      setPlanName('')
+      setItems([])
+      navigate('/')
+    }, 800)
   }
 
   function startWorkout() {
     if (items.length === 0) return
-    startSession('custom', 'Custom Workout', items.map((item) => ({
+    startSession('custom', planName.trim() || 'Custom Workout', items.map((item) => ({
       exerciseId: item.exerciseId,
       targetSets: item.sets,
       targetReps: String(item.reps),
@@ -50,15 +104,23 @@ export default function Builder() {
     navigate('/active')
   }
 
-  const filteredExercises = exercises.filter((e) =>
-    e.name.toLowerCase().includes(search.toLowerCase())
-  )
+  /* Picker filtering */
+  const pickerMuscles = useMemo<MuscleGroup[]>(() => {
+    const base = getExercisesByGroup(pickerGroup)
+    return [...new Set(base.map((e) => e.primaryMuscle))] as MuscleGroup[]
+  }, [pickerGroup])
+
+  const filteredExercises = useMemo(() => {
+    let list = getExercisesByGroup(pickerGroup)
+    if (pickerMuscle) list = list.filter((e) => e.primaryMuscle === pickerMuscle)
+    return list
+  }, [pickerGroup, pickerMuscle])
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0C0C0C' }}>
-      {/* Header */}
+
+      {/* Sticky header */}
       <div style={{
-        paddingTop: 'max(54px, env(safe-area-inset-top))',
         padding: 'max(54px, env(safe-area-inset-top)) 24px 16px',
         background: 'rgba(12,12,12,0.95)',
         backdropFilter: 'blur(20px)',
@@ -67,152 +129,291 @@ export default function Builder() {
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1 style={{
-              fontFamily: '"DM Serif Display", Georgia, serif',
-              fontSize: 30, color: '#F0EDE8', lineHeight: 1.1,
-            }}>
-              Build your<br />
-              <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>routine</em>
-            </h1>
-            <p style={{
-              fontSize: 12, color: '#8A8680', marginTop: 4,
-              fontFamily: '"Outfit", system-ui, sans-serif',
-            }}>
-              {items.length} exercise{items.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={() => setShowPicker(true)}
-            style={{
-              background: '#C8A96E',
-              border: 'none', borderRadius: 12,
-              color: '#0C0C0C', fontSize: 13, fontWeight: 700,
-              padding: '10px 16px', cursor: 'pointer', marginTop: 4,
-              fontFamily: '"Outfit", system-ui, sans-serif',
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1v10M1 6h10" stroke="#0C0C0C" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            Add
-          </motion.button>
+          <h1 style={{
+            fontFamily: '"DM Serif Display", Georgia, serif',
+            fontSize: 30, color: '#F0EDE8', lineHeight: 1.1,
+          }}>
+            Build your<br />
+            <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>routine</em>
+          </h1>
+          <p style={{
+            fontSize: 12, color: '#8A8680', marginTop: 6,
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            {plans.length} saved
+          </p>
         </div>
       </div>
 
-      {/* Exercise list */}
-      <div className="scroll-y" style={{ flex: 1, padding: '16px 16px 0' }}>
-        {items.length === 0 ? (
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowPicker(true)}
+      {/* Scrollable content */}
+      <div className="scroll-y" style={{ flex: 1, padding: '20px 16px 0' }}>
+
+        {/* Routine name input — Elevate pattern: always visible, not in modal */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{
+            fontSize: 11, color: '#C8A96E', fontWeight: 600,
+            textTransform: 'uppercase', letterSpacing: '0.8px',
+            display: 'block', marginBottom: 8,
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            Routine Name
+          </label>
+          <input
+            value={planName}
+            onChange={(e) => setPlanName(e.target.value)}
+            placeholder="e.g. Push A"
             style={{
               width: '100%',
-              padding: '40px 24px',
-              background: 'transparent',
-              border: '1.5px dashed rgba(200,169,110,0.35)',
-              borderRadius: 20,
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 14,
-              marginTop: 8,
+              background: '#161616',
+              border: '1px solid rgba(255,255,255,0.09)',
+              borderRadius: 14,
+              padding: '14px 16px',
+              fontSize: 16,
+              color: '#F0EDE8',
+              fontFamily: '"Outfit", system-ui, sans-serif',
+              outline: 'none',
+              boxSizing: 'border-box',
+              WebkitAppearance: 'none',
             }}
-          >
-            <svg width="52" height="20" viewBox="0 0 52 20" fill="none" style={{ opacity: 0.3 }}>
-              <rect x="16" y="7" width="20" height="6" rx="2" fill="#C8A96E" />
-              <rect x="10" y="4" width="6" height="12" rx="2" fill="#C8A96E" />
-              <rect x="36" y="4" width="6" height="12" rx="2" fill="#C8A96E" />
-              <rect x="4" y="2" width="6" height="16" rx="2" fill="#C8A96E" />
-              <rect x="42" y="2" width="6" height="16" rx="2" fill="#C8A96E" />
-            </svg>
-            <div>
+            onFocus={(e) => { e.target.style.borderColor = 'rgba(200,169,110,0.5)' }}
+            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.09)' }}
+          />
+        </div>
+
+        {/* Exercise list label */}
+        {items.length > 0 && (
+          <label style={{
+            fontSize: 11, color: '#8A8680', fontWeight: 600,
+            textTransform: 'uppercase', letterSpacing: '0.8px',
+            display: 'block', marginBottom: 10,
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            Exercises · drag to reorder
+          </label>
+        )}
+
+        {/* Reorderable exercise cards */}
+        <Reorder.Group
+          axis="y"
+          values={items}
+          onReorder={setItems}
+          style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}
+        >
+          {items.map((item) => {
+            const ex = getExerciseById(item.exerciseId)
+            if (!ex) return null
+            const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+            const mLabel = muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle
+
+            return (
+              <Reorder.Item
+                key={item.uid}
+                value={item}
+                style={{
+                  background: '#161616',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 16,
+                  padding: '14px',
+                  listStyle: 'none',
+                  cursor: 'grab',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)',
+                  touchAction: 'none',
+                }}
+              >
+                {/* Top row: name + muscle chip + remove */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      fontSize: 15, fontWeight: 600, color: '#F0EDE8',
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                      lineHeight: 1.2, marginBottom: 5,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {ex.name}
+                    </p>
+                    {/* Muscle category chip — Elevate signature */}
+                    <span style={{
+                      display: 'inline-block',
+                      background: mColor + '18',
+                      border: `1px solid ${mColor}35`,
+                      borderRadius: 6,
+                      padding: '2px 7px',
+                      fontSize: 11, fontWeight: 500,
+                      color: mColor,
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                    }}>
+                      {mLabel}
+                    </span>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.82 }}
+                    onClick={() => removeItem(item.uid)}
+                    style={{
+                      background: '#1E1E1E',
+                      border: 'none',
+                      borderRadius: 8,
+                      width: 30, height: 30,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', flexShrink: 0,
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="#8A8680" strokeWidth="2.5" strokeLinecap="round" />
+                    </svg>
+                  </motion.button>
+                </div>
+
+                {/* Sets + Reps pill steppers — Elevate signature */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  {(['sets', 'reps'] as const).map((field) => (
+                    <div key={field} style={{
+                      flex: 1, display: 'flex', alignItems: 'center',
+                      background: '#1A1A1A', borderRadius: 10, overflow: 'hidden',
+                    }}>
+                      <button
+                        onClick={() => updateItem(item.uid, { [field]: Math.max(1, item[field] - 1) })}
+                        style={pillBtnStyle}
+                      >
+                        −
+                      </button>
+                      <div style={{
+                        flex: 1, textAlign: 'center',
+                        fontSize: 14, fontWeight: 600, color: '#F0EDE8',
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {item[field]}
+                        <span style={{ fontSize: 10, fontWeight: 400, color: '#8A8680', marginLeft: 3 }}>
+                          {field}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => updateItem(item.uid, { [field]: item[field] + 1 })}
+                        style={pillBtnStyle}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Weight pill stepper */}
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  background: '#1A1A1A', borderRadius: 10, overflow: 'hidden',
+                }}>
+                  <button
+                    onClick={() => updateItem(item.uid, { weightKg: Math.max(0, parseFloat((item.weightKg - 0.25).toFixed(2))) })}
+                    style={pillBtnStyle}
+                  >
+                    −
+                  </button>
+                  <div style={{
+                    flex: 1, textAlign: 'center',
+                    fontSize: 14, fontWeight: 600, color: '#C8A96E',
+                    fontFamily: '"Outfit", system-ui, sans-serif',
+                  }}>
+                    {fmtKg(item.weightKg)}
+                    <span style={{ fontSize: 10, fontWeight: 400, color: '#8A8680', marginLeft: 3 }}>kg</span>
+                  </div>
+                  <button
+                    onClick={() => updateItem(item.uid, { weightKg: parseFloat((item.weightKg + 0.25).toFixed(2)) })}
+                    style={pillBtnStyle}
+                  >
+                    +
+                  </button>
+                </div>
+              </Reorder.Item>
+            )
+          })}
+        </Reorder.Group>
+
+        {/* Dashed "Add Exercise" — always visible (Elevate signature) */}
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setShowPicker(true)}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: '1.5px dashed rgba(200,169,110,0.35)',
+            borderRadius: 16,
+            padding: items.length === 0 ? '32px 20px' : '14px 20px',
+            fontSize: 14,
+            color: '#8A8680',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            marginTop: items.length === 0 ? 0 : 0,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v12M1 7h12" stroke="#C8A96E" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          {items.length === 0 ? (
+            <div style={{ textAlign: 'center' }}>
               <p style={{
                 fontFamily: '"DM Serif Display", Georgia, serif',
-                fontSize: 22, color: '#F0EDE8', marginBottom: 6, lineHeight: 1,
+                fontSize: 20, color: '#F0EDE8', marginBottom: 6, lineHeight: 1,
               }}>
-                Build your <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>routine</em>
+                Add your first exercise
               </p>
-              <p style={{
-                fontSize: 13, color: '#8A8680',
-                fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.5,
-              }}>
-                Tap to add exercises
+              <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                Tap to browse the exercise library
               </p>
             </div>
-          </motion.button>
-        ) : (
-          <>
-            <Reorder.Group axis="y" values={items} onReorder={setItems} style={{ listStyle: 'none', padding: 0 }}>
-              {items.map((item) => (
-                <BuilderItem key={item.uid} item={item} onUpdate={updateItem} onRemove={removeItem} />
-              ))}
-            </Reorder.Group>
-            {/* Dashed "add more" button — Elevate signature */}
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowPicker(true)}
-              style={{
-                width: '100%',
-                padding: '14px 0',
-                background: 'transparent',
-                border: '1.5px dashed rgba(200,169,110,0.35)',
-                borderRadius: 14,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                marginTop: 4,
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1v12M1 7h12" stroke="#C8A96E" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              <span style={{
-                fontSize: 13, color: '#8A8680',
-                fontFamily: '"Outfit", system-ui, sans-serif',
-              }}>
-                Add exercise
-              </span>
-            </motion.button>
-          </>
-        )}
-        <div style={{ height: 180 }} />
-      </div>
+          ) : (
+            <span>Add exercise</span>
+          )}
+        </motion.button>
 
-      {/* Bottom actions */}
-      <AnimatePresence>
-        {items.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            style={{
-              position: 'fixed',
-              bottom: 'max(84px, calc(env(safe-area-inset-bottom) + 64px))',
-              left: 16, right: 16,
-              display: 'flex', gap: 10,
-            }}
-          >
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setShowSaveModal(true)}
-              style={{
-                flex: 1, height: 52,
-                background: 'rgba(30,30,30,0.95)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 16, color: '#F0EDE8',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                fontFamily: '"Outfit", system-ui, sans-serif',
-              }}
-            >
-              Save Plan
-            </motion.button>
+        {/* Save / Start buttons — Elevate pattern: disabled Save state */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 20, paddingBottom: 'max(100px, calc(env(safe-area-inset-bottom) + 80px))' }}>
+          <AnimatePresence mode="wait">
+            {saved ? (
+              <motion.div
+                key="saved"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  flex: 1, height: 52,
+                  background: 'rgba(52,199,89,0.1)',
+                  border: '1px solid rgba(52,199,89,0.25)',
+                  borderRadius: 16,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, fontWeight: 700, color: '#34C759',
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                }}
+              >
+                Saved
+              </motion.div>
+            ) : (
+              <motion.button
+                key="save"
+                whileTap={canSave ? { scale: 0.97 } : undefined}
+                onClick={savePlan}
+                disabled={!canSave}
+                style={{
+                  flex: 1, height: 52,
+                  background: canSave ? '#F0EDE8' : '#1A1A1A',
+                  color: canSave ? '#0C0C0C' : '#8A8680',
+                  border: canSave ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 16,
+                  fontSize: 14, fontWeight: 700,
+                  cursor: canSave ? 'pointer' : 'not-allowed',
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                  transition: 'background 0.2s, color 0.2s',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                Save Routine
+              </motion.button>
+            )}
+          </AnimatePresence>
+          {items.length > 0 && (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={startWorkout}
@@ -221,225 +422,211 @@ export default function Builder() {
                 border: 'none', borderRadius: 16,
                 color: '#0C0C0C', fontSize: 14, fontWeight: 700,
                 cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               Start Workout
             </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </div>
+      </div>
 
-      {/* Save modal */}
-      <AnimatePresence>
-        {showSaveModal && (
-          <motion.div
-            key="modal-bg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed', inset: 0,
-              background: 'rgba(0,0,0,0.75)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 200, padding: 24,
-            }}
-          >
-            <motion.div
-              key="modal"
-              initial={{ scale: 0.94, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              style={{
-                background: 'rgba(22,22,22,0.98)',
-                backdropFilter: 'blur(40px)',
-                borderRadius: 22, padding: 28, width: '100%', maxWidth: 360,
-                border: '1px solid rgba(255,255,255,0.09)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-              }}
-            >
-              <h3 style={{
-                fontFamily: '"DM Serif Display", Georgia, serif',
-                fontSize: 24, color: '#F0EDE8', marginBottom: 6,
-              }}>
-                Name your plan
-              </h3>
-              <p style={{
-                fontSize: 13, color: '#8A8680', marginBottom: 20,
-                fontFamily: '"Outfit", system-ui, sans-serif',
-              }}>
-                {items.length} exercise{items.length !== 1 ? 's' : ''}
-              </p>
-              <input
-                autoFocus
-                value={planName}
-                onChange={(e) => setPlanName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && savePlan()}
-                placeholder="e.g. Push A"
-                style={{
-                  width: '100%', height: 50,
-                  background: '#1E1E1E',
-                  border: '1px solid rgba(255,255,255,0.09)',
-                  borderRadius: 14, color: '#F0EDE8',
-                  fontSize: 16, padding: '0 16px', outline: 'none',
-                  marginBottom: 16,
-                  fontFamily: '"Outfit", system-ui, sans-serif',
-                  boxSizing: 'border-box',
-                }}
-              />
-              <div style={{ display: 'flex', gap: 10 }}>
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowSaveModal(false)}
-                  style={{
-                    flex: 1, height: 48,
-                    background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.09)',
-                    borderRadius: 14, color: '#8A8680',
-                    fontSize: 14, cursor: 'pointer',
-                    fontFamily: '"Outfit", system-ui, sans-serif',
-                  }}
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={savePlan}
-                  style={{
-                    flex: 2, height: 48,
-                    background: '#C8A96E', border: 'none',
-                    borderRadius: 14, color: '#0C0C0C',
-                    fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                    fontFamily: '"Outfit", system-ui, sans-serif',
-                  }}
-                >
-                  Save Plan
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Exercise picker */}
+      {/* Exercise picker — bottom sheet (Elevate signature) */}
       <AnimatePresence>
         {showPicker && (
-          <motion.div
-            key="picker"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 32, stiffness: 280 }}
-            style={{
-              position: 'fixed', inset: 0, background: '#0C0C0C',
-              zIndex: 150, display: 'flex', flexDirection: 'column',
-            }}
-          >
-            <div style={{
-              padding: 'max(54px, env(safe-area-inset-top)) 20px 12px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-              background: '#0C0C0C',
-              flexShrink: 0,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <motion.button
-                  whileTap={{ scale: 0.94 }}
-                  onClick={() => { setShowPicker(false); setSearch('') }}
-                  style={{
-                    background: 'none', border: 'none',
-                    color: '#C8A96E', fontSize: 14, cursor: 'pointer',
-                    fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif',
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    flexShrink: 0,
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Back
-                </motion.button>
-                <input
-                  autoFocus
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search exercises…"
-                  style={{
-                    flex: 1, height: 42,
-                    background: '#161616',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 12, color: '#F0EDE8',
-                    fontSize: 14, padding: '0 14px', outline: 'none',
-                    fontFamily: '"Outfit", system-ui, sans-serif',
-                  }}
-                />
-              </div>
-            </div>
-            <div className="scroll-y" style={{ flex: 1 }}>
-              {filteredExercises.map((ex) => {
-                const alreadyIn = items.some((i) => i.exerciseId === ex.id)
-                return (
-                  <div
-                    key={ex.id}
-                    onClick={() => {
-                      if (alreadyIn) return
-                      setItems([...items, {
-                        uid: nanoid(),
-                        exerciseId: ex.id,
-                        sets: ex.defaultSets,
-                        reps: parseInt(ex.defaultReps.split('–')[0]),
-                        weightKg: 20,
-                      }])
-                      setShowPicker(false)
-                      setSearch('')
-                    }}
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="picker-bg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPicker(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                zIndex: 200,
+              }}
+            />
+            {/* Sheet */}
+            <motion.div
+              key="picker-sheet"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 32, stiffness: 300 }}
+              style={{
+                position: 'fixed',
+                bottom: 0, left: 0, right: 0,
+                background: '#111111',
+                borderRadius: '28px 28px 0 0',
+                padding: '16px 20px 0',
+                paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+                maxHeight: '82svh',
+                display: 'flex',
+                flexDirection: 'column',
+                zIndex: 201,
+              }}
+            >
+              {/* Drag handle */}
+              <div style={{
+                width: 36, height: 4,
+                background: 'rgba(255,255,255,0.15)',
+                borderRadius: 2, margin: '0 auto 18px',
+              }} />
+
+              {/* Sheet heading */}
+              <h3 style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 26, color: '#F0EDE8',
+                marginBottom: 16, lineHeight: 1,
+              }}>
+                Add Exercise
+              </h3>
+
+              {/* Body group tabs */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexShrink: 0 }}>
+                {groupTabs.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => selectGroup(key)}
                     style={{
-                      display: 'flex', alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '15px 20px',
-                      borderBottom: '1px solid rgba(255,255,255,0.045)',
-                      cursor: alreadyIn ? 'default' : 'pointer',
-                      opacity: alreadyIn ? 0.35 : 1,
+                      flex: 1,
+                      background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
+                      color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
+                      border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                      borderRadius: 10,
+                      padding: '8px 0',
+                      fontSize: 12,
+                      fontWeight: pickerGroup === key ? 700 : 400,
+                      cursor: 'pointer',
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                      WebkitTapHighlightColor: 'transparent',
                     }}
-                    onPointerDown={(e) => {
-                      if (!alreadyIn) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.025)'
-                    }}
-                    onPointerUp={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
-                    onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                   >
-                    <div>
-                      <p style={{
-                        fontSize: 15, fontWeight: 500, color: '#F0EDE8',
-                        fontFamily: '"Outfit", system-ui, sans-serif',
-                      }}>
-                        {ex.name}
-                      </p>
-                      <p style={{
-                        fontSize: 12, color: '#8A8680',
-                        fontFamily: '"Outfit", system-ui, sans-serif', marginTop: 2,
-                      }}>
-                        {ex.defaultSets}×{ex.defaultReps}
-                      </p>
-                    </div>
-                    {alreadyIn && (
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Muscle chips — horizontal scroll */}
+              <div style={{
+                display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0,
+                paddingBottom: 12, marginBottom: 4,
+                scrollbarWidth: 'none',
+              }}>
+                <button
+                  onClick={() => setPickerMuscle(null)}
+                  style={chipStyle(pickerMuscle === null)}
+                >
+                  All
+                </button>
+                {pickerMuscles.map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setPickerMuscle(pickerMuscle === m ? null : m)}
+                    style={chipStyle(pickerMuscle === m)}
+                  >
+                    {muscleLabels[m] ?? m}
+                  </button>
+                ))}
+              </div>
+
+              {/* Exercise list */}
+              <div style={{
+                overflowY: 'auto', flex: 1, minHeight: 0,
+                display: 'flex', flexDirection: 'column', gap: 8,
+                paddingBottom: 16,
+                WebkitOverflowScrolling: 'touch',
+              }}>
+                {filteredExercises.map((ex) => {
+                  const already = items.some((i) => i.exerciseId === ex.id)
+                  const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+                  return (
+                    <motion.div
+                      key={ex.id}
+                      whileTap={already ? undefined : { scale: 0.97 }}
+                      onClick={() => !already && addExercise(ex.id)}
+                      style={{
+                        background: already ? '#181818' : '#1E1E1E',
+                        borderRadius: 14,
+                        padding: '12px 14px',
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        cursor: already ? 'default' : 'pointer',
+                        opacity: already ? 0.5 : 1,
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          fontSize: 15, fontWeight: 500, color: '#F0EDE8',
+                          fontFamily: '"Outfit", system-ui, sans-serif',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {ex.name}
+                        </p>
+                        <p style={{
+                          fontSize: 12, color: '#8A8680', marginTop: 2,
+                          fontFamily: '"Outfit", system-ui, sans-serif',
+                        }}>
+                          {ex.defaultSets} sets · {ex.defaultReps} reps
+                        </p>
+                      </div>
                       <span style={{
-                        fontSize: 11, color: '#8A8680',
+                        background: already ? 'rgba(138,134,128,0.12)' : mColor + '18',
+                        color: already ? '#8A8680' : mColor,
+                        border: already
+                          ? '1px solid rgba(138,134,128,0.2)'
+                          : `1px solid ${mColor}35`,
+                        borderRadius: 8,
+                        padding: '3px 9px',
+                        fontSize: 11, fontWeight: 500,
                         fontFamily: '"Outfit", system-ui, sans-serif',
+                        flexShrink: 0,
+                        whiteSpace: 'nowrap',
                       }}>
-                        Added
+                        {already ? 'Added' : (muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle)}
                       </span>
-                    )}
-                  </div>
-                )
-              })}
-              <div style={{ height: 60 }} />
-            </div>
-          </motion.div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-
-      <ExerciseDetailSheet exercise={pickerSelected} onClose={() => setPickerSelected(null)} />
     </div>
   )
+}
+
+/* ── Shared styles ── */
+const pillBtnStyle: React.CSSProperties = {
+  padding: '10px 14px',
+  background: 'none',
+  border: 'none',
+  fontSize: 18,
+  color: '#8A8680',
+  cursor: 'pointer',
+  lineHeight: 1,
+  WebkitTapHighlightColor: 'transparent',
+  flexShrink: 0,
+}
+
+function chipStyle(active: boolean): React.CSSProperties {
+  return {
+    flexShrink: 0,
+    background: active ? '#F0EDE8' : '#1E1E1E',
+    color: active ? '#0C0C0C' : '#8A8680',
+    border: active ? 'none' : '1px solid rgba(255,255,255,0.07)',
+    borderRadius: 10,
+    padding: '6px 14px',
+    fontSize: 12,
+    fontWeight: active ? 700 : 400,
+    cursor: 'pointer',
+    fontFamily: '"Outfit", system-ui, sans-serif',
+    WebkitTapHighlightColor: 'transparent',
+  }
 }
