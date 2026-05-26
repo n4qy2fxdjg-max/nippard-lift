@@ -1,30 +1,19 @@
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import { useWorkoutStore, buildSessionFromProgram } from '../store/useWorkoutStore'
 import type { Program } from '../types'
 import { format, parseISO } from 'date-fns'
 
 interface Props {
   program: Program
   lastDate?: string
+  onOpen: () => void      // tap card → detail sheet
 }
 
-export default function WorkoutCard({ program, lastDate }: Props) {
-  const navigate = useNavigate()
-  const startSession = useWorkoutStore((s) => s.startSession)
-
-  function handleStart() {
-    const session = buildSessionFromProgram(program.id)
-    if (!session) return
-    startSession(program.id, session.planName, session.exercises)
-    navigate('/active')
-  }
-
+export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
   return (
     <motion.div
       whileTap={{ scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      onClick={handleStart}
+      onClick={onOpen}
       style={{
         minWidth: 220,
         background: '#161616',
@@ -75,7 +64,7 @@ export default function WorkoutCard({ program, lastDate }: Props) {
           {program.name}
         </p>
 
-        {/* Italic subtitle — Elevate signature */}
+        {/* Italic subtitle */}
         <p style={{
           fontFamily: '"DM Serif Display", Georgia, serif',
           fontSize: 13,
@@ -86,7 +75,7 @@ export default function WorkoutCard({ program, lastDate }: Props) {
           {program.exercises.length} exercises · {program.estimatedMinutes}m
         </p>
 
-        {/* Bottom row: last date + start CTA */}
+        {/* Bottom row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
           <p style={{
             fontSize: 10,
@@ -105,8 +94,14 @@ export default function WorkoutCard({ program, lastDate }: Props) {
             color: '#0C0C0C',
             fontFamily: '"Outfit", system-ui, sans-serif',
             letterSpacing: '0.2px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
           }}>
-            Start
+            View
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="#0C0C0C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
         </div>
       </div>

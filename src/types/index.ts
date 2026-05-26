@@ -69,12 +69,19 @@ export interface SetResult {
   timestamp?: number
 }
 
+export interface WarmupSet {
+  weightKg: number
+  targetReps: number
+  completed: boolean
+}
+
 export interface SessionExercise {
   exerciseId: string
   targetSets: number
   targetReps: string
   currentWeight: number
   sets: SetResult[]
+  warmupSets?: WarmupSet[]
 }
 
 export interface ActiveSession {
@@ -85,7 +92,8 @@ export interface ActiveSession {
   exercises: SessionExercise[]
   currentExIdx: number
   currentSetIdx: number
-  phase: 'exercise' | 'rest' | 'done'
+  phase: 'warmup' | 'exercise' | 'rest' | 'done'
+  warmupSetIdx: number
   restRemaining: number
   restTotal: number
   timerStartAt: number
