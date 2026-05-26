@@ -64,7 +64,7 @@ export const featuredPrograms: Program[] = [
   // ── Muscle Ladder programmes (Nippard) ──────────────────────────
   {
     id: 'lower-ml',
-    name: 'Lower Ladder',
+    name: 'Lower Day',
     tag: 'lower',
     tagColor: '#FB923C',
     estimatedMinutes: 85,
@@ -87,7 +87,7 @@ export const featuredPrograms: Program[] = [
   },
   {
     id: 'full-ml',
-    name: 'Full Body Ladder',
+    name: 'Full Body',
     tag: 'full',
     tagColor: '#2DD4BF',
     estimatedMinutes: 75,

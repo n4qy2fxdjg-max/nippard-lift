@@ -1,11 +1,15 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { Reorder, motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { useBuilderStore } from '../store/useBuilderStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
+import { useAppStore } from '../store/useAppStore'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
 import type { BuilderItem as BuilderItemType, MuscleGroup, BodyGroup } from '../types'
+
+const KG_TO_LB = 2.20462
+const LB_TO_KG = 1 / KG_TO_LB
 
 /* ── Muscle colour + label map (shared with ExerciseRow) ── */
 const muscleColors: Record<string, string> = {
@@ -34,8 +38,9 @@ const groupTabs: { key: 'all' | BodyGroup; label: string }[] = [
   { key: 'core', label: 'Core' },
 ]
 
-function fmtKg(kg: number) {
-  return parseFloat(kg.toFixed(2)).toString()
+function fmtWeight(kg: number, unit: 'kg' | 'lb'): string {
+  if (unit === 'lb') return Math.round(kg * KG_TO_LB).toString()
+  return kg % 1 === 0 ? kg.toFixed(0) : parseFloat(kg.toFixed(2)).toString()
 }
 
 export default function Builder() {
@@ -44,6 +49,7 @@ export default function Builder() {
   const addPlan = useBuilderStore((s) => s.addPlan)
   const plans = useBuilderStore((s) => s.plans)
   const startSession = useWorkoutStore((s) => s.startSession)
+  const unit = useAppStore((s) => s.unit)
   const navigate = useNavigate()
 
   const [planName, setPlanName] = useState('')
@@ -51,6 +57,20 @@ export default function Builder() {
   const [pickerGroup, setPickerGroup] = useState<'all' | BodyGroup>('all')
   const [pickerMuscle, setPickerMuscle] = useState<MuscleGroup | null>(null)
   const [saved, setSaved] = useState(false)
+  const [editingWeight, setEditingWeight] = useState<{ uid: string; val: string } | null>(null)
+  const weightInputRef = useRef<HTMLInputElement>(null)
+
+  const weightStep = unit === 'lb' ? LB_TO_KG : 1.0
+
+  function commitWeightEdit() {
+    if (!editingWeight) return
+    const num = parseFloat(editingWeight.val)
+    if (!isNaN(num) && num >= 0) {
+      const kg = unit === 'lb' ? num * LB_TO_KG : num
+      updateItem(editingWeight.uid, { weightKg: Math.max(0, parseFloat(kg.toFixed(4))) })
+    }
+    setEditingWeight(null)
+  }
 
   const canSave = planName.trim().length > 0 && items.length > 0
 
@@ -303,21 +323,51 @@ export default function Builder() {
                   background: '#1A1A1A', borderRadius: 10, overflow: 'hidden',
                 }}>
                   <button
-                    onClick={() => updateItem(item.uid, { weightKg: Math.max(0, parseFloat((item.weightKg - 0.25).toFixed(2))) })}
+                    onClick={() => updateItem(item.uid, { weightKg: Math.max(0, parseFloat((item.weightKg - weightStep).toFixed(4))) })}
                     style={pillBtnStyle}
                   >
                     −
                   </button>
-                  <div style={{
-                    flex: 1, textAlign: 'center',
-                    fontSize: 14, fontWeight: 600, color: '#C8A96E',
-                    fontFamily: '"Outfit", system-ui, sans-serif',
-                  }}>
-                    {fmtKg(item.weightKg)}
-                    <span style={{ fontSize: 10, fontWeight: 400, color: '#8A8680', marginLeft: 3 }}>kg</span>
+                  <div
+                    onClick={() => {
+                      if (editingWeight?.uid !== item.uid) {
+                        setEditingWeight({ uid: item.uid, val: fmtWeight(item.weightKg, unit) })
+                        setTimeout(() => weightInputRef.current?.focus(), 30)
+                      }
+                    }}
+                    style={{
+                      flex: 1, textAlign: 'center',
+                      fontSize: 14, fontWeight: 600, color: '#C8A96E',
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                      cursor: 'text',
+                    }}
+                  >
+                    {editingWeight?.uid === item.uid ? (
+                      <input
+                        ref={weightInputRef}
+                        value={editingWeight.val}
+                        onChange={(e) => setEditingWeight({ uid: item.uid, val: e.target.value })}
+                        onBlur={commitWeightEdit}
+                        onKeyDown={(e) => { if (e.key === 'Enter') commitWeightEdit() }}
+                        inputMode="decimal"
+                        style={{
+                          width: 56, textAlign: 'center',
+                          background: 'transparent', border: 'none',
+                          borderBottom: '2px solid #C8A96E',
+                          color: '#C8A96E', fontSize: 14, fontWeight: 600,
+                          outline: 'none',
+                          fontFamily: '"Outfit", system-ui, sans-serif',
+                        }}
+                      />
+                    ) : (
+                      <>
+                        {fmtWeight(item.weightKg, unit)}
+                        <span style={{ fontSize: 10, fontWeight: 400, color: '#8A8680', marginLeft: 3 }}>{unit}</span>
+                      </>
+                    )}
                   </div>
                   <button
-                    onClick={() => updateItem(item.uid, { weightKg: parseFloat((item.weightKg + 0.25).toFixed(2)) })}
+                    onClick={() => updateItem(item.uid, { weightKg: parseFloat((item.weightKg + weightStep).toFixed(4)) })}
                     style={pillBtnStyle}
                   >
                     +
