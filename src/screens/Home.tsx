@@ -9,7 +9,6 @@ import { featuredPrograms } from '../data/programs'
 import WorkoutCard from '../components/WorkoutCard'
 import StreakChip from '../components/StreakChip'
 import ProgramDetailSheet from '../components/ProgramDetailSheet'
-import SyncSheet from '../components/SyncSheet'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
 import type { Program } from '../types'
 
@@ -55,7 +54,6 @@ export default function Home() {
   const today = format(new Date(), 'EEEE, d MMM')
 
   const [detailProgram, setDetailProgram] = useState<Program | null>(null)
-  const [showSync, setShowSync] = useState(false)
 
   function lastPerformed(programId: string): string | undefined {
     return logs.find((l) => l.planId === programId)?.date
@@ -104,30 +102,11 @@ export default function Home() {
               </h1>
             </div>
 
-            {/* Right side: streak + settings */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, marginTop: 42 }}>
-              {streak > 0 && <StreakChip streak={streak} />}
-              <motion.button
-                whileTap={{ scale: 0.88 }}
-                onClick={() => setShowSync(true)}
-                style={{
-                  width: 36, height: 36,
-                  background: '#161616',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 10, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                {/* Sync icon */}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 2v6h-6" stroke="#8A8680" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M3 12a9 9 0 0115-6.7L21 8" stroke="#8A8680" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M3 22v-6h6" stroke="#8A8680" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M21 12a9 9 0 01-15 6.7L3 16" stroke="#8A8680" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </motion.button>
-            </div>
+            {streak > 0 && (
+              <div style={{ marginTop: 42 }}>
+                <StreakChip streak={streak} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -212,9 +191,6 @@ export default function Home() {
         program={detailProgram}
         onClose={() => setDetailProgram(null)}
       />
-
-      {/* Sync sheet */}
-      <SyncSheet open={showSync} onClose={() => setShowSync(false)} />
     </div>
   )
 }

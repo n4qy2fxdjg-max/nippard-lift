@@ -2,6 +2,12 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { CustomPlan, BuilderItem } from '../types'
 
+function autoSync() {
+  import('./useSyncStore').then(({ useSyncStore }) => {
+    useSyncStore.getState().pushSync().catch(() => {})
+  })
+}
+
 interface BuilderStore {
   plans: CustomPlan[]
   currentItems: BuilderItem[]
@@ -16,12 +22,22 @@ export const useBuilderStore = create<BuilderStore>()(
     (set) => ({
       plans: [],
       currentItems: [],
-      addPlan: (plan) => set((s) => ({ plans: [plan, ...s.plans] })),
-      deletePlan: (id) => set((s) => ({ plans: s.plans.filter((p) => p.id !== id) })),
+
+      addPlan: (plan) => {
+        set((s) => ({ plans: [plan, ...s.plans] }))
+        autoSync()
+      },
+
+      deletePlan: (id) => {
+        set((s) => ({ plans: s.plans.filter((p) => p.id !== id) }))
+        autoSync()
+      },
+
       updatePlan: (id, items) =>
         set((s) => ({
           plans: s.plans.map((p) => (p.id === id ? { ...p, items } : p)),
         })),
+
       setCurrentItems: (items) => set({ currentItems: items }),
     }),
     { name: 'lift-builder-v1' }

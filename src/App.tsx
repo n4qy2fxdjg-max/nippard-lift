@@ -6,6 +6,7 @@ import Library from './screens/Library'
 import Builder from './screens/Builder'
 import ActiveWorkout from './screens/ActiveWorkout'
 import Progress from './screens/Progress'
+import Settings from './screens/Settings'
 import Onboarding from './screens/Onboarding'
 import { useAppStore } from './store/useAppStore'
 
@@ -89,6 +90,21 @@ function AnimatedRoutes() {
                 transition={pageTransition}
               >
                 <Progress />
+              </motion.div>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <motion.div
+                style={{ height: '100%' }}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pageTransition}
+              >
+                <Settings />
               </motion.div>
             }
           />

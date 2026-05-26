@@ -7,6 +7,7 @@ const tabs = [
   { to: '/library', label: 'Library', icon: LibraryIcon },
   { to: '/builder', label: 'Build', icon: BuildIcon },
   { to: '/progress', label: 'Progress', icon: ProgressIcon },
+  { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
 
 export default function BottomNav() {
@@ -175,6 +176,19 @@ function ProgressIcon({ active }: { active: boolean }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
+      />
+    </svg>
+  )
+}
+
+function SettingsIcon({ active }: { active: boolean }) {
+  const c = active ? '#C8A96E' : '#8A8680'
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="3" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
+      <path
+        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+        stroke={c} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"
       />
     </svg>
   )
