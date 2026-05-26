@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lift",
   "main": "src/worker.ts",
-  "compatibility_date": "2026-05-27",
+  "compatibility_date": "2025-11-01",
   "observability": {
     "enabled": true
   },
@@ -17,7 +17,7 @@
     {
       "binding": "DB",
       "database_name": "lift-db",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_id": "0e9ba5ee-3a1a-4492-8df6-cdafb1763d34"
     }
   ]
 }
