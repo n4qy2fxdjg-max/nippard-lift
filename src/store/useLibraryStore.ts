@@ -24,6 +24,6 @@ export const useLibraryStore = create<LibraryStore>()(
       },
       getHistory: (exerciseId) => get().weightHistory[exerciseId] ?? [],
     }),
-    { name: 'nippard-library-v1' }
+    { name: 'lift-library-v1' }
   )
 )

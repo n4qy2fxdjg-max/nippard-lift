@@ -190,7 +190,7 @@ function HeroStep() {
           lineHeight: 1.1, marginBottom: 16,
         }}
       >
-        Nippard Lift
+        Lift
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 12 }}

@@ -21,6 +21,6 @@ export const useAppStore = create<AppStore>()(
       completeOnboarding: (name, unit) =>
         set({ userName: name.trim() || 'You', unit, onboarded: true }),
     }),
-    { name: 'nippard-app-v1' }
+    { name: 'lift-app-v1' }
   )
 )

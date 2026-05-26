@@ -200,7 +200,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         set((s) => ({ logs: s.logs.filter((l) => l.id !== id) })),
     }),
     {
-      name: 'nippard-workout-v1',
+      name: 'lift-workout-v1',
       partialize: (state) => ({ logs: state.logs }),
     }
   )

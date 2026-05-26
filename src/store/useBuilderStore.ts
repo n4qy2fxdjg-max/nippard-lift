@@ -24,6 +24,6 @@ export const useBuilderStore = create<BuilderStore>()(
         })),
       setCurrentItems: (items) => set({ currentItems: items }),
     }),
-    { name: 'nippard-builder-v1' }
+    { name: 'lift-builder-v1' }
   )
 )

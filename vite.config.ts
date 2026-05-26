@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
-        name: 'Nippard Lift',
+        name: 'Lift',
         short_name: 'Lift',
-        description: 'Jeff Nippard-inspired progressive overload tracker',
+        description: 'Science-based progressive overload tracker',
         theme_color: '#0C0C0C',
         background_color: '#0C0C0C',
         display: 'standalone',
