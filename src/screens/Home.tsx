@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/useAppStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
@@ -6,13 +7,12 @@ import { useBuilderStore } from '../store/useBuilderStore'
 import { featuredPrograms } from '../data/programs'
 import WorkoutCard from '../components/WorkoutCard'
 import StreakChip from '../components/StreakChip'
-import { isWithinInterval, subWeeks, parseISO, startOfDay } from 'date-fns'
+import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
 
-function greeting(name: string): string {
+function greeting(name: string): { prefix: string; name: string } {
   const h = new Date().getHours()
-  if (h < 12) return `Good morning, ${name}`
-  if (h < 17) return `Good afternoon, ${name}`
-  return `Good evening, ${name}`
+  const prefix = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+  return { prefix, name }
 }
 
 function computeStreak(logs: { date: string }[]): number {
@@ -31,6 +31,14 @@ function computeStreak(logs: { date: string }[]): number {
   return streak
 }
 
+const listVariants = {
+  visible: { transition: { staggerChildren: 0.07 } },
+}
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 28 } },
+}
+
 export default function Home() {
   const userName = useAppStore((s) => s.userName)
   const logs = useWorkoutStore((s) => s.logs)
@@ -39,6 +47,8 @@ export default function Home() {
   const navigate = useNavigate()
 
   const streak = useMemo(() => computeStreak(logs), [logs])
+  const { prefix, name } = greeting(userName)
+  const today = format(new Date(), 'EEEE, d MMM')
 
   function lastPerformed(programId: string): string | undefined {
     return logs.find((l) => l.planId === programId)?.date
@@ -59,84 +69,158 @@ export default function Home() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0C0C0C' }}>
-      <div className="scroll-y" style={{ flex: 1, paddingBottom: 90 }}>
+      <div className="scroll-y" style={{ flex: 1, paddingBottom: 100 }}>
+
         {/* Header */}
-        <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 24px 20px' }}>
-          <h1 style={{
-            fontFamily: '"DM Serif Display", serif',
-            fontSize: 30,
-            color: '#F0EDE8',
-            lineHeight: 1.2,
-            marginBottom: 12,
+        <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 24px 28px' }}>
+          <p style={{
+            fontSize: 11,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
+            color: '#8A8680',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            marginBottom: 8,
           }}>
-            {greeting(userName)}
-          </h1>
-          <StreakChip streak={streak} />
+            {today}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{
+                fontSize: 15,
+                color: '#8A8680',
+                fontFamily: '"Outfit", system-ui, sans-serif',
+                marginBottom: 2,
+              }}>
+                {prefix},
+              </p>
+              <h1 style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 40,
+                color: '#F0EDE8',
+                lineHeight: 1.0,
+                letterSpacing: '-0.5px',
+              }}>
+                {name}.
+              </h1>
+            </div>
+            {streak > 0 && (
+              <div style={{ marginTop: 6 }}>
+                <StreakChip streak={streak} />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Featured Programs */}
-        <div style={{ paddingLeft: 24, marginBottom: 32 }}>
-          <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 14 }}>
-            Programmes
-          </p>
-          <div className="scroll-x" style={{ display: 'flex', gap: 12, paddingRight: 24 }}>
+        {/* Programmes */}
+        <div style={{ marginBottom: 36 }}>
+          <div style={{ padding: '0 24px', marginBottom: 14, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <p style={{
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+              color: '#8A8680',
+              fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              Programmes
+            </p>
+            <p style={{
+              fontSize: 11,
+              color: 'rgba(138,134,128,0.6)',
+              fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              {featuredPrograms.length} plans
+            </p>
+          </div>
+          <div className="scroll-x" style={{ display: 'flex', gap: 10, paddingLeft: 24, paddingRight: 24 }}>
             {featuredPrograms.map((p) => (
               <WorkoutCard key={p.id} program={p} lastDate={lastPerformed(p.id)} />
             ))}
           </div>
         </div>
 
-        {/* Saved Plans */}
-        {plans.length > 0 && (
-          <div style={{ padding: '0 24px' }}>
-            <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 14 }}>
-              My Plans
-            </p>
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                onClick={() => startCustomPlan(plan.id)}
-                style={{
-                  background: '#161616',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 14,
-                  padding: '16px 18px',
-                  marginBottom: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  cursor: 'pointer',
-                }}
-                onPointerDown={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                onPointerUp={(e) => { (e.currentTarget as HTMLElement).style.opacity = '' }}
-                onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '' }}
-              >
-                <div>
-                  <p style={{ fontSize: 15, fontWeight: 600, color: '#F0EDE8' }}>{plan.name}</p>
-                  <p style={{ fontSize: 12, color: '#8A8680', marginTop: 3 }}>{plan.items.length} exercises</p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: '#C8A96E', fontWeight: 600 }}>Start →</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* My Plans */}
+        <div style={{ padding: '0 24px' }}>
+          <p style={{
+            fontSize: 10,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
+            color: '#8A8680',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            marginBottom: 14,
+          }}>
+            My Plans
+          </p>
 
-        {/* Empty state */}
-        {plans.length === 0 && (
-          <div style={{ padding: '0 24px' }}>
+          {plans.length === 0 ? (
             <div style={{
-              background: '#161616',
-              border: '1px dashed rgba(255,255,255,0.1)',
-              borderRadius: 14,
               padding: '24px 20px',
+              borderRadius: 16,
+              border: '1px dashed rgba(255,255,255,0.08)',
               textAlign: 'center',
             }}>
-              <p style={{ fontSize: 14, color: '#8A8680' }}>Build your first custom plan in the Builder tab</p>
+              <p style={{
+                fontSize: 13,
+                color: '#8A8680',
+                fontFamily: '"Outfit", system-ui, sans-serif',
+                lineHeight: 1.6,
+              }}>
+                Build your first custom plan in the Builder tab
+              </p>
             </div>
-          </div>
-        )}
+          ) : (
+            <motion.div initial="hidden" animate="visible" variants={listVariants}>
+              {plans.map((plan) => (
+                <motion.div key={plan.id} variants={itemVariants}>
+                  <motion.div
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    onClick={() => startCustomPlan(plan.id)}
+                    style={{
+                      background: '#161616',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      borderRadius: 16,
+                      padding: '16px 18px',
+                      marginBottom: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute', left: 0, top: 14, bottom: 14,
+                      width: 3, background: '#C8A96E',
+                      borderRadius: '0 2px 2px 0', opacity: 0.7,
+                    }} />
+                    <div>
+                      <p style={{
+                        fontSize: 15, fontWeight: 600, color: '#F0EDE8',
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {plan.name}
+                      </p>
+                      <p style={{
+                        fontSize: 12, color: '#8A8680', marginTop: 3,
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {plan.items.length} exercise{plan.items.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M6 4l13 8-13 8V4z" fill="#C8A96E" />
+                    </svg>
+                  </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   )

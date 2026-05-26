@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
-import { exercises, getExercisesByGroup } from '../data/exercises'
+import { motion } from 'framer-motion'
+import { getExercisesByGroup } from '../data/exercises'
 import ExerciseRow from '../components/ExerciseRow'
 import ExerciseDetailSheet from '../components/ExerciseDetailSheet'
 import type { BodyGroup, Exercise, MuscleGroup } from '../types'
@@ -18,6 +19,14 @@ const muscleLabels: Record<MuscleGroup, string> = {
   biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
   glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
   obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
+}
+
+const listVariants = {
+  visible: { transition: { staggerChildren: 0.03 } },
+}
+const rowVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 28 } },
 }
 
 export default function Library() {
@@ -46,69 +55,88 @@ export default function Library() {
       {/* Sticky header */}
       <div style={{
         paddingTop: 'max(54px, env(safe-area-inset-top))',
-        background: '#0C0C0C',
+        background: 'rgba(12,12,12,0.95)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         flexShrink: 0,
       }}>
-        <div style={{ padding: '16px 24px 0' }}>
-          <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 28, color: '#F0EDE8' }}>Library</h1>
-          <p style={{ fontSize: 12, color: '#8A8680', marginTop: 2 }}>{exercises.length} exercises</p>
+        <div style={{ padding: '16px 24px 0', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <h1 style={{
+            fontFamily: '"DM Serif Display", Georgia, serif',
+            fontSize: 30, color: '#F0EDE8',
+          }}>
+            Library
+          </h1>
+          <p style={{
+            fontSize: 11, color: '#8A8680',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            paddingBottom: 4,
+          }}>
+            {filtered.length} exercises
+          </p>
         </div>
 
         {/* Group tabs */}
         <div className="scroll-x" style={{ display: 'flex', gap: 8, padding: '14px 24px 0' }}>
           {groupTabs.map(({ key, label }) => (
-            <button
+            <motion.button
               key={key}
+              whileTap={{ scale: 0.94 }}
               onClick={() => handleGroupChange(key)}
               style={{
                 padding: '7px 16px',
                 borderRadius: 20,
-                border: group === key ? '1px solid rgba(200,169,110,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                background: group === key ? 'rgba(200,169,110,0.12)' : '#161616',
+                border: group === key
+                  ? '1px solid rgba(200,169,110,0.35)'
+                  : '1px solid rgba(255,255,255,0.07)',
+                background: group === key ? 'rgba(200,169,110,0.1)' : 'transparent',
                 color: group === key ? '#C8A96E' : '#8A8680',
                 fontSize: 13,
                 fontWeight: group === key ? 600 : 400,
                 cursor: 'pointer',
                 flexShrink: 0,
+                fontFamily: '"Outfit", system-ui, sans-serif',
                 letterSpacing: '0.2px',
               }}
             >
               {label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* Muscle chips */}
-        <div className="scroll-x" style={{ display: 'flex', gap: 8, padding: '10px 24px 14px' }}>
+        <div className="scroll-x" style={{ display: 'flex', gap: 6, padding: '10px 24px 14px' }}>
           <button
             onClick={() => setMuscle(null)}
             style={{
-              padding: '5px 12px',
+              padding: '4px 12px',
               borderRadius: 20,
-              border: muscle === null ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.06)',
-              background: muscle === null ? 'rgba(200,169,110,0.1)' : 'transparent',
+              border: muscle === null
+                ? '1px solid rgba(200,169,110,0.3)'
+                : '1px solid rgba(255,255,255,0.05)',
+              background: muscle === null ? 'rgba(200,169,110,0.08)' : 'transparent',
               color: muscle === null ? '#C8A96E' : '#8A8680',
-              fontSize: 11,
-              fontWeight: 500,
-              cursor: 'pointer',
-              flexShrink: 0,
+              fontSize: 11, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
+              fontFamily: '"Outfit", system-ui, sans-serif',
             }}
-          >All</button>
+          >
+            All
+          </button>
           {muscles.map((m) => (
             <button
               key={m}
               onClick={() => setMuscle(m === muscle ? null : m)}
               style={{
-                padding: '5px 12px',
+                padding: '4px 12px',
                 borderRadius: 20,
-                border: muscle === m ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.06)',
-                background: muscle === m ? 'rgba(200,169,110,0.1)' : 'transparent',
+                border: muscle === m
+                  ? '1px solid rgba(200,169,110,0.3)'
+                  : '1px solid rgba(255,255,255,0.05)',
+                background: muscle === m ? 'rgba(200,169,110,0.08)' : 'transparent',
                 color: muscle === m ? '#C8A96E' : '#8A8680',
-                fontSize: 11,
-                fontWeight: 500,
-                cursor: 'pointer',
-                flexShrink: 0,
+                fontSize: 11, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
+                fontFamily: '"Outfit", system-ui, sans-serif',
               }}
             >
               {muscleLabels[m] ?? m}
@@ -118,12 +146,21 @@ export default function Library() {
       </div>
 
       {/* Exercise list */}
-      <div className="scroll-y" style={{ flex: 1 }}>
+      <motion.div
+        key={`${group}-${muscle}`}
+        className="scroll-y"
+        style={{ flex: 1 }}
+        initial="hidden"
+        animate="visible"
+        variants={listVariants}
+      >
         {filtered.map((ex) => (
-          <ExerciseRow key={ex.id} exercise={ex} onClick={() => setSelected(ex)} />
+          <motion.div key={ex.id} variants={rowVariants}>
+            <ExerciseRow exercise={ex} onClick={() => setSelected(ex)} />
+          </motion.div>
         ))}
-        <div style={{ height: 90 }} />
-      </div>
+        <div style={{ height: 100 }} />
+      </motion.div>
 
       <ExerciseDetailSheet exercise={selected} onClose={() => setSelected(null)} />
     </div>

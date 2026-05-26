@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkoutStore, buildSessionFromProgram } from '../store/useWorkoutStore'
 import type { Program } from '../types'
@@ -6,13 +7,6 @@ import { format, parseISO } from 'date-fns'
 interface Props {
   program: Program
   lastDate?: string
-}
-
-const tagLabels: Record<string, string> = {
-  push: 'PUSH',
-  pull: 'PULL',
-  legs: 'LEGS',
-  upper: 'UPPER',
 }
 
 export default function WorkoutCard({ program, lastDate }: Props) {
@@ -27,59 +21,87 @@ export default function WorkoutCard({ program, lastDate }: Props) {
   }
 
   return (
-    <div
+    <motion.div
+      whileTap={{ scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       onClick={handleStart}
       style={{
-        minWidth: 200,
+        minWidth: 210,
+        height: 200,
         background: '#161616',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 16,
-        padding: '20px 18px',
+        borderRadius: 18,
+        padding: '18px 18px 16px',
         cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
-        gap: 14,
+        gap: 0,
         flexShrink: 0,
-        transition: 'transform 0.12s, opacity 0.12s',
         userSelect: 'none',
+        position: 'relative',
+        overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.06)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
-      onPointerDown={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)'; (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
-      onPointerUp={(e) => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.opacity = '' }}
-      onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.opacity = '' }}
     >
-      {/* Tag */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Left color accent bar */}
+      <div style={{
+        position: 'absolute',
+        left: 0, top: 20, bottom: 20,
+        width: 3,
+        background: program.tagColor,
+        borderRadius: '0 2px 2px 0',
+        opacity: 0.8,
+      }} />
+
+      {/* Top row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'auto' }}>
         <span style={{
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: 700,
-          letterSpacing: '1.5px',
+          letterSpacing: '1.8px',
           color: program.tagColor,
-          background: `${program.tagColor}18`,
-          border: `1px solid ${program.tagColor}35`,
-          borderRadius: 6,
-          padding: '3px 8px',
+          textTransform: 'uppercase',
+          fontFamily: '"Outfit", system-ui, sans-serif',
         }}>
-          {tagLabels[program.tag]}
+          {program.tag}
         </span>
-        <span style={{ fontSize: 12, color: '#8A8680' }}>{program.estimatedMinutes} min</span>
+        <span style={{
+          fontSize: 11,
+          color: '#8A8680',
+          fontFamily: '"Outfit", system-ui, sans-serif',
+        }}>
+          {program.estimatedMinutes}m
+        </span>
       </div>
 
-      {/* Name */}
-      <div>
-        <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: 22, color: '#F0EDE8', lineHeight: 1.1 }}>
+      {/* Program name */}
+      <div style={{ marginTop: 'auto' }}>
+        <p style={{
+          fontFamily: '"DM Serif Display", Georgia, serif',
+          fontSize: 26,
+          color: '#F0EDE8',
+          lineHeight: 1.1,
+          marginBottom: 6,
+        }}>
           {program.name}
         </p>
-        <p style={{ fontSize: 12, color: '#8A8680', marginTop: 4 }}>
+        <p style={{
+          fontSize: 12,
+          color: '#8A8680',
+          fontFamily: '"Outfit", system-ui, sans-serif',
+          marginBottom: 14,
+        }}>
           {program.exercises.length} exercises
         </p>
+        <p style={{
+          fontSize: 10,
+          color: lastDate ? '#8A8680' : 'rgba(138,134,128,0.5)',
+          fontFamily: '"Outfit", system-ui, sans-serif',
+          letterSpacing: '0.3px',
+        }}>
+          {lastDate ? `Last ${format(parseISO(lastDate), 'MMM d')}` : 'Not started'}
+        </p>
       </div>
-
-      {/* Last performed */}
-      <p style={{ fontSize: 11, color: '#8A8680', marginTop: 'auto' }}>
-        {lastDate
-          ? `Last: ${format(parseISO(lastDate), 'MMM d')}`
-          : 'Not started yet'}
-      </p>
-    </div>
+    </motion.div>
   )
 }

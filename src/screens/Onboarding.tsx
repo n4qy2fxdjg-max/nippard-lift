@@ -129,7 +129,7 @@ export default function Onboarding() {
             width: '100%', padding: '16px 0',
             background: '#C8A96E', borderRadius: 14,
             border: 'none', cursor: 'pointer',
-            fontFamily: '"Inter", system-ui, sans-serif',
+            fontFamily: '"Outfit", system-ui, sans-serif',
             fontSize: 16, fontWeight: 700, color: '#0C0C0C',
             letterSpacing: '-0.2px',
           }}
@@ -143,7 +143,7 @@ export default function Onboarding() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: '#8A8680', fontSize: 14,
-              fontFamily: '"Inter", system-ui, sans-serif',
+              fontFamily: '"Outfit", system-ui, sans-serif',
             }}
           >
             Back
@@ -236,7 +236,7 @@ function NameStep({ name, setName, inputRef }: {
           background: '#161616',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 12,
-          fontFamily: '"Inter", system-ui, sans-serif',
+          fontFamily: '"Outfit", system-ui, sans-serif',
           fontSize: 17, color: '#F0EDE8',
           outline: 'none', boxSizing: 'border-box',
         }}
@@ -278,7 +278,7 @@ function UnitStep({ unit, setUnit }: { unit: 'kg' | 'lb'; setUnit: (u: 'kg' | 'l
               background: unit === u ? 'rgba(200,169,110,0.12)' : '#161616',
               border: `2px solid ${unit === u ? '#C8A96E' : 'rgba(255,255,255,0.08)'}`,
               borderRadius: 14, cursor: 'pointer',
-              fontFamily: '"Inter", system-ui, sans-serif',
+              fontFamily: '"Outfit", system-ui, sans-serif',
               fontSize: 22, fontWeight: 700,
               color: unit === u ? '#C8A96E' : '#8A8680',
               transition: 'all 0.18s ease',

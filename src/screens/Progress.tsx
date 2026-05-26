@@ -11,6 +11,14 @@ function formatDuration(secs: number): string {
   return `${Math.floor(m / 60)}h ${m % 60}m`
 }
 
+const listVariants = {
+  visible: { transition: { staggerChildren: 0.06 } },
+}
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 280, damping: 26 } },
+}
+
 export default function Progress() {
   const logs = useWorkoutStore((s) => s.logs)
   const deleteLog = useWorkoutStore((s) => s.deleteLog)
@@ -35,114 +43,262 @@ export default function Progress() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0C0C0C' }}>
-      <div className="scroll-y" style={{ flex: 1, paddingBottom: 90 }}>
+      <div className="scroll-y" style={{ flex: 1, paddingBottom: 100 }}>
+
         {/* Header */}
         <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 24px 20px' }}>
-          <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 28, color: '#F0EDE8' }}>Progress</h1>
+          <h1 style={{
+            fontFamily: '"DM Serif Display", Georgia, serif',
+            fontSize: 30, color: '#F0EDE8',
+          }}>
+            Progress
+          </h1>
         </div>
 
         {/* New workout banner */}
         <AnimatePresence>
           {isNew && logs.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: -16 }}
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              style={{ margin: '0 24px 16px', background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)', borderRadius: 12, padding: '12px 16px' }}
+              style={{
+                margin: '0 24px 20px',
+                background: 'rgba(52,199,89,0.07)',
+                border: '1px solid rgba(52,199,89,0.2)',
+                borderRadius: 14, padding: '12px 16px',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}
             >
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#34C759' }}>
-                ✓ Workout saved — great session!
-              </p>
-              {logs[0].personalRecords.length > 0 && (
-                <p style={{ fontSize: 12, color: '#8A8680', marginTop: 4 }}>
-                  {logs[0].personalRecords.length} personal record{logs[0].personalRecords.length > 1 ? 's' : ''} 🏆
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12l5 5L20 7" stroke="#34C759" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div>
+                <p style={{
+                  fontSize: 13, fontWeight: 600, color: '#34C759',
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                }}>
+                  Workout saved
                 </p>
-              )}
+                {logs[0].personalRecords.length > 0 && (
+                  <p style={{
+                    fontSize: 12, color: '#8A8680', marginTop: 2,
+                    fontFamily: '"Outfit", system-ui, sans-serif',
+                  }}>
+                    {logs[0].personalRecords.length} personal record{logs[0].personalRecords.length > 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Weekly stats */}
-        <div style={{ padding: '0 24px 24px' }}>
-          <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 12 }}>This Week</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-            {[
-              { label: 'Sessions', value: weeklyStats.sessions, unit: '' },
-              { label: 'Volume', value: `${(weeklyStats.volume / 1000).toFixed(1)}`, unit: 't' },
-              { label: 'Avg Time', value: weeklyStats.avgDuration > 0 ? formatDuration(weeklyStats.avgDuration) : '—', unit: '' },
-            ].map(({ label, value, unit }) => (
-              <div key={label} style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '14px 12px' }}>
-                <p style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8' }}>
-                  {value}<span style={{ fontSize: 12, color: '#8A8680' }}>{unit}</span>
+        {/* Weekly stats — asymmetric editorial layout, not 3-col cards */}
+        <div style={{ padding: '0 24px 32px' }}>
+          <p style={{
+            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 18,
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            This Week
+          </p>
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
+            {/* Sessions — primary stat, large */}
+            <div style={{ flex: 2, paddingRight: 24 }}>
+              <p style={{
+                fontSize: 56, fontWeight: 700, color: '#F0EDE8', lineHeight: 1,
+                fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-3px',
+              }}>
+                {weeklyStats.sessions}
+              </p>
+              <p style={{
+                fontSize: 11, color: '#8A8680', marginTop: 8,
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}>
+                sessions
+              </p>
+            </div>
+            {/* Vertical divider */}
+            <div style={{ width: 1, background: 'rgba(255,255,255,0.07)' }} />
+            {/* Volume + Avg — stacked right */}
+            <div style={{ flex: 2, paddingLeft: 24, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
+              <div>
+                <p style={{
+                  fontSize: 24, fontWeight: 700, color: '#F0EDE8', lineHeight: 1,
+                  fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px',
+                }}>
+                  {weeklyStats.volume > 0 ? `${(weeklyStats.volume / 1000).toFixed(1)}t` : '—'}
                 </p>
-                <p style={{ fontSize: 11, color: '#8A8680', marginTop: 4 }}>{label}</p>
+                <p style={{
+                  fontSize: 11, color: '#8A8680', marginTop: 5,
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                }}>
+                  volume
+                </p>
               </div>
-            ))}
+              <div>
+                <p style={{
+                  fontSize: 24, fontWeight: 700, color: '#F0EDE8', lineHeight: 1,
+                  fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px',
+                }}>
+                  {weeklyStats.avgDuration > 0 ? formatDuration(weeklyStats.avgDuration) : '—'}
+                </p>
+                <p style={{
+                  fontSize: 11, color: '#8A8680', marginTop: 5,
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                }}>
+                  avg session
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Heatmap */}
-        <div style={{ padding: '0 24px 28px' }}>
-          <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 12 }}>Activity</p>
-          <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '16px 12px' }}>
+        <div style={{ padding: '0 24px 32px' }}>
+          <p style={{
+            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            Activity
+          </p>
+          <div style={{
+            background: '#161616',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 16, padding: '16px 14px',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+          }}>
             <HeatmapGrid logDates={logDates} />
           </div>
         </div>
 
         {/* History */}
         <div style={{ padding: '0 24px' }}>
-          <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 12 }}>
-            History — {logs.length} workout{logs.length !== 1 ? 's' : ''}
-          </p>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+            marginBottom: 14,
+          }}>
+            <p style={{
+              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '1.5px', color: '#8A8680',
+              fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              History
+            </p>
+            <p style={{
+              fontSize: 11, color: 'rgba(138,134,128,0.6)',
+              fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              {logs.length} workout{logs.length !== 1 ? 's' : ''}
+            </p>
+          </div>
 
           {logs.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: '#8A8680' }}>
-              <p style={{ fontSize: 32, marginBottom: 12 }}>📊</p>
-              <p style={{ fontSize: 14, color: '#F0EDE8', marginBottom: 6 }}>No workouts yet</p>
-              <p style={{ fontSize: 13 }}>Complete a workout to see your history</p>
+            <div style={{ padding: '40px 0 32px' }}>
+              <svg width="40" height="32" viewBox="0 0 40 32" fill="none" style={{ marginBottom: 16, opacity: 0.2 }}>
+                <rect x="0" y="20" width="6" height="12" rx="2" fill="#8A8680" />
+                <rect x="9" y="12" width="6" height="20" rx="2" fill="#8A8680" />
+                <rect x="18" y="6" width="6" height="26" rx="2" fill="#8A8680" />
+                <rect x="27" y="14" width="6" height="18" rx="2" fill="#8A8680" />
+                <rect x="34" y="2" width="6" height="30" rx="2" fill="#8A8680" />
+              </svg>
+              <p style={{
+                fontSize: 15, fontWeight: 600, color: '#F0EDE8', marginBottom: 6,
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}>
+                No workouts yet
+              </p>
+              <p style={{
+                fontSize: 13, color: '#8A8680',
+                fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6,
+              }}>
+                Complete a workout to see your history here
+              </p>
             </div>
           )}
 
           <AnimatePresence>
-            {logs.map((log, i) => (
-              <motion.div
-                key={log.id}
-                initial={i === 0 && isNew ? { opacity: 0, y: 20 } : false}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -60, height: 0, marginBottom: 0 }}
-                transition={{ duration: 0.25 }}
-                style={{ marginBottom: 10 }}
-              >
-                <div style={{
-                  background: '#161616',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: 14,
-                  padding: '16px 18px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 12,
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 15, fontWeight: 600, color: '#F0EDE8' }}>{log.planName}</p>
-                    <p style={{ fontSize: 12, color: '#8A8680', marginTop: 4 }}>
-                      {format(parseISO(log.date), 'EEE, MMM d')}
-                      {' · '}{formatDuration(log.durationSec)}
-                      {' · '}{log.totalVolume.toLocaleString()} kg
-                    </p>
-                    {log.personalRecords.length > 0 && (
-                      <p style={{ fontSize: 11, color: '#C8A96E', marginTop: 6 }}>
-                        🏆 {log.personalRecords.length} PR{log.personalRecords.length > 1 ? 's' : ''}
+            <motion.div initial="hidden" animate="visible" variants={listVariants}>
+              {logs.map((log, i) => (
+                <motion.div
+                  key={log.id}
+                  variants={i === 0 && isNew ? itemVariants : undefined}
+                  exit={{ opacity: 0, x: -48, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ marginBottom: 10 }}
+                >
+                  <div style={{
+                    background: '#161616',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 16, padding: '16px 16px',
+                    display: 'flex', justifyContent: 'space-between',
+                    alignItems: 'stretch', gap: 12,
+                    position: 'relative', overflow: 'hidden',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                  }}>
+                    <div style={{
+                      position: 'absolute', left: 0, top: 14, bottom: 14,
+                      width: 3, background: '#C8A96E',
+                      borderRadius: '0 2px 2px 0', opacity: 0.5,
+                    }} />
+                    <div style={{ flex: 1, minWidth: 0, paddingLeft: 4 }}>
+                      <p style={{
+                        fontSize: 15, fontWeight: 600, color: '#F0EDE8',
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {log.planName}
                       </p>
-                    )}
+                      <p style={{
+                        fontSize: 12, color: '#8A8680', marginTop: 4,
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {format(parseISO(log.date), 'EEE, MMM d')}
+                        <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
+                        {formatDuration(log.durationSec)}
+                        <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
+                        {log.totalVolume.toLocaleString()} kg
+                      </p>
+                      {log.personalRecords.length > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"
+                              fill="#C8A96E"
+                            />
+                          </svg>
+                          <p style={{
+                            fontSize: 11, color: '#C8A96E', fontWeight: 600,
+                            fontFamily: '"Outfit", system-ui, sans-serif',
+                          }}>
+                            {log.personalRecords.length} PR{log.personalRecords.length > 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.82 }}
+                      onClick={() => deleteLog(log.id)}
+                      style={{
+                        background: 'none', border: 'none',
+                        color: 'rgba(138,134,128,0.6)', cursor: 'pointer',
+                        padding: 4, flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        alignSelf: 'center',
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+                          stroke="currentColor" strokeWidth="1.75"
+                          strokeLinecap="round" strokeLinejoin="round"
+                        />
+                      </svg>
+                    </motion.button>
                   </div>
-                  <button
-                    onClick={() => deleteLog(log.id)}
-                    style={{ background: 'none', border: 'none', color: '#8A8680', cursor: 'pointer', padding: 4, fontSize: 16, flexShrink: 0 }}
-                  >🗑</button>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </motion.div>
           </AnimatePresence>
         </div>
       </div>

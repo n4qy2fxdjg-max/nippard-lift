@@ -17,14 +17,15 @@ export default function BottomNav() {
     <nav
       style={{
         position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: '#0C0C0C',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
+        bottom: 0, left: 0, right: 0,
+        background: 'rgba(12,12,12,0.88)',
+        backdropFilter: 'blur(24px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
         display: 'flex',
         alignItems: 'stretch',
-        paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(28px, env(safe-area-inset-bottom))',
         zIndex: 50,
       }}
     >
@@ -36,29 +37,31 @@ export default function BottomNav() {
           style={{ flex: 1, textDecoration: 'none' }}
         >
           {({ isActive }) => (
-            <div
+            <motion.div
+              whileTap={{ scale: 0.88 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 3,
-                paddingTop: 10,
+                gap: 4,
+                paddingTop: 12,
                 paddingBottom: 4,
                 position: 'relative',
               }}
             >
               {isActive && (
                 <motion.div
-                  layoutId="nav-indicator"
+                  layoutId="nav-dot"
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    width: 32,
+                    width: 24,
                     height: 2,
                     background: '#C8A96E',
-                    borderRadius: 2,
+                    borderRadius: 1,
                   }}
                   transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                 />
@@ -70,26 +73,28 @@ export default function BottomNav() {
                   fontWeight: isActive ? 600 : 400,
                   color: isActive ? '#C8A96E' : '#8A8680',
                   letterSpacing: '0.3px',
+                  fontFamily: '"Outfit", system-ui, sans-serif',
                 }}
               >
                 {label}
               </span>
-            </div>
+            </motion.div>
           )}
         </NavLink>
       ))}
 
-      {/* Live session badge */}
       {activeSession && (
-        <button
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
           onClick={() => navigate('/active')}
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 3,
-            paddingTop: 10,
+            gap: 4,
+            paddingTop: 12,
             paddingBottom: 4,
             background: 'none',
             border: 'none',
@@ -98,35 +103,42 @@ export default function BottomNav() {
           }}
         >
           <motion.div
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            animate={{ opacity: [1, 0.4, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             style={{
-              width: 8,
-              height: 8,
+              width: 6, height: 6,
               borderRadius: '50%',
               background: '#C8A96E',
               position: 'absolute',
-              top: 8,
-              right: 'calc(50% - 16px)',
+              top: 10,
+              right: 'calc(50% - 18px)',
             }}
           />
           <LiveIcon />
-          <span style={{ fontSize: 10, fontWeight: 600, color: '#C8A96E' }}>Live</span>
-        </button>
+          <span style={{
+            fontSize: 10,
+            fontWeight: 600,
+            color: '#C8A96E',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            Live
+          </span>
+        </motion.button>
       )}
     </nav>
   )
 }
 
 function HomeIcon({ active }: { active: boolean }) {
+  const c = active ? '#C8A96E' : '#8A8680'
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path
-        d="M3 9.5L12 3L21 9.5V20C21 20.55 20.55 21 20 21H15V15H9V21H4C3.45 21 3 20.55 3 20V9.5Z"
-        stroke={active ? '#C8A96E' : '#8A8680'}
-        strokeWidth={1.75}
+        d="M3 9.5L12 3L21 9.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1V9.5z"
+        stroke={c}
+        strokeWidth={1.6}
         strokeLinejoin="round"
-        fill={active ? 'rgba(200,169,110,0.15)' : 'none'}
+        fill={active ? 'rgba(200,169,110,0.12)' : 'none'}
       />
     </svg>
   )
@@ -136,9 +148,9 @@ function LibraryIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="7" height="18" rx="1" stroke={c} strokeWidth={1.75} fill={active ? 'rgba(200,169,110,0.15)' : 'none'} />
-      <rect x="14" y="3" width="7" height="11" rx="1" stroke={c} strokeWidth={1.75} fill={active ? 'rgba(200,169,110,0.15)' : 'none'} />
-      <rect x="14" y="17" width="7" height="4" rx="1" stroke={c} strokeWidth={1.75} fill={active ? 'rgba(200,169,110,0.15)' : 'none'} />
+      <rect x="4" y="4" width="6" height="16" rx="1" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
+      <rect x="14" y="4" width="6" height="9" rx="1" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
+      <rect x="14" y="16" width="6" height="4" rx="1" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
     </svg>
   )
 }
@@ -147,7 +159,7 @@ function BuildIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path d="M12 4V20M4 12H20" stroke={c} strokeWidth={2} strokeLinecap="round" />
+      <path d="M12 5v14M5 12h14" stroke={c} strokeWidth={1.75} strokeLinecap="round" />
     </svg>
   )
 }
@@ -156,8 +168,14 @@ function ProgressIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <polyline points="3,18 9,12 13,16 21,6" stroke={c} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="21" cy="6" r="2" fill={c} />
+      <polyline
+        points="3,17 8,11 12.5,15 20,6"
+        stroke={c}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
     </svg>
   )
 }
@@ -165,7 +183,7 @@ function ProgressIcon({ active }: { active: boolean }) {
 function LiveIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path d="M5 3L19 12L5 21V3Z" fill="#C8A96E" />
+      <path d="M6 4l13 8-13 8V4z" fill="#C8A96E" />
     </svg>
   )
 }

@@ -6,44 +6,69 @@ interface Props {
 
 export default function RestTimer({ remaining, total, onSkip }: Props) {
   const fraction = total > 0 ? remaining / total : 0
-  const radius = 54
+  const radius = 64
   const circumference = 2 * Math.PI * radius
   const dashOffset = circumference * (1 - fraction)
-
   const mins = Math.floor(remaining / 60)
   const secs = remaining % 60
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-      <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#8A8680' }}>Rest</p>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+      <p style={{
+        fontSize: 10,
+        textTransform: 'uppercase',
+        letterSpacing: '2px',
+        color: '#8A8680',
+        fontFamily: '"Outfit", system-ui, sans-serif',
+        fontWeight: 600,
+      }}>
+        Rest
+      </p>
 
-      {/* SVG Ring */}
-      <div style={{ position: 'relative', width: 128, height: 128 }}>
-        <svg width={128} height={128} viewBox="0 0 128 128" style={{ transform: 'rotate(-90deg)' }}>
-          {/* Track */}
-          <circle cx={64} cy={64} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={8} />
-          {/* Progress */}
+      <div style={{ position: 'relative', width: 152, height: 152 }}>
+        <svg width={152} height={152} viewBox="0 0 152 152" style={{ transform: 'rotate(-90deg)' }}>
           <circle
-            cx={64} cy={64} r={radius}
+            cx={76} cy={76} r={radius}
+            fill="none"
+            stroke="rgba(255,255,255,0.05)"
+            strokeWidth={6}
+          />
+          <circle
+            cx={76} cy={76} r={radius}
             fill="none"
             stroke="#C8A96E"
-            strokeWidth={8}
+            strokeWidth={6}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
             style={{ transition: 'stroke-dashoffset 1s linear' }}
           />
         </svg>
-        {/* Countdown */}
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexDirection: 'column',
+          flexDirection: 'column', gap: 2,
         }}>
-          <span style={{ fontSize: 28, fontWeight: 700, color: '#F0EDE8', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{
+            fontSize: 36,
+            fontWeight: 700,
+            color: '#F0EDE8',
+            fontVariantNumeric: 'tabular-nums',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            letterSpacing: '-1px',
+            lineHeight: 1,
+          }}>
             {mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : secs}
           </span>
-          {mins === 0 && <span style={{ fontSize: 11, color: '#8A8680' }}>sec</span>}
+          <span style={{
+            fontSize: 10,
+            color: '#8A8680',
+            fontFamily: '"Outfit", system-ui, sans-serif',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+          }}>
+            {mins === 0 ? 'sec' : 'min'}
+          </span>
         </div>
       </div>
 
@@ -51,14 +76,16 @@ export default function RestTimer({ remaining, total, onSkip }: Props) {
         onClick={onSkip}
         style={{
           background: 'none',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: 12,
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 14,
           color: '#8A8680',
           fontSize: 13,
           fontWeight: 500,
-          padding: '10px 28px',
+          padding: '12px 32px',
           cursor: 'pointer',
+          fontFamily: '"Outfit", system-ui, sans-serif',
           letterSpacing: '0.3px',
+          WebkitTapHighlightColor: 'transparent',
         }}
       >
         Skip Rest

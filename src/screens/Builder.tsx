@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Reorder } from 'framer-motion'
+import { Reorder, motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { useBuilderStore } from '../store/useBuilderStore'
@@ -60,41 +60,68 @@ export default function Builder() {
       <div style={{
         paddingTop: 'max(54px, env(safe-area-inset-top))',
         padding: 'max(54px, env(safe-area-inset-top)) 24px 16px',
-        background: '#0C0C0C',
+        background: 'rgba(12,12,12,0.95)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 28, color: '#F0EDE8' }}>Builder</h1>
-            <p style={{ fontSize: 12, color: '#8A8680', marginTop: 2 }}>{items.length} exercise{items.length !== 1 ? 's' : ''}</p>
+            <h1 style={{
+              fontFamily: '"DM Serif Display", Georgia, serif',
+              fontSize: 30, color: '#F0EDE8',
+            }}>
+              Builder
+            </h1>
+            <p style={{
+              fontSize: 12, color: '#8A8680', marginTop: 2,
+              fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              {items.length} exercise{items.length !== 1 ? 's' : ''}
+            </p>
           </div>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.94 }}
             onClick={() => setShowPicker(true)}
             style={{
               background: '#C8A96E',
-              border: 'none',
-              borderRadius: 12,
-              color: '#0C0C0C',
-              fontSize: 13,
-              fontWeight: 700,
-              padding: '10px 16px',
-              cursor: 'pointer',
-              marginTop: 4,
+              border: 'none', borderRadius: 12,
+              color: '#0C0C0C', fontSize: 13, fontWeight: 700,
+              padding: '10px 16px', cursor: 'pointer', marginTop: 4,
+              fontFamily: '"Outfit", system-ui, sans-serif',
+              display: 'flex', alignItems: 'center', gap: 6,
             }}
-          >+ Add</button>
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M6 1v10M1 6h10" stroke="#0C0C0C" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            Add
+          </motion.button>
         </div>
       </div>
 
       {/* Exercise list */}
       <div className="scroll-y" style={{ flex: 1, padding: '16px 16px 0' }}>
         {items.length === 0 ? (
-          <div style={{
-            textAlign: 'center', padding: '60px 24px', color: '#8A8680',
-          }}>
-            <p style={{ fontSize: 32, marginBottom: 12 }}>🏗️</p>
-            <p style={{ fontSize: 15, fontWeight: 500, color: '#F0EDE8', marginBottom: 8 }}>Start building</p>
-            <p style={{ fontSize: 13 }}>Tap "+ Add" to add exercises. Drag to reorder.</p>
+          <div style={{ textAlign: 'center', padding: '80px 32px', color: '#8A8680' }}>
+            {/* Barbell SVG */}
+            <svg width="52" height="20" viewBox="0 0 52 20" fill="none" style={{ marginBottom: 20, opacity: 0.3 }}>
+              <rect x="16" y="7" width="20" height="6" rx="2" fill="#8A8680" />
+              <rect x="10" y="4" width="6" height="12" rx="2" fill="#8A8680" />
+              <rect x="36" y="4" width="6" height="12" rx="2" fill="#8A8680" />
+              <rect x="4" y="2" width="6" height="16" rx="2" fill="#8A8680" />
+              <rect x="42" y="2" width="6" height="16" rx="2" fill="#8A8680" />
+            </svg>
+            <p style={{
+              fontSize: 16, fontWeight: 600, color: '#F0EDE8',
+              marginBottom: 8, fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              Start building
+            </p>
+            <p style={{ fontSize: 13, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
+              Tap Add to include exercises. Drag handles to reorder.
+            </p>
           </div>
         ) : (
           <Reorder.Group axis="y" values={items} onReorder={setItems} style={{ listStyle: 'none', padding: 0 }}>
@@ -103,119 +130,263 @@ export default function Builder() {
             ))}
           </Reorder.Group>
         )}
-        <div style={{ height: 160 }} />
+        <div style={{ height: 180 }} />
       </div>
 
       {/* Bottom actions */}
-      {items.length > 0 && (
-        <div style={{
-          position: 'fixed', bottom: 'max(80px, calc(env(safe-area-inset-bottom) + 60px))',
-          left: 16, right: 16,
-          display: 'flex', gap: 10,
-        }}>
-          <button
-            onClick={() => setShowSaveModal(true)}
+      <AnimatePresence>
+        {items.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
             style={{
-              flex: 1, height: 50, background: '#161616',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 14, color: '#F0EDE8',
-              fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              position: 'fixed',
+              bottom: 'max(84px, calc(env(safe-area-inset-bottom) + 64px))',
+              left: 16, right: 16,
+              display: 'flex', gap: 10,
             }}
-          >Save Plan</button>
-          <button
-            onClick={startWorkout}
-            style={{
-              flex: 2, height: 50, background: '#C8A96E',
-              border: 'none', borderRadius: 14,
-              color: '#0C0C0C', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-            }}
-          >Start Workout →</button>
-        </div>
-      )}
+          >
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowSaveModal(true)}
+              style={{
+                flex: 1, height: 52,
+                background: 'rgba(30,30,30,0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 16, color: '#F0EDE8',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}
+            >
+              Save Plan
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={startWorkout}
+              style={{
+                flex: 2, height: 52, background: '#C8A96E',
+                border: 'none', borderRadius: 16,
+                color: '#0C0C0C', fontSize: 14, fontWeight: 700,
+                cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+              }}
+            >
+              Start Workout
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Save modal */}
-      {showSaveModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 200, padding: 24,
-        }}>
-          <div style={{
-            background: '#161616', borderRadius: 20, padding: 28, width: '100%', maxWidth: 360,
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}>
-            <h3 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 22, color: '#F0EDE8', marginBottom: 16 }}>
-              Save Plan
-            </h3>
-            <input
-              autoFocus
-              value={planName}
-              onChange={(e) => setPlanName(e.target.value)}
-              placeholder="e.g. Push A"
+      <AnimatePresence>
+        {showSaveModal && (
+          <motion.div
+            key="modal-bg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(0,0,0,0.75)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 200, padding: 24,
+            }}
+          >
+            <motion.div
+              key="modal"
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               style={{
-                width: '100%', height: 48, background: '#1E1E1E',
-                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
-                color: '#F0EDE8', fontSize: 15, padding: '0 16px', outline: 'none',
-                marginBottom: 16,
+                background: 'rgba(22,22,22,0.98)',
+                backdropFilter: 'blur(40px)',
+                borderRadius: 22, padding: 28, width: '100%', maxWidth: 360,
+                border: '1px solid rgba(255,255,255,0.09)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
               }}
-            />
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setShowSaveModal(false)} style={{ flex: 1, height: 46, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#8A8680', fontSize: 14, cursor: 'pointer' }}>Cancel</button>
-              <button onClick={savePlan} style={{ flex: 2, height: 46, background: '#C8A96E', border: 'none', borderRadius: 12, color: '#0C0C0C', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Save</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Exercise picker */}
-      {showPicker && (
-        <div style={{ position: 'fixed', inset: 0, background: '#0C0C0C', zIndex: 150, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button onClick={() => setShowPicker(false)} style={{ background: 'none', border: 'none', color: '#C8A96E', fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>← Back</button>
+            >
+              <h3 style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 24, color: '#F0EDE8', marginBottom: 6,
+              }}>
+                Name your plan
+              </h3>
+              <p style={{
+                fontSize: 13, color: '#8A8680', marginBottom: 20,
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}>
+                {items.length} exercise{items.length !== 1 ? 's' : ''}
+              </p>
               <input
                 autoFocus
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search exercises…"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && savePlan()}
+                placeholder="e.g. Push A"
                 style={{
-                  flex: 1, height: 40, background: '#161616',
-                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
-                  color: '#F0EDE8', fontSize: 14, padding: '0 14px', outline: 'none',
+                  width: '100%', height: 50,
+                  background: '#1E1E1E',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                  borderRadius: 14, color: '#F0EDE8',
+                  fontSize: 16, padding: '0 16px', outline: 'none',
+                  marginBottom: 16,
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                  boxSizing: 'border-box',
                 }}
               />
-            </div>
-          </div>
-          <div className="scroll-y" style={{ flex: 1 }}>
-            {filteredExercises.map((ex) => {
-              const alreadyIn = items.some((i) => i.exerciseId === ex.id)
-              return (
-                <div
-                  key={ex.id}
-                  onClick={() => {
-                    if (alreadyIn) return
-                    setItems([...items, { uid: nanoid(), exerciseId: ex.id, sets: ex.defaultSets, reps: parseInt(ex.defaultReps.split('–')[0]), weightKg: 20 }])
-                    setShowPicker(false)
-                    setSearch('')
-                  }}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowSaveModal(false)}
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    cursor: alreadyIn ? 'default' : 'pointer',
-                    opacity: alreadyIn ? 0.4 : 1,
+                    flex: 1, height: 48,
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.09)',
+                    borderRadius: 14, color: '#8A8680',
+                    fontSize: 14, cursor: 'pointer',
+                    fontFamily: '"Outfit", system-ui, sans-serif',
                   }}
                 >
-                  <div>
-                    <p style={{ fontSize: 15, fontWeight: 500, color: '#F0EDE8' }}>{ex.name}</p>
-                    <p style={{ fontSize: 12, color: '#8A8680' }}>{ex.defaultSets}×{ex.defaultReps}</p>
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={savePlan}
+                  style={{
+                    flex: 2, height: 48,
+                    background: '#C8A96E', border: 'none',
+                    borderRadius: 14, color: '#0C0C0C',
+                    fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                    fontFamily: '"Outfit", system-ui, sans-serif',
+                  }}
+                >
+                  Save Plan
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Exercise picker */}
+      <AnimatePresence>
+        {showPicker && (
+          <motion.div
+            key="picker"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 32, stiffness: 280 }}
+            style={{
+              position: 'fixed', inset: 0, background: '#0C0C0C',
+              zIndex: 150, display: 'flex', flexDirection: 'column',
+            }}
+          >
+            <div style={{
+              padding: 'max(54px, env(safe-area-inset-top)) 20px 12px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background: '#0C0C0C',
+              flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => { setShowPicker(false); setSearch('') }}
+                  style={{
+                    background: 'none', border: 'none',
+                    color: '#C8A96E', fontSize: 14, cursor: 'pointer',
+                    fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Back
+                </motion.button>
+                <input
+                  autoFocus
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search exercises…"
+                  style={{
+                    flex: 1, height: 42,
+                    background: '#161616',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 12, color: '#F0EDE8',
+                    fontSize: 14, padding: '0 14px', outline: 'none',
+                    fontFamily: '"Outfit", system-ui, sans-serif',
+                  }}
+                />
+              </div>
+            </div>
+            <div className="scroll-y" style={{ flex: 1 }}>
+              {filteredExercises.map((ex) => {
+                const alreadyIn = items.some((i) => i.exerciseId === ex.id)
+                return (
+                  <div
+                    key={ex.id}
+                    onClick={() => {
+                      if (alreadyIn) return
+                      setItems([...items, {
+                        uid: nanoid(),
+                        exerciseId: ex.id,
+                        sets: ex.defaultSets,
+                        reps: parseInt(ex.defaultReps.split('–')[0]),
+                        weightKg: 20,
+                      }])
+                      setShowPicker(false)
+                      setSearch('')
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '15px 20px',
+                      borderBottom: '1px solid rgba(255,255,255,0.045)',
+                      cursor: alreadyIn ? 'default' : 'pointer',
+                      opacity: alreadyIn ? 0.35 : 1,
+                    }}
+                    onPointerDown={(e) => {
+                      if (!alreadyIn) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.025)'
+                    }}
+                    onPointerUp={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                    onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                  >
+                    <div>
+                      <p style={{
+                        fontSize: 15, fontWeight: 500, color: '#F0EDE8',
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {ex.name}
+                      </p>
+                      <p style={{
+                        fontSize: 12, color: '#8A8680',
+                        fontFamily: '"Outfit", system-ui, sans-serif', marginTop: 2,
+                      }}>
+                        {ex.defaultSets}×{ex.defaultReps}
+                      </p>
+                    </div>
+                    {alreadyIn && (
+                      <span style={{
+                        fontSize: 11, color: '#8A8680',
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        Added
+                      </span>
+                    )}
                   </div>
-                  {alreadyIn && <span style={{ fontSize: 11, color: '#8A8680' }}>Added</span>}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+                )
+              })}
+              <div style={{ height: 60 }} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ExerciseDetailSheet exercise={pickerSelected} onClose={() => setPickerSelected(null)} />
     </div>
