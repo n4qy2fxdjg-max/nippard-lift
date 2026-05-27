@@ -44,7 +44,7 @@ body {
 }
 
 /* Safe area utilities */
-.pt-safe { padding-top: max(54px, env(safe-area-inset-top)); }
+.pt-safe { padding-top: max(62px, env(safe-area-inset-top)); }
 .pb-safe { padding-bottom: max(34px, env(safe-area-inset-bottom)); }
 
 /* Scrollable containers */

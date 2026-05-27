@@ -64,7 +64,7 @@ export default function Settings() {
       <div className="scroll-y" style={{ flex: 1, paddingBottom: 120 }}>
 
         {/* Header */}
-        <div style={{ padding: 'max(54px, env(safe-area-inset-top)) 24px 28px' }}>
+        <div style={{ padding: 'max(62px, env(safe-area-inset-top)) 24px 28px' }}>
           <h1 style={{
             fontFamily: '"DM Serif Display", Georgia, serif',
             fontSize: 40, color: '#F0EDE8', lineHeight: 1.1, letterSpacing: '-0.5px',
