@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkoutStore, buildWarmupSets } from '../store/useWorkoutStore'
@@ -113,7 +114,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
     navigate('/active')
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {program && (
         <>
@@ -402,7 +403,8 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
           </AnimatePresence>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 

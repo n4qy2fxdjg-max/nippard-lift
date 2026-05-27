@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Reorder, motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
@@ -482,6 +483,7 @@ export default function Builder() {
       </div>
 
       {/* Exercise picker — bottom sheet (Elevate signature) */}
+      {createPortal(
       <AnimatePresence>
         {showPicker && (
           <>
@@ -647,7 +649,9 @@ export default function Builder() {
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </div>
   )
 }
