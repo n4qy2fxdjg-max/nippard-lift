@@ -25,8 +25,8 @@ export default function BottomNav() {
         borderTop: '1px solid rgba(255,255,255,0.07)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
         display: 'flex',
-        alignItems: 'stretch',
-        paddingBottom: 'max(4px, env(safe-area-inset-bottom))',
+        alignItems: 'flex-start',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         zIndex: 50,
       }}
     >
@@ -40,12 +40,12 @@ export default function BottomNav() {
           {({ isActive }) => (
             <div
               style={{
-                flex: 1,
+                width: '100%',
+                height: 50,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                paddingTop: 10,
-                paddingBottom: 4,
+                justifyContent: 'center',
                 position: 'relative',
               }}
             >
@@ -99,13 +99,13 @@ export default function BottomNav() {
           transition={{ type: 'spring', stiffness: 400, damping: 28 }}
           onClick={() => navigate('/active')}
           style={{
-            flex: 1,
+            width: '100%',
+            height: 50,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 4,
-            paddingTop: 12,
-            paddingBottom: 4,
             background: 'none',
             border: 'none',
             cursor: 'pointer',
