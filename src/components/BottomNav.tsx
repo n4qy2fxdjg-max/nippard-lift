@@ -39,7 +39,7 @@ export default function BottomNav() {
             <div
               style={{
                 width: '100%',
-                height: 25,
+                height: 15,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -98,7 +98,7 @@ export default function BottomNav() {
           onClick={() => navigate('/active')}
           style={{
             width: '100%',
-            height: 25,
+            height: 15,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
