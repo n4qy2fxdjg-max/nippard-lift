@@ -66,7 +66,8 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
             transition={{ type: 'spring', damping: 34, stiffness: 300 }}
             style={{
               position: 'fixed',
-              bottom: 0, left: 0, right: 0,
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
+              left: 0, right: 0,
               background: 'rgba(18,18,18,0.98)',
               backdropFilter: 'blur(40px)',
               WebkitBackdropFilter: 'blur(40px)',
@@ -74,7 +75,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
               border: '1px solid rgba(255,255,255,0.08)',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 -20px 60px rgba(0,0,0,0.4)',
               zIndex: 101,
-              maxHeight: '90vh',
+              maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 50px - 60px)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -85,7 +86,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
               <div style={{ width: 32, height: 4, background: 'rgba(255,255,255,0.12)', borderRadius: 2 }} />
             </div>
 
-            <div style={{ overflowY: 'auto', padding: '16px 24px', paddingBottom: 'max(36px, env(safe-area-inset-bottom))', flex: 1 }}>
+            <div style={{ overflowY: 'auto', padding: '16px 24px', paddingBottom: '16px', flex: 1 }}>
               {/* Header */}
               <div style={{ marginBottom: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
