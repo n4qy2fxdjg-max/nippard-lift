@@ -140,12 +140,12 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
             transition={{ type: 'spring', damping: 32, stiffness: 300 }}
             style={{
               position: 'fixed',
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 44px)',
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 25px)',
               left: 0, right: 0,
               background: '#111111',
               borderRadius: '28px 28px 0 0',
               paddingBottom: '16px',
-              maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 44px - 60px)',
+              maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 25px - 60px)',
               display: 'flex',
               flexDirection: 'column',
               zIndex: 401,
