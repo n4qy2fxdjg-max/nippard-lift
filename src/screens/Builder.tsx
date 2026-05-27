@@ -511,12 +511,12 @@ export default function Builder() {
               transition={{ type: 'spring', damping: 32, stiffness: 300 }}
               style={{
                 position: 'fixed',
-                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 15px)',
+                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
                 left: 0, right: 0,
                 background: '#111111',
                 borderRadius: '28px 28px 0 0',
                 padding: '16px 20px 16px',
-                maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 15px - 60px)',
+                maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 50px - 60px)',
                 display: 'flex',
                 flexDirection: 'column',
                 zIndex: 201,

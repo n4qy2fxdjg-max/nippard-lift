@@ -39,7 +39,7 @@ export default function BottomNav() {
             <div
               style={{
                 width: '100%',
-                height: 15,
+                height: 50,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -70,13 +70,13 @@ export default function BottomNav() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 2,
+                  gap: 4,
                 }}
               >
-                <Icon active={isActive} size={14} />
+                <Icon active={isActive} />
                 <span
                   style={{
-                    fontSize: 8,
+                    fontSize: 10,
                     fontWeight: isActive ? 600 : 400,
                     color: isActive ? '#C8A96E' : '#8A8680',
                     letterSpacing: '0.3px',
@@ -98,7 +98,7 @@ export default function BottomNav() {
           onClick={() => navigate('/active')}
           style={{
             width: '100%',
-            height: 15,
+            height: 50,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -137,10 +137,10 @@ export default function BottomNav() {
   )
 }
 
-function HomeIcon({ active, size = 22 }: { active: boolean; size?: number }) {
+function HomeIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path
         d="M3 9.5L12 3L21 9.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1V9.5z"
         stroke={c}
@@ -152,10 +152,10 @@ function HomeIcon({ active, size = 22 }: { active: boolean; size?: number }) {
   )
 }
 
-function LibraryIcon({ active, size = 22 }: { active: boolean; size?: number }) {
+function LibraryIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <rect x="4" y="4" width="6" height="16" rx="1" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
       <rect x="14" y="4" width="6" height="9" rx="1" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
       <rect x="14" y="16" width="6" height="4" rx="1" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
@@ -163,19 +163,19 @@ function LibraryIcon({ active, size = 22 }: { active: boolean; size?: number }) 
   )
 }
 
-function BuildIcon({ active, size = 22 }: { active: boolean; size?: number }) {
+function BuildIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path d="M12 5v14M5 12h14" stroke={c} strokeWidth={1.75} strokeLinecap="round" />
     </svg>
   )
 }
 
-function ProgressIcon({ active, size = 22 }: { active: boolean; size?: number }) {
+function ProgressIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <polyline
         points="3,17 8,11 12.5,15 20,6"
         stroke={c}
@@ -188,10 +188,10 @@ function ProgressIcon({ active, size = 22 }: { active: boolean; size?: number })
   )
 }
 
-function SettingsIcon({ active, size = 22 }: { active: boolean; size?: number }) {
+function SettingsIcon({ active }: { active: boolean }) {
   const c = active ? '#C8A96E' : '#8A8680'
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="12" r="3" stroke={c} strokeWidth={1.6} fill={active ? 'rgba(200,169,110,0.12)' : 'none'} />
       <path
         d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
@@ -203,7 +203,7 @@ function SettingsIcon({ active, size = 22 }: { active: boolean; size?: number })
 
 function LiveIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path d="M6 4l13 8-13 8V4z" fill="#C8A96E" />
     </svg>
   )
