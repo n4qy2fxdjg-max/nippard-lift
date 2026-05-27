@@ -1,7 +1,9 @@
 import { startOfWeek, subWeeks, addDays, isSameDay, parseISO, format } from 'date-fns'
 
-const WEEKS = 16
+const WEEKS = 9
 const DAYS = 7
+const CELL = 28
+const GAP = 4
 
 function getOpacity(count: number): number {
   if (count === 0) return 0.08
@@ -34,24 +36,33 @@ export default function HeatmapGrid({ logDates }: Props) {
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
   return (
-    <div>
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto' }}>
-        {/* Day labels */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 18 }}>
+    <div style={{ width: '100%' }}>
+      <div style={{ display: 'flex', gap: GAP }}>
+        {/* Day labels column */}
+        <div style={{
+          display: 'flex', flexDirection: 'column',
+          gap: GAP, paddingTop: 18, flexShrink: 0,
+        }}>
           {dayLabels.map((l, i) => (
-            <div key={i} style={{ width: 10, height: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {i % 2 === 1 && <span style={{ fontSize: 8, color: '#8A8680' }}>{l}</span>}
+            <div
+              key={i}
+              style={{
+                width: 10, height: CELL,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <span style={{ fontSize: 9, color: '#8A8680', lineHeight: 1 }}>{l}</span>
             </div>
           ))}
         </div>
 
         {/* Week columns */}
         {weeks.map((week, wi) => (
-          <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: GAP, flex: 1 }}>
             {/* Month label */}
             <div style={{ height: 14, display: 'flex', alignItems: 'center' }}>
-              {wi === 0 || format(week[0], 'M') !== format(weeks[wi - 1][0], 'M') ? (
-                <span style={{ fontSize: 8, color: '#8A8680', whiteSpace: 'nowrap' }}>
+              {(wi === 0 || format(week[0], 'M') !== format(weeks[wi - 1][0], 'M')) ? (
+                <span style={{ fontSize: 9, color: '#8A8680', whiteSpace: 'nowrap' }}>
                   {format(week[0], 'MMM')}
                 </span>
               ) : null}
@@ -65,8 +76,9 @@ export default function HeatmapGrid({ logDates }: Props) {
                   key={di}
                   title={`${format(day, 'MMM d')}: ${count} workout${count !== 1 ? 's' : ''}`}
                   style={{
-                    width: 10, height: 10,
-                    borderRadius: 2,
+                    width: '100%',
+                    height: CELL,
+                    borderRadius: 5,
                     background: isFuture
                       ? 'rgba(255,255,255,0.03)'
                       : `rgba(200,169,110,${getOpacity(count)})`,

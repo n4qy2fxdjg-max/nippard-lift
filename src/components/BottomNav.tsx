@@ -26,7 +26,7 @@ export default function BottomNav() {
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
         display: 'flex',
         alignItems: 'stretch',
-        paddingBottom: 'max(28px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(4px, env(safe-area-inset-bottom))',
         zIndex: 50,
       }}
     >
@@ -35,25 +35,23 @@ export default function BottomNav() {
           key={to}
           to={to}
           end={to === '/'}
-          style={{ flex: 1, textDecoration: 'none' }}
+          style={{ flex: 1, textDecoration: 'none', display: 'flex' }}
         >
           {({ isActive }) => (
-            <motion.div
-              whileTap={{ scale: 0.88 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+            <div
               style={{
+                flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 4,
-                paddingTop: 12,
+                paddingTop: 10,
                 paddingBottom: 4,
                 position: 'relative',
               }}
             >
+              {/* Indicator lives here — never inside a scaled element */}
               {isActive && (
-                <motion.div
-                  layoutId="nav-dot"
+                <div
                   style={{
                     position: 'absolute',
                     top: 0,
@@ -64,22 +62,33 @@ export default function BottomNav() {
                     background: '#C8A96E',
                     borderRadius: 1,
                   }}
-                  transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                 />
               )}
-              <Icon active={isActive} />
-              <span
+              {/* Only icon + label scale on tap */}
+              <motion.div
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
                 style={{
-                  fontSize: 10,
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? '#C8A96E' : '#8A8680',
-                  letterSpacing: '0.3px',
-                  fontFamily: '"Outfit", system-ui, sans-serif',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
                 }}
               >
-                {label}
-              </span>
-            </motion.div>
+                <Icon active={isActive} />
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? '#C8A96E' : '#8A8680',
+                    letterSpacing: '0.3px',
+                    fontFamily: '"Outfit", system-ui, sans-serif',
+                  }}
+                >
+                  {label}
+                </span>
+              </motion.div>
+            </div>
           )}
         </NavLink>
       ))}

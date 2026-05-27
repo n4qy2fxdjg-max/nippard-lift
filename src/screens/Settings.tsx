@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
 import { useSyncStore } from '../store/useSyncStore'
@@ -12,8 +12,8 @@ export default function Settings() {
   const { syncCode, lastSyncAt, isSyncing, syncError, createSync, verifyAndJoin, pullSync, clearSync, clearError } = useSyncStore()
   const logs = useWorkoutStore((s) => s.logs)
 
-  // Profile form
-  const [nameInput, setNameInput] = useState(userName)
+  // Profile form — uncontrolled input avoids iOS Safari dropping controlled values
+  const nameRef = useRef<HTMLInputElement>(null)
   const [profileSaved, setProfileSaved] = useState(false)
 
   // Sync view
@@ -23,7 +23,8 @@ export default function Settings() {
   const [copied, setCopied] = useState(false)
 
   function saveProfile() {
-    setUserName(nameInput.trim() || 'You')
+    const val = nameRef.current?.value?.trim() || 'You'
+    setUserName(val)
     setProfileSaved(true)
     setTimeout(() => setProfileSaved(false), 1800)
   }
@@ -80,8 +81,9 @@ export default function Settings() {
           <div style={{ marginBottom: 16 }}>
             <FieldLabel>Name</FieldLabel>
             <input
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
+              key={userName}
+              ref={nameRef}
+              defaultValue={userName}
               placeholder="Your name"
               maxLength={24}
               style={inputStyle}
