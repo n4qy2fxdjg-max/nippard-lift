@@ -7,6 +7,8 @@ export default function Layout() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <Outlet />
       </div>
+      {/* Spacer reserves the nav's footprint so content isn't hidden underneath */}
+      <div style={{ height: 'calc(50px + env(safe-area-inset-bottom, 34px))', flexShrink: 0 }} />
       <BottomNav />
     </div>
   )
