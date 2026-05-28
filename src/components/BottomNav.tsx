@@ -46,8 +46,8 @@ export default function BottomNav() {
         >
           {({ isActive }) => (
             <motion.div
-              whileTap={{ scale: 0.88 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ duration: 0.12 }}
               style={{
                 width: '100%',
                 display: 'flex',

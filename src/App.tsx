@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Layout from './components/Layout'
 import Home from './screens/Home'
@@ -10,13 +10,26 @@ import Settings from './screens/Settings'
 import Onboarding from './screens/Onboarding'
 import { useAppStore } from './store/useAppStore'
 
-const pageVariants = {
-  initial: { opacity: 0, x: 20 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 },
-}
+// Light fade — no horizontal slide, faster duration. Page changes feel snappy on mobile.
+const pageTransition = { duration: 0.14, ease: 'easeOut' as const }
 
-const pageTransition = { duration: 0.22, ease: [0.32, 0.72, 0, 1] as const }
+function PageFade() {
+  const location = useLocation()
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        style={{ height: '100%' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={pageTransition}
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  )
+}
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -30,89 +43,19 @@ function AnimatedRoutes() {
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route element={<Layout />}>
-          <Route
-            path="/"
-            element={
-              <motion.div
-                style={{ height: '100%' }}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={pageTransition}
-              >
-                <Home />
-              </motion.div>
-            }
-          />
-          <Route
-            path="/library"
-            element={
-              <motion.div
-                style={{ height: '100%' }}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={pageTransition}
-              >
-                <Library />
-              </motion.div>
-            }
-          />
-          <Route
-            path="/builder"
-            element={
-              <motion.div
-                style={{ height: '100%' }}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={pageTransition}
-              >
-                <Builder />
-              </motion.div>
-            }
-          />
-          <Route
-            path="/progress"
-            element={
-              <motion.div
-                style={{ height: '100%' }}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={pageTransition}
-              >
-                <Progress />
-              </motion.div>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <motion.div
-                style={{ height: '100%' }}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={pageTransition}
-              >
-                <Settings />
-              </motion.div>
-            }
-          />
+    <Routes>
+      <Route element={<Layout />}>
+        <Route element={<PageFade />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/library" element={<Library />} />
+          <Route path="/builder" element={<Builder />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
-        <Route path="/active" element={<ActiveWorkout />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-      </Routes>
-    </AnimatePresence>
+      </Route>
+      <Route path="/active" element={<ActiveWorkout />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+    </Routes>
   )
 }
 

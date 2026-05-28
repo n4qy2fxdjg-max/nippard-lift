@@ -43,10 +43,6 @@ html, body {
   background: #0C0C0C;
 }
 
-/* Safe area utilities */
-.pt-safe { padding-top: max(30px, env(safe-area-inset-top)); }
-.pb-safe { padding-bottom: max(34px, env(safe-area-inset-bottom)); }
-
 /* Scrollable containers */
 .scroll-y {
   overflow-y: auto;
@@ -61,13 +57,3 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 .scroll-x::-webkit-scrollbar { display: none; }
-
-/* Typography helpers */
-.font-display { font-family: "DM Serif Display", Georgia, serif; }
-
-/* Active press states */
-.pressable {
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-}
-.pressable:active { opacity: 0.75; transform: scale(0.97); }
