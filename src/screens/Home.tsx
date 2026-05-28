@@ -248,7 +248,7 @@ export default function Home() {
               {featuredPrograms.length} plans
             </p>
           </div>
-          <div className="scroll-x" style={{ display: 'flex', gap: 10, paddingLeft: 24, paddingRight: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 24px' }}>
             {featuredPrograms.map((p) => (
               <WorkoutCard
                 key={p.id}
