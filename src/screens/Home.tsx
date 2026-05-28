@@ -55,6 +55,25 @@ export default function Home() {
 
   const [detailProgram, setDetailProgram] = useState<Program | null>(null)
 
+  // Stats: this week's workouts, total volume (last 7d), total sessions
+  const stats = useMemo(() => {
+    const now = new Date()
+    const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
+    const weekLogs = logs.filter((l) => new Date(l.date) >= weekAgo)
+    const weeklyVolume = weekLogs.reduce((sum, l) => sum + (l.totalVolume ?? 0), 0)
+    return {
+      thisWeek: weekLogs.length,
+      volumeKg: Math.round(weeklyVolume),
+      totalSessions: logs.length,
+    }
+  }, [logs])
+
+  const recentLogs = useMemo(() => {
+    return [...logs]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 4)
+  }, [logs])
+
   function lastPerformed(programId: string): string | undefined {
     return logs.find((l) => l.planId === programId)?.date
   }
@@ -108,6 +127,110 @@ export default function Home() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: 'flex', gap: 10, padding: '0 24px', marginBottom: 28 }}>
+          {[
+            { label: 'this week', value: stats.thisWeek, unit: 'workouts' },
+            { label: 'volume', value: stats.volumeKg, unit: 'kg' },
+            { label: 'total', value: stats.totalSessions, unit: 'sessions' },
+          ].map((s) => (
+            <div
+              key={s.label}
+              style={{
+                flex: 1,
+                background: '#161616',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 16,
+                padding: '14px 10px',
+                textAlign: 'center',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+              }}
+            >
+              <div style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 28,
+                color: '#F0EDE8',
+                lineHeight: 1,
+                letterSpacing: '-0.5px',
+              }}>
+                {s.value}
+              </div>
+              <div style={{
+                fontSize: 11,
+                color: '#C8A96E',
+                marginTop: 6,
+                fontFamily: '"Outfit", system-ui, sans-serif',
+                fontWeight: 500,
+              }}>
+                {s.unit}
+              </div>
+              <div style={{
+                fontSize: 10,
+                color: '#8A8680',
+                marginTop: 1,
+                fontFamily: '"Outfit", system-ui, sans-serif',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+              }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick start CTA */}
+        <div style={{ padding: '0 24px', marginBottom: 28 }}>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/builder')}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, rgba(200,169,110,0.18) 0%, rgba(200,169,110,0.08) 100%)',
+              border: '1px solid rgba(200,169,110,0.25)',
+              borderRadius: 20,
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            }}
+          >
+            <div style={{ textAlign: 'left' }}>
+              <div style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 20,
+                color: '#F0EDE8',
+                lineHeight: 1.2,
+              }}>
+                Build a routine
+              </div>
+              <div style={{
+                fontSize: 13,
+                color: '#8A8680',
+                marginTop: 3,
+                fontFamily: '"Outfit", system-ui, sans-serif',
+              }}>
+                Pick exercises, set reps, save it
+              </div>
+            </div>
+            <div style={{
+              width: 40,
+              height: 40,
+              background: '#C8A96E',
+              borderRadius: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="#0C0C0C" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+            </div>
+          </motion.button>
         </div>
 
         {/* Programmes */}
@@ -184,6 +307,81 @@ export default function Home() {
             </motion.div>
           )}
         </div>
+
+        {/* Recent Activity */}
+        {recentLogs.length > 0 && (
+          <div style={{ padding: '0 24px', marginTop: 32 }}>
+            <p style={{
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+              color: '#8A8680',
+              fontFamily: '"Outfit", system-ui, sans-serif',
+              marginBottom: 14,
+            }}>
+              Recent Activity
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {recentLogs.map((log) => (
+                <div
+                  key={log.id}
+                  style={{
+                    background: '#161616',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 14,
+                    padding: '12px 16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div>
+                    <div style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#F0EDE8',
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                    }}>
+                      {log.planName}
+                    </div>
+                    <div style={{
+                      fontSize: 12,
+                      color: '#8A8680',
+                      marginTop: 2,
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                    }}>
+                      {format(new Date(log.date), 'EEE, d MMM')}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{
+                      fontSize: 13,
+                      color: '#C8A96E',
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                      fontWeight: 600,
+                    }}>
+                      {Math.round(log.durationSec / 60)} min
+                    </div>
+                    {log.personalRecords?.length > 0 && (
+                      <div style={{
+                        fontSize: 10,
+                        color: '#34C759',
+                        marginTop: 2,
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}>
+                        {log.personalRecords.length} PR
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Program detail sheet */}
