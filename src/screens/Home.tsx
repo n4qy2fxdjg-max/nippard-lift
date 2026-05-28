@@ -15,6 +15,14 @@ import type { Program, CustomPlan } from '../types'
 
 const KG_TO_LB = 2.20462
 
+function formatVolume(n: number): string {
+  if (n < 1000) return n.toString()
+  // 16900 -> 16.9k, 1500 -> 1.5k, 12000 -> 12k (drop trailing .0)
+  const k = n / 1000
+  const rounded = k >= 100 ? Math.round(k).toString() : k.toFixed(1).replace(/\.0$/, '')
+  return `${rounded}k`
+}
+
 function greeting(name: string): { prefix: string; name: string } {
   const h = new Date().getHours()
   const prefix = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
@@ -64,7 +72,7 @@ export default function Home() {
     const volume = unit === 'lb' ? weeklyVolumeKg * KG_TO_LB : weeklyVolumeKg
     return {
       thisWeek: weekLogs.length,
-      volume: Math.round(volume),
+      volume: formatVolume(Math.round(volume)),
       volumeUnit: unit,
       totalSessions: logs.length,
     }
