@@ -66,7 +66,7 @@ export default function Progress() {
       <div className="scroll-y" style={{ flex: 1, paddingBottom: 90 }}>
 
         {/* Header */}
-        <div style={{ padding: 'max(120px, calc(env(safe-area-inset-top) + 60px)) 24px 20px' }}>
+        <div style={{ padding: 'max(44px, env(safe-area-inset-top)) 24px 20px' }}>
           <h1 style={{
             fontFamily: '"DM Serif Display", Georgia, serif',
             fontSize: 30, color: '#F0EDE8', lineHeight: 1.1,
