@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 
 const tabs = [
@@ -14,7 +15,7 @@ export default function BottomNav() {
   const activeSession = useWorkoutStore((s) => s.activeSession)
   const navigate = useNavigate()
 
-  return (
+  return createPortal(
     <nav
       style={{
         position: 'fixed',
@@ -126,7 +127,8 @@ export default function BottomNav() {
           </span>
         </motion.button>
       )}
-    </nav>
+    </nav>,
+    document.body
   )
 }
 
