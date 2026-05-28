@@ -23,8 +23,9 @@ export default function BottomNav() {
         borderTop: '1px solid rgba(255,255,255,0.07)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
         display: 'flex',
-        alignItems: 'flex-start',
-        paddingBottom: 'env(safe-area-inset-bottom, 34px)',
+        justifyContent: 'space-around',
+        paddingTop: 8,
+        paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
         flexShrink: 0,
       }}
     >
@@ -36,57 +37,42 @@ export default function BottomNav() {
           style={{ flex: 1, textDecoration: 'none', display: 'flex' }}
         >
           {({ isActive }) => (
-            <div
+            <motion.div
+              whileTap={{ scale: 0.88 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               style={{
                 width: '100%',
-                height: 50,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
+                gap: 3,
+                padding: '6px 0',
+                cursor: 'pointer',
               }}
             >
-              {/* Indicator lives here — never inside a scaled element */}
+              <Icon active={isActive} />
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? '#C8A96E' : '#8A8680',
+                  letterSpacing: '0.3px',
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                }}
+              >
+                {label}
+              </span>
               {isActive && (
                 <div
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 24,
-                    height: 2,
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
                     background: '#C8A96E',
-                    borderRadius: 1,
                   }}
                 />
               )}
-              {/* Only icon + label scale on tap */}
-              <motion.div
-                whileTap={{ scale: 0.88 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                <Icon active={isActive} />
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? '#C8A96E' : '#8A8680',
-                    letterSpacing: '0.3px',
-                    fontFamily: '"Outfit", system-ui, sans-serif',
-                  }}
-                >
-                  {label}
-                </span>
-              </motion.div>
-            </div>
+            </motion.div>
           )}
         </NavLink>
       ))}
@@ -97,13 +83,13 @@ export default function BottomNav() {
           transition={{ type: 'spring', stiffness: 400, damping: 28 }}
           onClick={() => navigate('/active')}
           style={{
-            width: '100%',
-            height: 50,
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 4,
+            gap: 3,
+            padding: '6px 0',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
