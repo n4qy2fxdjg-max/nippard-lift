@@ -19,6 +19,11 @@ export default function Layout() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <Outlet />
       </div>
+      {/* Reserves space so content area sizes correctly even though nav is fixed */}
+      <div style={{
+        height: 'calc(61px + max(8px, env(safe-area-inset-bottom)))',
+        flexShrink: 0,
+      }} />
       <BottomNav />
     </div>
   )

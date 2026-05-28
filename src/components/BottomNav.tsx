@@ -17,6 +17,12 @@ export default function BottomNav() {
   return (
     <nav
       style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: 430,
         background: 'rgba(12,12,12,0.88)',
         backdropFilter: 'blur(24px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
@@ -26,7 +32,7 @@ export default function BottomNav() {
         justifyContent: 'space-around',
         paddingTop: 8,
         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
-        flexShrink: 0,
+        zIndex: 50,
       }}
     >
       {tabs.map(({ to, label, icon: Icon }) => (
