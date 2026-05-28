@@ -142,7 +142,7 @@ export default function Builder() {
 
       {/* Sticky header */}
       <div style={{
-        padding: 'max(160px, calc(env(safe-area-inset-top) + 100px)) 24px 16px',
+        padding: 'max(120px, calc(env(safe-area-inset-top) + 60px)) 24px 16px',
         background: 'rgba(12,12,12,0.95)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
