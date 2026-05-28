@@ -14,6 +14,7 @@ interface BuilderStore {
   addPlan: (plan: CustomPlan) => void
   deletePlan: (id: string) => void
   updatePlan: (id: string, items: BuilderItem[]) => void
+  reorderPlans: (plans: CustomPlan[]) => void
   setCurrentItems: (items: BuilderItem[]) => void
 }
 
@@ -37,6 +38,11 @@ export const useBuilderStore = create<BuilderStore>()(
         set((s) => ({
           plans: s.plans.map((p) => (p.id === id ? { ...p, items } : p)),
         })),
+
+      reorderPlans: (plans) => {
+        set({ plans })
+        autoSync()
+      },
 
       setCurrentItems: (items) => set({ currentItems: items }),
     }),
