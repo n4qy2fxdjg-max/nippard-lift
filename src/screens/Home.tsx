@@ -100,7 +100,7 @@ export default function Home() {
       <div className="scroll-y" style={{ flex: 1, paddingBottom: 100 }}>
 
         {/* Header */}
-        <div style={{ padding: 'max(62px, env(safe-area-inset-top)) 24px 28px' }}>
+        <div style={{ padding: 'max(160px, calc(env(safe-area-inset-top) + 100px)) 24px 28px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
               <p style={{

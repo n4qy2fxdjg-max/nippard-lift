@@ -54,7 +54,7 @@ export default function Library() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0C0C0C' }}>
       {/* Sticky header */}
       <div style={{
-        paddingTop: 'max(62px, env(safe-area-inset-top))',
+        paddingTop: 'max(160px, calc(env(safe-area-inset-top) + 100px))',
         background: 'rgba(12,12,12,0.95)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',

@@ -104,7 +104,7 @@ export default function ActiveWorkout() {
         position: 'fixed', inset: 0,
         background: '#0C0C0C',
         display: 'flex', flexDirection: 'column',
-        paddingTop: 'max(62px, env(safe-area-inset-top))',
+        paddingTop: 'max(160px, calc(env(safe-area-inset-top) + 100px))',
         paddingBottom: 'max(34px, env(safe-area-inset-bottom))',
         zIndex: 200,
       }}
