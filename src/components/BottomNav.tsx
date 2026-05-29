@@ -42,7 +42,7 @@ export default function BottomNav() {
           key={to}
           to={to}
           end={to === '/'}
-          style={{ flex: 1, textDecoration: 'none', display: 'flex' }}
+          style={{ flex: 1, textDecoration: 'none', display: 'flex', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
           {({ isActive }) => (
             <motion.div

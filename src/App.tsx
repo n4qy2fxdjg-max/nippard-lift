@@ -11,13 +11,12 @@ import Onboarding from './screens/Onboarding'
 import Toaster from './components/Toaster'
 import { useAppStore } from './store/useAppStore'
 
-// Light fade — no horizontal slide, faster duration. Page changes feel snappy on mobile.
-const pageTransition = { duration: 0.14, ease: 'easeOut' as const }
+const pageTransition = { duration: 0.1, ease: 'easeOut' as const }
 
 function PageFade() {
   const location = useLocation()
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="sync">
       <motion.div
         key={location.pathname}
         style={{ height: '100%' }}
