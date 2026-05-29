@@ -11,7 +11,7 @@ import Onboarding from './screens/Onboarding'
 import Toaster from './components/Toaster'
 import { useAppStore } from './store/useAppStore'
 
-const pageTransition = { duration: 0.1, ease: 'easeOut' as const }
+const pageTransition = { duration: 0.15, ease: 'easeOut' as const }
 
 function PageFade() {
   const location = useLocation()
@@ -19,10 +19,10 @@ function PageFade() {
     <AnimatePresence mode="sync">
       <motion.div
         key={location.pathname}
-        style={{ height: '100%' }}
+        style={{ height: '100%', position: 'absolute', inset: 0 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        exit={{ opacity: 1 }}
         transition={pageTransition}
       >
         <Outlet />
