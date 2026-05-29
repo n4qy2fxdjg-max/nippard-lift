@@ -5,7 +5,10 @@ import { useWorkoutStore } from '../store/useWorkoutStore'
 import { useAppStore } from '../store/useAppStore'
 import { exercises as exerciseList } from '../data/exercises'
 import HeatmapGrid from '../components/HeatmapGrid'
+import LineChart from '../components/LineChart'
 import { format, parseISO, startOfWeek, isWithinInterval } from 'date-fns'
+
+const KG_TO_LB = 2.20462
 
 function formatDuration(secs: number): string {
   const m = Math.floor(secs / 60)
@@ -29,6 +32,15 @@ export default function Progress() {
   const logs = useWorkoutStore((s) => s.logs)
   const deleteLog = useWorkoutStore((s) => s.deleteLog)
   const unit = useAppStore((s) => s.unit)
+  const bodyweightLog = useAppStore((s) => s.bodyweightLog)
+
+  const bodyweightData = useMemo(
+    () => bodyweightLog.map((e) => ({
+      label: format(parseISO(e.date), 'MMM d'),
+      value: unit === 'lb' ? Math.round(e.weightKg * KG_TO_LB) : Math.round(e.weightKg * 2) / 2,
+    })),
+    [bodyweightLog, unit]
+  )
   const [params] = useSearchParams()
   const isNew = params.get('new') === '1'
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -205,6 +217,27 @@ export default function Progress() {
             <HeatmapGrid logDates={logDates} />
           </div>
         </div>
+
+        {/* Bodyweight */}
+        {bodyweightData.length > 0 && (
+          <div style={{ padding: '0 24px 32px' }}>
+            <p style={{
+              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
+              fontFamily: '"Outfit", system-ui, sans-serif',
+            }}>
+              Bodyweight
+            </p>
+            <div style={{
+              background: '#161616',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 16, padding: '16px 14px 8px',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            }}>
+              <LineChart data={bodyweightData} unit={` ${unit}`} height={160} />
+            </div>
+          </div>
+        )}
 
         {/* History */}
         <div style={{ padding: '0 24px' }}>

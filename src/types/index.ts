@@ -121,3 +121,9 @@ export interface WeightHistoryEntry {
   sets: number
   e1rm: number
 }
+
+// Bodyweight tracking (stored in kg internally)
+export interface BodyweightEntry {
+  date: string // yyyy-MM-dd
+  weightKg: number
+}

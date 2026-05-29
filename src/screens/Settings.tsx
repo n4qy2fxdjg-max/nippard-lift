@@ -3,12 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
 import { useSyncStore } from '../store/useSyncStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 
 type SyncView = 'idle' | 'creating' | 'joining'
 
+const KG_TO_LB = 2.20462
+const LB_TO_KG = 1 / KG_TO_LB
+
 export default function Settings() {
-  const { userName, unit, setUserName, setUnit } = useAppStore()
+  const { userName, unit, setUserName, setUnit, bodyweightLog, logBodyweight } = useAppStore()
   const { syncCode, lastSyncAt, isSyncing, syncError, createSync, verifyAndJoin, pullSync, clearSync, clearError } = useSyncStore()
   const logs = useWorkoutStore((s) => s.logs)
 
@@ -154,6 +157,16 @@ export default function Settings() {
               </motion.button>
             )}
           </AnimatePresence>
+        </Section>
+
+        {/* ── Bodyweight ──────────────────────────────────────────────── */}
+        <Section label="Bodyweight">
+          <BodyweightCard
+            unit={unit}
+            latestKg={bodyweightLog.length > 0 ? bodyweightLog[bodyweightLog.length - 1].weightKg : null}
+            latestDate={bodyweightLog.length > 0 ? bodyweightLog[bodyweightLog.length - 1].date : null}
+            onLog={logBodyweight}
+          />
         </Section>
 
         {/* ── Sync ────────────────────────────────────────────────────── */}
@@ -388,6 +401,97 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   )
 }
 
+function BodyweightCard({
+  unit, latestKg, latestDate, onLog,
+}: {
+  unit: 'kg' | 'lb'
+  latestKg: number | null
+  latestDate: string | null
+  onLog: (kg: number) => void
+}) {
+  const [draftKg, setDraftKg] = useState<number>(latestKg ?? 70)
+  const [logged, setLogged] = useState(false)
+
+  const step = unit === 'lb' ? LB_TO_KG : 0.5
+  const adjust = (dir: 1 | -1) => {
+    setDraftKg((kg) => Math.max(20, Math.min(300, parseFloat((kg + dir * step).toFixed(4)))))
+    setLogged(false)
+  }
+
+  const display = unit === 'lb'
+    ? Math.round(draftKg * KG_TO_LB).toString()
+    : (Math.round(draftKg * 2) / 2).toString()
+
+  function commit() {
+    onLog(parseFloat(draftKg.toFixed(2)))
+    setLogged(true)
+    setTimeout(() => setLogged(false), 1800)
+  }
+
+  return (
+    <>
+      <div style={{
+        background: '#161616', border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 16, padding: '18px 16px', marginBottom: 12,
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => adjust(-1)}
+          style={stepperBtn}
+        >
+          −
+        </motion.button>
+        <div style={{ flex: 1, textAlign: 'center' }}>
+          <span style={{
+            fontFamily: '"DM Serif Display", Georgia, serif',
+            fontSize: 38, color: '#F0EDE8', lineHeight: 1,
+          }}>
+            {display}
+          </span>
+          <span style={{ fontSize: 14, color: '#8A8680', marginLeft: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+            {unit}
+          </span>
+        </div>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => adjust(1)}
+          style={stepperBtn}
+        >
+          +
+        </motion.button>
+      </div>
+
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={commit}
+        style={{
+          width: '100%', height: 50,
+          background: logged ? 'rgba(52,199,89,0.1)' : '#F0EDE8',
+          border: logged ? '1px solid rgba(52,199,89,0.25)' : 'none',
+          borderRadius: 14, color: logged ? '#34C759' : '#0C0C0C',
+          fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          fontFamily: '"Outfit", system-ui, sans-serif',
+          WebkitTapHighlightColor: 'transparent',
+          transition: 'background 0.2s ease',
+        }}
+      >
+        {logged ? "Logged today's weight" : 'Log weight'}
+      </motion.button>
+
+      {latestDate && (
+        <p style={{
+          fontSize: 11, color: '#8A8680', marginTop: 10, textAlign: 'center',
+          fontFamily: '"Outfit", system-ui, sans-serif',
+        }}>
+          Last logged {format(parseISO(latestDate), 'MMM d')}
+          {latestKg != null && ` · ${unit === 'lb' ? `${Math.round(latestKg * KG_TO_LB)} lb` : `${Math.round(latestKg * 2) / 2} kg`}`}
+        </p>
+      )}
+    </>
+  )
+}
+
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
@@ -466,4 +570,16 @@ const ctaBtn: React.CSSProperties = {
   cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
   WebkitTapHighlightColor: 'transparent',
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+}
+
+const stepperBtn: React.CSSProperties = {
+  width: 48, height: 48, flexShrink: 0,
+  background: '#1E1E1E',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 14,
+  fontSize: 24, color: '#C8A96E',
+  cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+  WebkitTapHighlightColor: 'transparent',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  lineHeight: 1,
 }

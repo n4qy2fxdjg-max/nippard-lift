@@ -10,8 +10,9 @@ import { getExerciseById } from '../data/exercises'
 import WorkoutCard from '../components/WorkoutCard'
 import StreakChip from '../components/StreakChip'
 import ProgramDetailSheet from '../components/ProgramDetailSheet'
+import WorkoutDetailSheet from '../components/WorkoutDetailSheet'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
-import type { Program, CustomPlan } from '../types'
+import type { Program, CustomPlan, WorkoutLog } from '../types'
 
 const KG_TO_LB = 2.20462
 
@@ -60,6 +61,7 @@ export default function Home() {
   const today = format(new Date(), 'EEEE, d MMM')
 
   const [detailProgram, setDetailProgram] = useState<Program | null>(null)
+  const [detailLog, setDetailLog] = useState<WorkoutLog | null>(null)
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null)
   const [editMode, setEditMode] = useState(false)
 
@@ -343,19 +345,26 @@ export default function Home() {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {recentLogs.map((log) => (
-                <div
+                <motion.button
                   key={log.id}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setDetailLog(log)}
                   style={{
+                    width: '100%',
+                    textAlign: 'left',
                     background: '#161616',
                     border: '1px solid rgba(255,255,255,0.06)',
                     borderRadius: 14,
-                    padding: '12px 16px',
+                    padding: '12px 14px 12px 16px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    gap: 12,
+                    cursor: 'pointer',
+                    fontFamily: '"Outfit", system-ui, sans-serif',
                   }}
                 >
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{
                       fontSize: 14,
                       fontWeight: 600,
@@ -373,30 +382,35 @@ export default function Home() {
                       {format(new Date(log.date), 'EEE, d MMM')}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{
-                      fontSize: 13,
-                      color: '#C8A96E',
-                      fontFamily: '"Outfit", system-ui, sans-serif',
-                      fontWeight: 600,
-                    }}>
-                      {Math.round(log.durationSec / 60)} min
-                    </div>
-                    {log.personalRecords?.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                    <div style={{ textAlign: 'right' }}>
                       <div style={{
-                        fontSize: 10,
-                        color: '#34C759',
-                        marginTop: 2,
+                        fontSize: 13,
+                        color: '#C8A96E',
                         fontFamily: '"Outfit", system-ui, sans-serif',
                         fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
                       }}>
-                        {log.personalRecords.length} PR
+                        {Math.round(log.durationSec / 60)} min
                       </div>
-                    )}
+                      {log.personalRecords?.length > 0 && (
+                        <div style={{
+                          fontSize: 10,
+                          color: '#34C759',
+                          marginTop: 2,
+                          fontFamily: '"Outfit", system-ui, sans-serif',
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}>
+                          {log.personalRecords.length} PR
+                        </div>
+                      )}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#8A8680', flexShrink: 0 }}>
+                      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </div>
-                </div>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -407,6 +421,12 @@ export default function Home() {
       <ProgramDetailSheet
         program={detailProgram}
         onClose={() => setDetailProgram(null)}
+      />
+
+      {/* Workout history detail sheet */}
+      <WorkoutDetailSheet
+        log={detailLog}
+        onClose={() => setDetailLog(null)}
       />
     </div>
   )
