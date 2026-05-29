@@ -46,14 +46,6 @@ const muscleLabels: Record<MuscleGroup, string> = {
   obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
 }
 
-const listVariants = {
-  visible: { transition: { staggerChildren: 0.03 } },
-}
-const rowVariants = {
-  hidden: { opacity: 0, x: -10 },
-  visible: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 28 } },
-}
-
 export default function Library() {
   const [group, setGroup] = useState<'all' | BodyGroup>('all')
   const [muscle, setMuscle] = useState<MuscleGroup | null>(null)
@@ -226,14 +218,7 @@ export default function Library() {
       </div>
 
       {/* Exercise list */}
-      <motion.div
-        key={searching ? `q-${query}` : `${group}-${muscle}`}
-        className="scroll-y"
-        style={{ flex: 1 }}
-        initial="hidden"
-        animate="visible"
-        variants={listVariants}
-      >
+      <div className="scroll-y" style={{ flex: 1 }}>
         {filtered.length === 0 && searching && (
           <div style={{ padding: '48px 24px', textAlign: 'center' }}>
             <p style={{
@@ -246,17 +231,15 @@ export default function Library() {
               fontSize: 13, color: '#8A8680',
               fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6,
             }}>
-              Nothing matches “{query.trim()}”. Try a shorter term.
+              Nothing matches "{query.trim()}". Try a shorter term.
             </p>
           </div>
         )}
         {filtered.map((ex) => (
-          <motion.div key={ex.id} variants={rowVariants}>
-            <ExerciseRow exercise={ex} onClick={() => setSelected(ex)} />
-          </motion.div>
+          <ExerciseRow key={ex.id} exercise={ex} onClick={() => setSelected(ex)} />
         ))}
         <div style={{ height: 100 }} />
-      </motion.div>
+      </div>
 
       <ExerciseDetailSheet exercise={selected} onClose={() => setSelected(null)} />
     </div>
