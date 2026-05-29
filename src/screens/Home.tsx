@@ -5,6 +5,7 @@ import { useAppStore } from '../store/useAppStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import { buildWarmupSets } from '../store/useWorkoutStore'
 import { useBuilderStore } from '../store/useBuilderStore'
+import { useToastStore } from '../store/useToastStore'
 import { featuredPrograms } from '../data/programs'
 import { getExerciseById } from '../data/exercises'
 import WorkoutCard from '../components/WorkoutCard'
@@ -54,7 +55,19 @@ export default function Home() {
   const reorderPlans = useBuilderStore((s) => s.reorderPlans)
   const deletePlan = useBuilderStore((s) => s.deletePlan)
   const startSession = useWorkoutStore((s) => s.startSession)
+  const showToast = useToastStore((s) => s.show)
   const navigate = useNavigate()
+
+  function handleDeletePlan(plan: CustomPlan) {
+    const snapshot = plans // exact order before deletion
+    deletePlan(plan.id)
+    setExpandedPlanId(null)
+    showToast({
+      message: 'Plan deleted',
+      actionLabel: 'Undo',
+      onAction: () => reorderPlans(snapshot),
+    })
+  }
 
   const streak = useMemo(() => computeStreak(logs), [logs])
   const { prefix, name } = greeting(userName)
@@ -269,7 +282,7 @@ export default function Home() {
                   unit={unit}
                   onToggle={() => setExpandedPlanId(expandedPlanId === plan.id ? null : plan.id)}
                   onStart={() => startCustomPlan(plan.id)}
-                  onDelete={() => deletePlan(plan.id)}
+                  onDelete={() => handleDeletePlan(plan)}
                 />
               ))}
             </Reorder.Group>
@@ -285,7 +298,7 @@ export default function Home() {
               width: '100%',
               background: 'linear-gradient(135deg, rgba(200,169,110,0.18) 0%, rgba(200,169,110,0.08) 100%)',
               border: '1px solid rgba(200,169,110,0.25)',
-              borderRadius: 20,
+              borderRadius: 24,
               padding: '18px 20px',
               display: 'flex',
               alignItems: 'center',
@@ -354,7 +367,7 @@ export default function Home() {
                     textAlign: 'left',
                     background: '#161616',
                     border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: 14,
+                    borderRadius: 16,
                     padding: '12px 14px 12px 16px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -513,7 +526,7 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
           <button
             onClick={onDelete}
             style={{
-              width: 32, height: 32, borderRadius: 10,
+              width: 32, height: 32, borderRadius: 12,
               background: 'rgba(255,69,58,0.12)',
               border: '1px solid rgba(255,69,58,0.25)',
               color: '#FF453A',
@@ -542,7 +555,7 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
             <button
               onClick={(e) => { e.stopPropagation(); onStart() }}
               style={{
-                width: 36, height: 36, borderRadius: 10,
+                width: 36, height: 36, borderRadius: 12,
                 background: '#C8A96E',
                 border: 'none',
                 cursor: 'pointer',

@@ -107,7 +107,7 @@ export default function Settings() {
                     flex: 1, padding: '14px 0',
                     background: unit === u ? 'rgba(200,169,110,0.12)' : '#161616',
                     border: `2px solid ${unit === u ? '#C8A96E' : 'rgba(255,255,255,0.08)'}`,
-                    borderRadius: 14, cursor: 'pointer',
+                    borderRadius: 16, cursor: 'pointer',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                     fontSize: 18, fontWeight: 700,
                     color: unit === u ? '#C8A96E' : '#8A8680',
@@ -129,7 +129,7 @@ export default function Settings() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 style={{
-                  height: 50, borderRadius: 14,
+                  height: 50, borderRadius: 16,
                   background: 'rgba(52,199,89,0.1)',
                   border: '1px solid rgba(52,199,89,0.25)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -147,7 +147,7 @@ export default function Settings() {
                 style={{
                   width: '100%', height: 50,
                   background: '#F0EDE8', border: 'none',
-                  borderRadius: 14, color: '#0C0C0C',
+                  borderRadius: 16, color: '#0C0C0C',
                   fontSize: 14, fontWeight: 700, cursor: 'pointer',
                   fontFamily: '"Outfit", system-ui, sans-serif',
                   WebkitTapHighlightColor: 'transparent',
@@ -219,7 +219,7 @@ export default function Settings() {
                       style={{
                         background: copied ? 'rgba(52,199,89,0.1)' : '#1E1E1E',
                         border: `1px solid ${copied ? 'rgba(52,199,89,0.25)' : 'rgba(255,255,255,0.08)'}`,
-                        borderRadius: 10, padding: '8px 14px',
+                        borderRadius: 12, padding: '8px 14px',
                         fontSize: 12, fontWeight: 600,
                         color: copied ? '#34C759' : '#F0EDE8',
                         cursor: 'pointer',
@@ -246,7 +246,7 @@ export default function Settings() {
                   style={{
                     width: '100%', height: 50,
                     background: '#C8A96E', border: 'none',
-                    borderRadius: 14, color: '#0C0C0C',
+                    borderRadius: 16, color: '#0C0C0C',
                     fontSize: 14, fontWeight: 700, cursor: isSyncing ? 'not-allowed' : 'pointer',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                     marginBottom: 10, opacity: isSyncing ? 0.6 : 1,
@@ -273,7 +273,7 @@ export default function Settings() {
                     width: '100%', height: 46,
                     background: 'transparent',
                     border: '1px solid rgba(255,59,48,0.2)',
-                    borderRadius: 14, color: '#FF3B30',
+                    borderRadius: 16, color: '#FF3B30',
                     fontSize: 13, cursor: 'pointer',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                     WebkitTapHighlightColor: 'transparent',
@@ -469,7 +469,7 @@ function BodyweightCard({
           width: '100%', height: 50,
           background: logged ? 'rgba(52,199,89,0.1)' : '#F0EDE8',
           border: logged ? '1px solid rgba(52,199,89,0.25)' : 'none',
-          borderRadius: 14, color: logged ? '#34C759' : '#0C0C0C',
+          borderRadius: 16, color: logged ? '#34C759' : '#0C0C0C',
           fontSize: 14, fontWeight: 700, cursor: 'pointer',
           fontFamily: '"Outfit", system-ui, sans-serif',
           WebkitTapHighlightColor: 'transparent',
@@ -508,7 +508,7 @@ function StatCard({ label, value, wide }: { label: string; value: string; wide?:
   return (
     <div style={{
       background: '#161616', border: '1px solid rgba(255,255,255,0.07)',
-      borderRadius: 14, padding: '16px',
+      borderRadius: 16, padding: '16px',
       gridColumn: wide ? '1 / -1' : undefined,
     }}>
       <p style={{ fontSize: 10, color: '#8A8680', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
@@ -556,7 +556,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', padding: '14px 16px',
   background: '#161616',
   border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: 14,
+  borderRadius: 16,
   fontFamily: '"Outfit", system-ui, sans-serif',
   fontSize: 17, color: '#F0EDE8',
   outline: 'none', boxSizing: 'border-box',
@@ -566,7 +566,7 @@ const inputStyle: React.CSSProperties = {
 
 const ctaBtn: React.CSSProperties = {
   width: '100%', height: 54, border: 'none',
-  borderRadius: 14, fontSize: 15, fontWeight: 700,
+  borderRadius: 16, fontSize: 15, fontWeight: 700,
   cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
   WebkitTapHighlightColor: 'transparent',
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -576,7 +576,7 @@ const stepperBtn: React.CSSProperties = {
   width: 48, height: 48, flexShrink: 0,
   background: '#1E1E1E',
   border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 14,
+  borderRadius: 16,
   fontSize: 24, color: '#C8A96E',
   cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
   WebkitTapHighlightColor: 'transparent',

@@ -127,7 +127,7 @@ export default function Onboarding() {
           onClick={step < STEPS - 1 ? () => goTo(step + 1) : finish}
           style={{
             width: '100%', padding: '16px 0',
-            background: '#C8A96E', borderRadius: 14,
+            background: '#C8A96E', borderRadius: 16,
             border: 'none', cursor: 'pointer',
             fontFamily: '"Outfit", system-ui, sans-serif',
             fontSize: 16, fontWeight: 700, color: '#0C0C0C',
@@ -277,7 +277,7 @@ function UnitStep({ unit, setUnit }: { unit: 'kg' | 'lb'; setUnit: (u: 'kg' | 'l
               flex: 1, padding: '20px 0',
               background: unit === u ? 'rgba(200,169,110,0.12)' : '#161616',
               border: `2px solid ${unit === u ? '#C8A96E' : 'rgba(255,255,255,0.08)'}`,
-              borderRadius: 14, cursor: 'pointer',
+              borderRadius: 16, cursor: 'pointer',
               fontFamily: '"Outfit", system-ui, sans-serif',
               fontSize: 22, fontWeight: 700,
               color: unit === u ? '#C8A96E' : '#8A8680',
@@ -337,7 +337,7 @@ function ReadyStep({ name, unit }: { name: string; unit: 'kg' | 'lb' }) {
               display: 'inline-block',
               background: p.color + '22',
               border: `1px solid ${p.color}44`,
-              borderRadius: 6, padding: '2px 8px',
+              borderRadius: 12, padding: '2px 8px',
               fontSize: 11, fontWeight: 700, color: p.color,
               marginBottom: 8,
             }}>

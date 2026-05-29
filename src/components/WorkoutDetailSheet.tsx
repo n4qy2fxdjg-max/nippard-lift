@@ -65,7 +65,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
               background: 'rgba(18,18,18,0.98)',
               backdropFilter: 'blur(40px)',
               WebkitBackdropFilter: 'blur(40px)',
-              borderRadius: '22px 22px 0 0',
+              borderRadius: '24px 24px 0 0',
               border: '1px solid rgba(255,255,255,0.08)',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 -20px 60px rgba(0,0,0,0.4)',
               zIndex: 101,
@@ -123,7 +123,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
                   <div key={s.label} style={{
                     flex: 1, background: '#161616',
                     border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: 14, padding: '12px 8px', textAlign: 'center',
+                    borderRadius: 16, padding: '12px 8px', textAlign: 'center',
                   }}>
                     <div style={{
                       fontFamily: '"DM Serif Display", Georgia, serif',
@@ -188,7 +188,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
                             fontFamily: '"Outfit", system-ui, sans-serif',
                             background: 'rgba(255,255,255,0.05)',
                             border: '1px solid rgba(255,255,255,0.06)',
-                            borderRadius: 8, padding: '5px 9px',
+                            borderRadius: 12, padding: '5px 9px',
                           }}>
                             {fmtWeight(set.weight)} × {set.reps}
                             {set.rpe != null && (

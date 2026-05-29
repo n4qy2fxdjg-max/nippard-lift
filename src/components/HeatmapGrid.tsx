@@ -78,7 +78,7 @@ export default function HeatmapGrid({ logDates }: Props) {
                   style={{
                     width: '100%',
                     height: CELL,
-                    borderRadius: 5,
+                    borderRadius: 12,
                     background: isFuture
                       ? 'rgba(255,255,255,0.03)'
                       : `rgba(200,169,110,${getOpacity(count)})`,

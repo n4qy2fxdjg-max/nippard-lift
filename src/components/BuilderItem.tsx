@@ -122,7 +122,7 @@ const microBtnStyle: React.CSSProperties = {
   width: 28, height: 28,
   background: '#1E1E1E',
   border: '1px solid rgba(255,255,255,0.07)',
-  borderRadius: 8,
+  borderRadius: 12,
   cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   flexShrink: 0,

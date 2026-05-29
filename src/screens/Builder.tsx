@@ -187,7 +187,7 @@ export default function Builder() {
               width: '100%',
               background: '#161616',
               border: '1px solid rgba(255,255,255,0.09)',
-              borderRadius: 14,
+              borderRadius: 16,
               padding: '14px 16px',
               fontSize: 16,
               color: '#F0EDE8',
@@ -257,7 +257,7 @@ export default function Builder() {
                       display: 'inline-block',
                       background: mColor + '18',
                       border: `1px solid ${mColor}35`,
-                      borderRadius: 6,
+                      borderRadius: 12,
                       padding: '2px 7px',
                       fontSize: 11, fontWeight: 500,
                       color: mColor,
@@ -272,7 +272,7 @@ export default function Builder() {
                     style={{
                       background: '#1E1E1E',
                       border: 'none',
-                      borderRadius: 8,
+                      borderRadius: 12,
                       width: 30, height: 30,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       cursor: 'pointer', flexShrink: 0,
@@ -290,7 +290,7 @@ export default function Builder() {
                   {(['sets', 'reps'] as const).map((field) => (
                     <div key={field} style={{
                       flex: 1, display: 'flex', alignItems: 'center',
-                      background: '#1A1A1A', borderRadius: 10, overflow: 'hidden',
+                      background: '#1A1A1A', borderRadius: 12, overflow: 'hidden',
                     }}>
                       <button
                         onClick={() => updateItem(item.uid, { [field]: Math.max(1, item[field] - 1) })}
@@ -321,7 +321,7 @@ export default function Builder() {
                 {/* Weight pill stepper */}
                 <div style={{
                   display: 'flex', alignItems: 'center',
-                  background: '#1A1A1A', borderRadius: 10, overflow: 'hidden',
+                  background: '#1A1A1A', borderRadius: 12, overflow: 'hidden',
                 }}>
                   <button
                     onClick={() => updateItem(item.uid, { weightKg: Math.max(0, parseFloat((item.weightKg - weightStep).toFixed(4))) })}
@@ -514,7 +514,7 @@ export default function Builder() {
                 bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
                 left: 0, right: 0,
                 background: '#111111',
-                borderRadius: '28px 28px 0 0',
+                borderRadius: '24px 24px 0 0',
                 padding: '16px 20px 16px',
                 maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 50px - 60px)',
                 display: 'flex',
@@ -549,7 +549,7 @@ export default function Builder() {
                       background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
                       color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
                       border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                      borderRadius: 10,
+                      borderRadius: 12,
                       padding: '8px 0',
                       fontSize: 12,
                       fontWeight: pickerGroup === key ? 700 : 400,
@@ -603,7 +603,7 @@ export default function Builder() {
                       onClick={() => !already && addExercise(ex.id)}
                       style={{
                         background: already ? '#181818' : '#1E1E1E',
-                        borderRadius: 14,
+                        borderRadius: 16,
                         padding: '12px 14px',
                         display: 'flex', alignItems: 'center', gap: 10,
                         cursor: already ? 'default' : 'pointer',
@@ -633,7 +633,7 @@ export default function Builder() {
                         border: already
                           ? '1px solid rgba(138,134,128,0.2)'
                           : `1px solid ${mColor}35`,
-                        borderRadius: 8,
+                        borderRadius: 12,
                         padding: '3px 9px',
                         fontSize: 11, fontWeight: 500,
                         fontFamily: '"Outfit", system-ui, sans-serif',
@@ -675,7 +675,7 @@ function chipStyle(active: boolean): React.CSSProperties {
     background: active ? '#F0EDE8' : '#1E1E1E',
     color: active ? '#0C0C0C' : '#8A8680',
     border: active ? 'none' : '1px solid rgba(255,255,255,0.07)',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: '6px 14px',
     fontSize: 12,
     fontWeight: active ? 700 : 400,

@@ -77,7 +77,7 @@ export default function RestTimer({ remaining, total, onSkip }: Props) {
         style={{
           background: 'none',
           border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 14,
+          borderRadius: 16,
           color: '#8A8680',
           fontSize: 13,
           fontWeight: 500,

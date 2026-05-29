@@ -71,7 +71,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
               background: 'rgba(18,18,18,0.98)',
               backdropFilter: 'blur(40px)',
               WebkitBackdropFilter: 'blur(40px)',
-              borderRadius: '22px 22px 0 0',
+              borderRadius: '24px 24px 0 0',
               border: '1px solid rgba(255,255,255,0.08)',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 -20px 60px rgba(0,0,0,0.4)',
               zIndex: 101,
@@ -120,7 +120,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
                 <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: 11, fontWeight: 600, padding: '4px 10px',
-                    borderRadius: 20, background: 'rgba(200,169,110,0.12)',
+                    borderRadius: 999, background: 'rgba(200,169,110,0.12)',
                     color: '#C8A96E', border: '1px solid rgba(200,169,110,0.2)',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                   }}>
@@ -128,7 +128,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
                   </span>
                   <span style={{
                     fontSize: 11, fontWeight: 600, padding: '4px 10px',
-                    borderRadius: 20, background: '#1E1E1E',
+                    borderRadius: 999, background: '#1E1E1E',
                     color: '#8A8680', border: '1px solid rgba(255,255,255,0.07)',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                   }}>
@@ -136,7 +136,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
                   </span>
                   <span style={{
                     fontSize: 11, fontWeight: 600, padding: '4px 10px',
-                    borderRadius: 20, background: '#1E1E1E',
+                    borderRadius: 999, background: '#1E1E1E',
                     color: '#8A8680', border: '1px solid rgba(255,255,255,0.07)',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                   }}>

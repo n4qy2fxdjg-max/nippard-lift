@@ -143,7 +143,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
               bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
               left: 0, right: 0,
               background: '#111111',
-              borderRadius: '28px 28px 0 0',
+              borderRadius: '24px 24px 0 0',
               paddingBottom: '16px',
               maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 50px - 60px)',
               display: 'flex',
@@ -164,7 +164,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                     display: 'inline-block',
                     background: program.tagColor + '18',
                     border: `1px solid ${program.tagColor}38`,
-                    borderRadius: 6, padding: '2px 8px',
+                    borderRadius: 12, padding: '2px 8px',
                     fontSize: 10, fontWeight: 700, letterSpacing: '1.2px',
                     color: program.tagColor, textTransform: 'uppercase',
                     fontFamily: '"Outfit", system-ui, sans-serif',
@@ -181,7 +181,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                 </div>
                 <button
                   onClick={onClose}
-                  style={{ background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}
+                  style={{ background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#8A8680" strokeWidth="2.5" strokeLinecap="round" /></svg>
                 </button>
@@ -209,7 +209,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                       style={{
                         background: '#1A1A1A',
                         border: '1px solid rgba(255,255,255,0.07)',
-                        borderRadius: 14,
+                        borderRadius: 16,
                         padding: '12px 14px',
                         listStyle: 'none',
                         cursor: 'grab',
@@ -234,7 +234,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                           {ex.name}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ background: mColor + '18', border: `1px solid ${mColor}35`, borderRadius: 5, padding: '1px 6px', fontSize: 10, fontWeight: 500, color: mColor, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          <span style={{ background: mColor + '18', border: `1px solid ${mColor}35`, borderRadius: 12, padding: '1px 6px', fontSize: 10, fontWeight: 500, color: mColor, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                             {mLabel}
                           </span>
                           <span style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
@@ -250,7 +250,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                         style={{
                           background: '#1E1E1E',
                           border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: 8, padding: '6px 10px',
+                          borderRadius: 12, padding: '6px 10px',
                           fontSize: 11, color: '#8A8680',
                           cursor: 'pointer', flexShrink: 0,
                           fontFamily: '"Outfit", system-ui, sans-serif',
@@ -308,7 +308,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                   transition={{ type: 'spring', damping: 32, stiffness: 300 }}
                   style={{
                     position: 'fixed', bottom: 0, left: 0, right: 0,
-                    background: '#111111', borderRadius: '28px 28px 0 0',
+                    background: '#111111', borderRadius: '24px 24px 0 0',
                     padding: '16px 20px 0',
                     paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
                     maxHeight: '78svh', display: 'flex', flexDirection: 'column',
@@ -334,7 +334,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                           background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
                           color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
                           border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                          borderRadius: 10, padding: '8px 0',
+                          borderRadius: 12, padding: '8px 0',
                           fontSize: 12, fontWeight: pickerGroup === key ? 700 : 400,
                           cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
                           WebkitTapHighlightColor: 'transparent',
@@ -367,7 +367,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                           onClick={() => !isCurrent && applySubstitute(ex.id)}
                           style={{
                             background: isCurrent ? '#181818' : '#1E1E1E',
-                            borderRadius: 14, padding: '12px 14px',
+                            borderRadius: 16, padding: '12px 14px',
                             display: 'flex', alignItems: 'center', gap: 10,
                             cursor: isCurrent ? 'default' : 'pointer',
                             opacity: isCurrent ? 0.4 : 1,
@@ -387,7 +387,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                             background: isCurrent ? 'rgba(138,134,128,0.12)' : mColor + '18',
                             color: isCurrent ? '#8A8680' : mColor,
                             border: isCurrent ? '1px solid rgba(138,134,128,0.2)' : `1px solid ${mColor}35`,
-                            borderRadius: 8, padding: '3px 9px',
+                            borderRadius: 12, padding: '3px 9px',
                             fontSize: 11, fontWeight: 500,
                             fontFamily: '"Outfit", system-ui, sans-serif',
                             flexShrink: 0, whiteSpace: 'nowrap',
@@ -415,7 +415,7 @@ function chipStyle(active: boolean): React.CSSProperties {
     background: active ? '#F0EDE8' : '#1E1E1E',
     color: active ? '#0C0C0C' : '#8A8680',
     border: active ? 'none' : '1px solid rgba(255,255,255,0.07)',
-    borderRadius: 10, padding: '6px 14px',
+    borderRadius: 12, padding: '6px 14px',
     fontSize: 12, fontWeight: active ? 700 : 400,
     cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
     WebkitTapHighlightColor: 'transparent',

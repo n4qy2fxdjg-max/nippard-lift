@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import { useAppStore } from '../store/useAppStore'
+import { useToastStore } from '../store/useToastStore'
 import { exercises as exerciseList } from '../data/exercises'
+import type { WorkoutLog } from '../types'
 import HeatmapGrid from '../components/HeatmapGrid'
 import LineChart from '../components/LineChart'
 import { format, parseISO, startOfWeek, isWithinInterval } from 'date-fns'
@@ -31,8 +33,20 @@ const itemVariants = {
 export default function Progress() {
   const logs = useWorkoutStore((s) => s.logs)
   const deleteLog = useWorkoutStore((s) => s.deleteLog)
+  const restoreLog = useWorkoutStore((s) => s.restoreLog)
+  const showToast = useToastStore((s) => s.show)
   const unit = useAppStore((s) => s.unit)
   const bodyweightLog = useAppStore((s) => s.bodyweightLog)
+
+  function handleDeleteLog(log: WorkoutLog) {
+    deleteLog(log.id)
+    setExpandedId(null)
+    showToast({
+      message: 'Workout deleted',
+      actionLabel: 'Undo',
+      onAction: () => restoreLog(log),
+    })
+  }
 
   const bodyweightData = useMemo(
     () => bodyweightLog.map((e) => ({
@@ -99,7 +113,7 @@ export default function Progress() {
                 margin: '0 24px 20px',
                 background: 'rgba(52,199,89,0.07)',
                 border: '1px solid rgba(52,199,89,0.2)',
-                borderRadius: 14, padding: '12px 16px',
+                borderRadius: 16, padding: '12px 16px',
                 display: 'flex', alignItems: 'center', gap: 10,
               }}
             >
@@ -138,7 +152,7 @@ export default function Progress() {
           <div style={{
             background: '#161616',
             border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 20,
+            borderRadius: 24,
             overflow: 'hidden',
             boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)',
           }}>
@@ -372,7 +386,7 @@ export default function Progress() {
                           {/* Delete */}
                           <motion.button
                             whileTap={{ scale: 0.82 }}
-                            onClick={(e) => { e.stopPropagation(); deleteLog(log.id) }}
+                            onClick={(e) => { e.stopPropagation(); handleDeleteLog(log) }}
                             style={{
                               background: 'none', border: 'none',
                               color: 'rgba(138,134,128,0.6)', cursor: 'pointer',
@@ -433,7 +447,7 @@ export default function Progress() {
                                               fontSize: 11, color: '#8A8680',
                                               fontFamily: '"Outfit", system-ui, sans-serif',
                                               background: 'rgba(255,255,255,0.04)',
-                                              borderRadius: 6, padding: '2px 7px',
+                                              borderRadius: 12, padding: '2px 7px',
                                             }}
                                           >
                                             {w} × {set.reps}

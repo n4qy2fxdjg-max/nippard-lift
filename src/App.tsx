@@ -8,6 +8,7 @@ import ActiveWorkout from './screens/ActiveWorkout'
 import Progress from './screens/Progress'
 import Settings from './screens/Settings'
 import Onboarding from './screens/Onboarding'
+import Toaster from './components/Toaster'
 import { useAppStore } from './store/useAppStore'
 
 // Light fade — no horizontal slide, faster duration. Page changes feel snappy on mobile.
@@ -63,6 +64,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AnimatedRoutes />
+      <Toaster />
     </BrowserRouter>
   )
 }

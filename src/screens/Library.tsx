@@ -125,7 +125,7 @@ export default function Library() {
                 padding: '11px 38px 11px 40px',
                 background: '#161616',
                 border: '1px solid rgba(255,255,255,0.09)',
-                borderRadius: 14,
+                borderRadius: 16,
                 fontFamily: '"Outfit", system-ui, sans-serif',
                 fontSize: 16, color: '#F0EDE8',
                 outline: 'none', boxSizing: 'border-box',
@@ -164,7 +164,7 @@ export default function Library() {
               onClick={() => handleGroupChange(key)}
               style={{
                 padding: '7px 16px',
-                borderRadius: 20,
+                borderRadius: 999,
                 border: group === key
                   ? '1px solid rgba(200,169,110,0.35)'
                   : '1px solid rgba(255,255,255,0.07)',
@@ -189,7 +189,7 @@ export default function Library() {
             onClick={() => setMuscle(null)}
             style={{
               padding: '4px 12px',
-              borderRadius: 20,
+              borderRadius: 999,
               border: muscle === null
                 ? '1px solid rgba(200,169,110,0.3)'
                 : '1px solid rgba(255,255,255,0.05)',
@@ -207,7 +207,7 @@ export default function Library() {
               onClick={() => setMuscle(m === muscle ? null : m)}
               style={{
                 padding: '4px 12px',
-                borderRadius: 20,
+                borderRadius: 999,
                 border: muscle === m
                   ? '1px solid rgba(200,169,110,0.3)'
                   : '1px solid rgba(255,255,255,0.05)',

@@ -45,6 +45,7 @@ interface WorkoutStore {
   completeSession: () => void
   abandonSession: () => void
   deleteLog: (id: string) => void
+  restoreLog: (log: WorkoutLog) => void
 }
 
 export const useWorkoutStore = create<WorkoutStore>()(
@@ -325,6 +326,13 @@ export const useWorkoutStore = create<WorkoutStore>()(
 
       deleteLog: (id) =>
         set((s) => ({ logs: s.logs.filter((l) => l.id !== id) })),
+
+      restoreLog: (log) =>
+        set((s) => {
+          const next = [log, ...s.logs.filter((l) => l.id !== log.id)]
+          next.sort((a, b) => b.date.localeCompare(a.date))
+          return { logs: next }
+        }),
     }),
     {
       name: 'lift-workout-v1',

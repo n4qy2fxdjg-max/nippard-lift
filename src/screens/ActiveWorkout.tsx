@@ -144,7 +144,7 @@ export default function ActiveWorkout() {
           const isComplete = done >= ex.targetSets
           return (
             <div key={i} style={{
-              padding: '5px 10px', borderRadius: 20, flexShrink: 0,
+              padding: '5px 10px', borderRadius: 999, flexShrink: 0,
               background: isActive ? 'rgba(200,169,110,0.12)' : isComplete ? 'rgba(52,199,89,0.08)' : '#161616',
               border: isActive ? '1px solid rgba(200,169,110,0.3)' : isComplete ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,255,255,0.06)',
             }}>
@@ -208,7 +208,7 @@ export default function ActiveWorkout() {
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   background: 'rgba(251,191,36,0.08)',
                   border: '1px solid rgba(251,191,36,0.2)',
-                  borderRadius: 8, padding: '4px 10px',
+                  borderRadius: 12, padding: '4px 10px',
                   marginBottom: 14,
                 }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
@@ -359,7 +359,7 @@ export default function ActiveWorkout() {
                     style={{
                       background: 'rgba(255,69,58,0.08)',
                       border: '1px solid rgba(255,69,58,0.2)',
-                      borderRadius: 10, padding: '6px 10px',
+                      borderRadius: 12, padding: '6px 10px',
                       fontSize: 11, color: '#FF453A',
                       cursor: 'pointer', flexShrink: 0,
                       fontFamily: '"Outfit", system-ui, sans-serif',
@@ -446,7 +446,7 @@ export default function ActiveWorkout() {
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               style={{
                 background: 'rgba(22,22,22,0.98)', backdropFilter: 'blur(40px)',
-                borderRadius: 22, padding: 28, width: '100%', maxWidth: 320,
+                borderRadius: 24, padding: 28, width: '100%', maxWidth: 320,
                 border: '1px solid rgba(255,255,255,0.09)',
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
               }}
@@ -459,11 +459,11 @@ export default function ActiveWorkout() {
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
                 <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowAbandon(false)}
-                  style={{ flex: 1, height: 48, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, color: '#F0EDE8', fontSize: 14, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                  style={{ flex: 1, height: 48, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 16, color: '#F0EDE8', fontSize: 14, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   Keep Going
                 </motion.button>
                 <motion.button whileTap={{ scale: 0.97 }} onClick={handleAbandon}
-                  style={{ flex: 1, height: 48, background: '#FF453A', border: 'none', borderRadius: 14, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                  style={{ flex: 1, height: 48, background: '#FF453A', border: 'none', borderRadius: 16, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   End
                 </motion.button>
               </div>
@@ -479,7 +479,7 @@ const smallCtrlBtn: React.CSSProperties = {
   width: 28, height: 28,
   background: '#1E1E1E',
   border: '1px solid rgba(255,255,255,0.07)',
-  borderRadius: 8, cursor: 'pointer',
+  borderRadius: 12, cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   WebkitTapHighlightColor: 'transparent',
 }
@@ -488,7 +488,7 @@ const bigBtnStyle: React.CSSProperties = {
   width: 48, height: 48,
   background: '#1E1E1E',
   border: '1px solid rgba(255,255,255,0.07)',
-  borderRadius: 14,
+  borderRadius: 16,
   color: '#F0EDE8',
   cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -499,7 +499,7 @@ const bigBtnStyle: React.CSSProperties = {
 const primaryBtnStyle: React.CSSProperties = {
   width: '100%', height: 56,
   background: '#C8A96E', border: 'none',
-  borderRadius: 18, color: '#0C0C0C',
+  borderRadius: 16, color: '#0C0C0C',
   fontSize: 16, fontWeight: 700, cursor: 'pointer',
   fontFamily: '"Outfit", system-ui, sans-serif',
   letterSpacing: '-0.2px',
