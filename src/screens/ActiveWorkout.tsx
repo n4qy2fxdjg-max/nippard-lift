@@ -66,7 +66,6 @@ export default function ActiveWorkout() {
   const [elapsed, setElapsed] = useState(0)
   const [showAbandon, setShowAbandon] = useState(false)
   const [reps, setReps] = useState(8)
-  const [showFormCues, setShowFormCues] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
@@ -142,7 +141,6 @@ export default function ActiveWorkout() {
       const ex = getExerciseById(currentEx.exerciseId)
       setReps(ex ? parseInt(ex.defaultReps.split('–')[0]) : 8)
     }
-    setShowFormCues(false)
   }, [activeSession?.currentExIdx])
 
   if (!activeSession) return null
@@ -508,70 +506,39 @@ export default function ActiveWorkout() {
                 </div>
               </div>
 
-              {/* Form cues — collapsible */}
+              {/* Form cues — always visible */}
               {exercise?.formCues && exercise.formCues.length > 0 && (
-                <div>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => { hapticLight(); setShowFormCues((v) => !v) }}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: showFormCues ? 'rgba(200,169,110,0.06)' : '#161616',
-                      border: `1px solid ${showFormCues ? 'rgba(200,169,110,0.2)' : 'rgba(255,255,255,0.07)'}`,
-                      borderRadius: showFormCues ? '12px 12px 0 0' : '12px',
-                      padding: '11px 16px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke={showFormCues ? '#C8A96E' : '#8A8680'} strokeWidth="1.6" />
-                        <path d="M12 8v4m0 4h.01" stroke={showFormCues ? '#C8A96E' : '#8A8680'} strokeWidth="1.8" strokeLinecap="round" />
-                      </svg>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: showFormCues ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                        Form Cues
+                <div style={{
+                  background: 'rgba(200,169,110,0.04)',
+                  border: '1px solid rgba(200,169,110,0.15)',
+                  borderRadius: 12, padding: '12px 16px',
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="#C8A96E" strokeWidth="1.6" />
+                      <path d="M12 8v4m0 4h.01" stroke="#C8A96E" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                      Form Cues
+                    </span>
+                  </div>
+                  {exercise.formCues.map((cue, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <span style={{
+                        width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                        background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.2)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, fontWeight: 700, color: '#C8A96E',
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                      }}>
+                        {i + 1}
                       </span>
+                      <p style={{ fontSize: 13, color: '#D4CFCA', lineHeight: 1.55, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
+                        {cue}
+                      </p>
                     </div>
-                    <motion.div animate={{ rotate: showFormCues ? 180 : 0 }} transition={{ duration: 0.18 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke={showFormCues ? '#C8A96E' : '#8A8680'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </motion.div>
-                  </motion.button>
-                  <AnimatePresence>
-                    {showFormCues && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                        style={{ overflow: 'hidden' }}
-                      >
-                        <div style={{
-                          background: 'rgba(200,169,110,0.04)',
-                          border: '1px solid rgba(200,169,110,0.15)', borderTop: 'none',
-                          borderRadius: '0 0 12px 12px', padding: '12px 16px',
-                          display: 'flex', flexDirection: 'column', gap: 10,
-                        }}>
-                          {exercise.formCues.map((cue, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                              <span style={{
-                                width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                                background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.2)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 10, fontWeight: 700, color: '#C8A96E',
-                                fontFamily: '"Outfit", system-ui, sans-serif',
-                              }}>
-                                {i + 1}
-                              </span>
-                              <p style={{ fontSize: 13, color: '#D4CFCA', lineHeight: 1.55, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
-                                {cue}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  ))}
                 </div>
               )}
             </motion.div>
