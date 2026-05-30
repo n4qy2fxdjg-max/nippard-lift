@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lift",
   "main": "src/worker.ts",
+  "pages_build_output_dir": "./dist",
   "compatibility_date": "2025-11-01",
   "observability": {
     "enabled": true
