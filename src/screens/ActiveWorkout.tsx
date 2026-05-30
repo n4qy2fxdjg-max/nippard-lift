@@ -3,9 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import { useAppStore } from '../store/useAppStore'
+import { useLibraryStore } from '../store/useLibraryStore'
 import { getExerciseById } from '../data/exercises'
 import WeightStepper from '../components/WeightStepper'
 import RestTimer from '../components/RestTimer'
+import { hapticLight, hapticMedium, hapticHeavy, hapticRestDone } from '../lib/haptic'
+import {
+  requestNotificationPermission,
+  scheduleRestDoneNotification,
+  scheduleSetReminder,
+  clearRestTimer,
+  clearSetReminder,
+  clearAllNotificationTimers,
+} from '../lib/notifications'
 
 const KG_TO_LB = 2.20462
 
@@ -15,14 +25,29 @@ function formatElapsed(secs: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
+/** Display warmup weight — rounds to nearest 5 lb, nearest 2.5 kg */
 function fmtWarmupWeight(kg: number, unit: 'kg' | 'lb'): string {
-  if (unit === 'lb') return `${Math.round(kg * KG_TO_LB)} lb`
-  return `${kg % 1 === 0 ? kg : parseFloat(kg.toFixed(1))} kg`
+  if (unit === 'lb') {
+    const lb = Math.round((kg * KG_TO_LB) / 5) * 5
+    return `${lb} lb`
+  }
+  const rounded = Math.round(kg / 2.5) * 2.5
+  return `${rounded % 1 === 0 ? rounded : parseFloat(rounded.toFixed(1))} kg`
+}
+
+/** Warmup weight step size — 2.5 kg or 5 lb expressed in kg */
+function warmupStep(unit: 'kg' | 'lb'): number {
+  return unit === 'lb' ? 5 / KG_TO_LB : 2.5
+}
+
+function getBestE1rm(weightHistory: Record<string, { e1rm: number }[]>, exerciseId: string): number {
+  return (weightHistory[exerciseId] ?? []).reduce((max, h) => (h.e1rm > max ? h.e1rm : max), 0)
 }
 
 export default function ActiveWorkout() {
   const navigate = useNavigate()
   const unit = useAppStore((s) => s.unit)
+  const weightHistory = useLibraryStore((s) => s.weightHistory)
   const {
     activeSession,
     markSetComplete,
@@ -31,6 +56,7 @@ export default function ActiveWorkout() {
     addTargetSet,
     removeTargetSet,
     adjustWeight,
+    adjustWarmupWeight,
     skipRest,
     tickRest,
     completeSession,
@@ -40,30 +66,75 @@ export default function ActiveWorkout() {
   const [elapsed, setElapsed] = useState(0)
   const [showAbandon, setShowAbandon] = useState(false)
   const [reps, setReps] = useState(8)
+  const [showFormCues, setShowFormCues] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
+  // Request notification permission once on mount
+  useEffect(() => {
+    requestNotificationPermission()
+    return () => clearAllNotificationTimers()
+  }, [])
+
+  // Acquire wake lock for the entire workout (not just rest)
   useEffect(() => {
     if (!activeSession) { navigate('/'); return }
-    const elapsedInterval = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - activeSession.startedAt) / 1000))
-    }, 1000)
-    return () => clearInterval(elapsedInterval)
-  }, [activeSession?.startedAt])
-
-  useEffect(() => {
-    if (!activeSession || activeSession.phase !== 'rest') {
-      if (timerRef.current) clearInterval(timerRef.current)
-      if (wakeLockRef.current) { wakeLockRef.current.release(); wakeLockRef.current = null }
-      return
-    }
     if ('wakeLock' in navigator) {
       navigator.wakeLock.request('screen').then((lock) => { wakeLockRef.current = lock }).catch(() => {})
     }
-    timerRef.current = setInterval(tickRest, 500)
+    return () => {
+      if (wakeLockRef.current) { wakeLockRef.current.release(); wakeLockRef.current = null }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!activeSession])
+
+  // Re-acquire wake lock if screen dims then comes back
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && activeSession && 'wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').then((lock) => { wakeLockRef.current = lock }).catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [!!activeSession])
+
+  // Elapsed timer
+  useEffect(() => {
+    if (!activeSession) return
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - activeSession.startedAt) / 1000))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [activeSession?.startedAt])
+
+  // Rest countdown + haptic/notification when done
+  useEffect(() => {
+    if (!activeSession || activeSession.phase !== 'rest') {
+      if (timerRef.current) clearInterval(timerRef.current)
+      return
+    }
+    scheduleRestDoneNotification(activeSession.restRemaining)
+    timerRef.current = setInterval(() => {
+      const prev = useWorkoutStore.getState().activeSession
+      if (prev?.phase === 'rest' && prev.restRemaining <= 1) {
+        hapticRestDone()
+        clearRestTimer()
+      }
+      tickRest()
+    }, 500)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSession?.phase])
 
+  // Set reminder notification when exercise phase starts
+  useEffect(() => {
+    if (!activeSession || activeSession.phase !== 'exercise') { clearSetReminder(); return }
+    scheduleSetReminder()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSession?.phase, activeSession?.currentExIdx, activeSession?.exercises[activeSession?.currentExIdx ?? 0]?.sets.length])
+
+  // Update reps default when exercise changes
   useEffect(() => {
     if (!activeSession) return
     const currentEx = activeSession.exercises[activeSession.currentExIdx]
@@ -71,6 +142,7 @@ export default function ActiveWorkout() {
       const ex = getExerciseById(currentEx.exerciseId)
       setReps(ex ? parseInt(ex.defaultReps.split('–')[0]) : 8)
     }
+    setShowFormCues(false)
   }, [activeSession?.currentExIdx])
 
   if (!activeSession) return null
@@ -84,14 +156,39 @@ export default function ActiveWorkout() {
   const warmupSets = currentEx?.warmupSets ?? []
   const currentWarmup = isWarmup ? warmupSets[warmupSetIdx] : null
 
+  // PR for current exercise
+  const bestE1rm = getBestE1rm(weightHistory, currentEx?.exerciseId ?? '')
+  const bestE1rmDisplay = unit === 'lb'
+    ? `${Math.round(bestE1rm * KG_TO_LB)} lb`
+    : `${bestE1rm.toFixed(1)} kg`
+
   function handleComplete() {
+    hapticHeavy()
+    clearAllNotificationTimers()
     completeSession()
     navigate('/progress?new=1')
   }
 
   function handleAbandon() {
+    clearAllNotificationTimers()
     abandonSession()
     navigate('/')
+  }
+
+  function handleMarkSet() {
+    hapticMedium()
+    clearSetReminder()
+    markSetComplete(reps)
+  }
+
+  function handleCompleteWarmup() {
+    hapticLight()
+    completeWarmupSet()
+  }
+
+  function handleSkipRest() {
+    clearRestTimer()
+    skipRest()
   }
 
   return (
@@ -189,7 +286,7 @@ export default function ActiveWorkout() {
           {/* ── Rest ── */}
           {phase === 'rest' && (
             <motion.div key="rest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', justifyContent: 'center' }}>
-              <RestTimer remaining={restRemaining} total={restTotal} onSkip={skipRest} />
+              <RestTimer remaining={restRemaining} total={restTotal} onSkip={handleSkipRest} />
             </motion.div>
           )}
 
@@ -203,13 +300,10 @@ export default function ActiveWorkout() {
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             >
               <div style={{ marginBottom: 6 }}>
-                {/* Warm-up label */}
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(251,191,36,0.08)',
-                  border: '1px solid rgba(251,191,36,0.2)',
-                  borderRadius: 12, padding: '4px 10px',
-                  marginBottom: 14,
+                  background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)',
+                  borderRadius: 12, padding: '4px 10px', marginBottom: 14,
                 }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14v-4m0-4h.01" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" />
@@ -218,7 +312,6 @@ export default function ActiveWorkout() {
                     Warm-up · {warmupSetIdx + 1}/{warmupSets.length}
                   </span>
                 </div>
-
                 <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
                 </p>
@@ -237,7 +330,7 @@ export default function ActiveWorkout() {
                       width: 40, height: 40, borderRadius: '50%',
                       background: done ? 'rgba(251,191,36,0.15)' : active ? 'rgba(251,191,36,0.06)' : '#1E1E1E',
                       border: done ? '1px solid rgba(251,191,36,0.4)' : active ? '2px solid rgba(251,191,36,0.5)' : '1px solid rgba(255,255,255,0.07)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {done ? (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -253,28 +346,39 @@ export default function ActiveWorkout() {
                 })}
               </div>
 
-              {/* Warmup set info */}
-              <div style={{
-                background: '#161616',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 16, padding: '16px 20px',
-                marginBottom: 24,
-              }}>
-                <p style={{ fontSize: 10, color: '#FBBF24', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              {/* Warmup weight (editable) + reps */}
+              <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '16px 20px', marginBottom: 24 }}>
+                <p style={{ fontSize: 10, color: '#FBBF24', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 12, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   Target
                 </p>
-                <div style={{ display: 'flex', gap: 24, alignItems: 'baseline' }}>
-                  <div>
-                    <p style={{ fontSize: 28, fontWeight: 700, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
-                      {fmtWarmupWeight(currentWarmup.weightKg, unit)}
-                    </p>
-                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>weight</p>
+                <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 8 }}>weight</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <motion.button
+                        whileTap={{ scale: 0.85 }}
+                        onClick={() => { hapticLight(); adjustWarmupWeight(-warmupStep(unit)) }}
+                        style={warmupAdjBtn}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#FBBF24" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                      </motion.button>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px', minWidth: 72, textAlign: 'center' }}>
+                        {fmtWarmupWeight(currentWarmup.weightKg, unit)}
+                      </span>
+                      <motion.button
+                        whileTap={{ scale: 0.85 }}
+                        onClick={() => { hapticLight(); adjustWarmupWeight(warmupStep(unit)) }}
+                        style={warmupAdjBtn}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#FBBF24" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                      </motion.button>
+                    </div>
                   </div>
                   <div>
+                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 8 }}>reps</p>
                     <p style={{ fontSize: 28, fontWeight: 700, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
                       {currentWarmup.targetReps}
                     </p>
-                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>reps</p>
                   </div>
                 </div>
               </div>
@@ -294,9 +398,26 @@ export default function ActiveWorkout() {
                 <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
                 </p>
-                <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 34, color: '#F0EDE8', lineHeight: 1.1, marginBottom: 6 }}>
-                  {exercise?.name ?? currentEx?.exerciseId}
-                </h2>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 34, color: '#F0EDE8', lineHeight: 1.1, marginBottom: 6, flex: 1 }}>
+                    {exercise?.name ?? currentEx?.exerciseId}
+                  </h2>
+                  {/* PR chip */}
+                  {bestE1rm > 0 && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+                      background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
+                      borderRadius: 10, padding: '5px 9px', marginTop: 4,
+                    }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#C8A96E" />
+                      </svg>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                        {bestE1rmDisplay} e1RM
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Set counter + add/remove controls */}
@@ -304,22 +425,11 @@ export default function ActiveWorkout() {
                 <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   Set {setsCompleted + 1} of {currentEx?.targetSets} · {currentEx?.targetReps} reps
                 </p>
-                {/* Add / remove set buttons */}
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <motion.button
-                    whileTap={{ scale: 0.85 }}
-                    onClick={removeTargetSet}
-                    style={smallCtrlBtn}
-                    title="Remove a set"
-                  >
+                  <motion.button whileTap={{ scale: 0.85 }} onClick={removeTargetSet} style={smallCtrlBtn} title="Remove a set">
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
                   </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.85 }}
-                    onClick={addTargetSet}
-                    style={smallCtrlBtn}
-                    title="Add a set"
-                  >
+                  <motion.button whileTap={{ scale: 0.85 }} onClick={addTargetSet} style={smallCtrlBtn} title="Add a set">
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
                   </motion.button>
                 </div>
@@ -335,8 +445,7 @@ export default function ActiveWorkout() {
                       width: 40, height: 40, borderRadius: '50%',
                       background: done ? '#C8A96E' : active ? 'rgba(200,169,110,0.1)' : '#1E1E1E',
                       border: done ? 'none' : active ? '2px solid #C8A96E' : '1px solid rgba(255,255,255,0.07)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>
                       {done ? (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -350,21 +459,15 @@ export default function ActiveWorkout() {
                     </div>
                   )
                 })}
-
-                {/* Undo last set */}
                 {setsCompleted > 0 && (
                   <motion.button
                     whileTap={{ scale: 0.85 }}
-                    onClick={undoLastSet}
+                    onClick={() => { hapticLight(); undoLastSet() }}
                     style={{
-                      background: 'rgba(255,69,58,0.08)',
-                      border: '1px solid rgba(255,69,58,0.2)',
-                      borderRadius: 12, padding: '6px 10px',
-                      fontSize: 11, color: '#FF453A',
-                      cursor: 'pointer', flexShrink: 0,
-                      fontFamily: '"Outfit", system-ui, sans-serif',
-                      display: 'flex', alignItems: 'center', gap: 4,
-                      WebkitTapHighlightColor: 'transparent',
+                      background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
+                      borderRadius: 12, padding: '6px 10px', fontSize: 11, color: '#FF453A',
+                      cursor: 'pointer', flexShrink: 0, fontFamily: '"Outfit", system-ui, sans-serif',
+                      display: 'flex', alignItems: 'center', gap: 4, WebkitTapHighlightColor: 'transparent',
                     }}
                   >
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
@@ -383,27 +486,94 @@ export default function ActiveWorkout() {
                 </p>
                 <WeightStepper
                   weight={currentEx?.currentWeight ?? 0}
-                  onChange={(w) => currentEx && adjustWeight(currentEx.exerciseId, w - currentEx.currentWeight)}
+                  onChange={(w) => { hapticLight(); currentEx && adjustWeight(currentEx.exerciseId, w - currentEx.currentWeight) }}
                 />
               </div>
 
               {/* Reps */}
-              <div>
+              <div style={{ marginBottom: 24 }}>
                 <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   Reps
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                  <button onClick={() => setReps(Math.max(1, reps - 1))} style={bigBtnStyle}>
+                  <button onClick={() => { hapticLight(); setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                   </button>
                   <span style={{ fontSize: 28, fontWeight: 700, color: '#F0EDE8', minWidth: 64, textAlign: 'center', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
                     {reps}
                   </span>
-                  <button onClick={() => setReps(reps + 1)} style={bigBtnStyle}>
+                  <button onClick={() => { hapticLight(); setReps(reps + 1) }} style={bigBtnStyle}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                   </button>
                 </div>
               </div>
+
+              {/* Form cues — collapsible */}
+              {exercise?.formCues && exercise.formCues.length > 0 && (
+                <div>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { hapticLight(); setShowFormCues((v) => !v) }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: showFormCues ? 'rgba(200,169,110,0.06)' : '#161616',
+                      border: `1px solid ${showFormCues ? 'rgba(200,169,110,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                      borderRadius: showFormCues ? '12px 12px 0 0' : '12px',
+                      padding: '11px 16px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke={showFormCues ? '#C8A96E' : '#8A8680'} strokeWidth="1.6" />
+                        <path d="M12 8v4m0 4h.01" stroke={showFormCues ? '#C8A96E' : '#8A8680'} strokeWidth="1.8" strokeLinecap="round" />
+                      </svg>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: showFormCues ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                        Form Cues
+                      </span>
+                    </div>
+                    <motion.div animate={{ rotate: showFormCues ? 180 : 0 }} transition={{ duration: 0.18 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 9l6 6 6-6" stroke={showFormCues ? '#C8A96E' : '#8A8680'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </motion.div>
+                  </motion.button>
+                  <AnimatePresence>
+                    {showFormCues && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        style={{ overflow: 'hidden' }}
+                      >
+                        <div style={{
+                          background: 'rgba(200,169,110,0.04)',
+                          border: '1px solid rgba(200,169,110,0.15)', borderTop: 'none',
+                          borderRadius: '0 0 12px 12px', padding: '12px 16px',
+                          display: 'flex', flexDirection: 'column', gap: 10,
+                        }}>
+                          {exercise.formCues.map((cue, i) => (
+                            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                              <span style={{
+                                width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                                background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 10, fontWeight: 700, color: '#C8A96E',
+                                fontFamily: '"Outfit", system-ui, sans-serif',
+                              }}>
+                                {i + 1}
+                              </span>
+                              <p style={{ fontSize: 13, color: '#D4CFCA', lineHeight: 1.55, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
+                                {cue}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -416,11 +586,11 @@ export default function ActiveWorkout() {
             Save & Exit
           </motion.button>
         ) : isWarmup ? (
-          <motion.button whileTap={{ scale: 0.97 }} onClick={completeWarmupSet} style={{ ...primaryBtnStyle, background: '#FBBF24' }}>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={handleCompleteWarmup} style={{ ...primaryBtnStyle, background: '#FBBF24' }}>
             Done — Warm-up Set {warmupSetIdx + 1}
           </motion.button>
         ) : phase === 'exercise' ? (
-          <motion.button whileTap={{ scale: 0.97 }} onClick={() => markSetComplete(reps)} style={primaryBtnStyle}>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={handleMarkSet} style={primaryBtnStyle}>
             Complete Set {setsCompleted + 1}
           </motion.button>
         ) : null}
@@ -475,33 +645,31 @@ export default function ActiveWorkout() {
   )
 }
 
-const smallCtrlBtn: React.CSSProperties = {
-  width: 28, height: 28,
-  background: '#1E1E1E',
-  border: '1px solid rgba(255,255,255,0.07)',
-  borderRadius: 12, cursor: 'pointer',
+const warmupAdjBtn: React.CSSProperties = {
+  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+  background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
+  cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+}
+
+const smallCtrlBtn: React.CSSProperties = {
+  width: 28, height: 28, background: '#1E1E1E',
+  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
   WebkitTapHighlightColor: 'transparent',
 }
 
 const bigBtnStyle: React.CSSProperties = {
-  width: 48, height: 48,
-  background: '#1E1E1E',
-  border: '1px solid rgba(255,255,255,0.07)',
-  borderRadius: 16,
-  color: '#F0EDE8',
-  cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  flexShrink: 0,
+  width: 48, height: 48, background: '#1E1E1E',
+  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16,
+  color: '#F0EDE8', cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   WebkitTapHighlightColor: 'transparent',
 }
 
 const primaryBtnStyle: React.CSSProperties = {
-  width: '100%', height: 56,
-  background: '#C8A96E', border: 'none',
-  borderRadius: 16, color: '#0C0C0C',
-  fontSize: 16, fontWeight: 700, cursor: 'pointer',
-  fontFamily: '"Outfit", system-ui, sans-serif',
-  letterSpacing: '-0.2px',
-  WebkitTapHighlightColor: 'transparent',
+  width: '100%', height: 56, background: '#C8A96E', border: 'none',
+  borderRadius: 16, color: '#0C0C0C', fontSize: 16, fontWeight: 700,
+  cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+  letterSpacing: '-0.2px', WebkitTapHighlightColor: 'transparent',
 }

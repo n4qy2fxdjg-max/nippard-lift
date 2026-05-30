@@ -40,6 +40,7 @@ interface WorkoutStore {
   addTargetSet: () => void
   removeTargetSet: () => void
   adjustWeight: (exerciseId: string, delta: number) => void
+  adjustWarmupWeight: (delta: number) => void
   skipRest: () => void
   tickRest: () => void
   completeSession: () => void
@@ -204,6 +205,21 @@ export const useWorkoutStore = create<WorkoutStore>()(
         set({ activeSession: { ...session, exercises: updatedExercises } })
       },
 
+      adjustWarmupWeight: (delta) => {
+        const session = get().activeSession
+        if (!session || session.phase !== 'warmup') return
+        const exIdx = session.currentExIdx
+        const wIdx = session.warmupSetIdx
+        const updatedExercises = session.exercises.map((e, i) => {
+          if (i !== exIdx) return e
+          const warmupSets = (e.warmupSets ?? []).map((w, j) =>
+            j === wIdx ? { ...w, weightKg: Math.max(0, parseFloat((w.weightKg + delta).toFixed(2))) } : w
+          )
+          return { ...e, warmupSets }
+        })
+        set({ activeSession: { ...session, exercises: updatedExercises } })
+      },
+
       adjustWeight: (exerciseId, delta) => {
         const session = get().activeSession
         if (!session) return
@@ -336,7 +352,19 @@ export const useWorkoutStore = create<WorkoutStore>()(
     }),
     {
       name: 'lift-workout-v1',
-      partialize: (state) => ({ logs: state.logs }),
+      partialize: (state) => ({
+        logs: state.logs,
+        // Persist the active session so iOS background kills don't lose the workout.
+        // We discard sessions older than 6 hours on rehydrate.
+        activeSession: state.activeSession,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (!state) return
+        // Discard stale sessions (older than 6 h)
+        if (state.activeSession && Date.now() - state.activeSession.startedAt > 6 * 60 * 60 * 1000) {
+          state.activeSession = null
+        }
+      },
     }
   )
 )
