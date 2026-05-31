@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Layout from './components/Layout'
@@ -10,6 +11,7 @@ import Settings from './screens/Settings'
 import Onboarding from './screens/Onboarding'
 import Toaster from './components/Toaster'
 import { useAppStore } from './store/useAppStore'
+import { useSyncStore } from './store/useSyncStore'
 
 const pageTransition = { duration: 0.15, ease: 'easeOut' as const }
 
@@ -59,9 +61,25 @@ function AnimatedRoutes() {
   )
 }
 
+function AutoSync() {
+  const autoSync = useSyncStore((s) => s.autoSync)
+  useEffect(() => {
+    // Sync on first mount (app open)
+    autoSync()
+    // Sync whenever the app comes back to the foreground
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') autoSync()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [autoSync])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <AutoSync />
       <AnimatedRoutes />
       <Toaster />
     </BrowserRouter>

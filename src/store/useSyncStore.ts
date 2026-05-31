@@ -34,6 +34,8 @@ function mergeHistory(
   return result
 }
 
+const AUTO_SYNC_COOLDOWN_MS = 60_000 // don't re-sync if last sync was < 60s ago
+
 // ── Store interface ──────────────────────────────────────────────────
 interface SyncStore {
   syncCode: string | null
@@ -45,6 +47,8 @@ interface SyncStore {
   verifyAndJoin: (code: string) => Promise<void>
   pushSync: () => Promise<void>
   pullSync: () => Promise<void>
+  /** Pull then push — safe to call on app focus; skips if no code or synced < 60s ago */
+  autoSync: () => Promise<void>
   clearSync: () => void
   clearError: () => void
 }
@@ -156,6 +160,14 @@ export const useSyncStore = create<SyncStore>()(
         } catch {
           set({ isSyncing: false })
         }
+      },
+
+      autoSync: async () => {
+        const { syncCode, lastSyncAt, isSyncing } = get()
+        if (!syncCode || isSyncing) return
+        if (lastSyncAt && Date.now() - lastSyncAt < AUTO_SYNC_COOLDOWN_MS) return
+        await get().pullSync()
+        await get().pushSync()
       },
 
       clearSync: () => set({ syncCode: null, lastSyncAt: null, syncError: null }),

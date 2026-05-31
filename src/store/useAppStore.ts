@@ -25,15 +25,18 @@ export const useAppStore = create<AppStore>()(
       setUnit: (unit) => set({ unit }),
       completeOnboarding: (name, unit) =>
         set({ userName: name.trim() || 'You', unit, onboarded: true }),
-      logBodyweight: (weightKg) =>
+      logBodyweight: (weightKg) => {
         set((s) => {
           const today = format(new Date(), 'yyyy-MM-dd')
-          // One entry per day — replace today's if it exists
           const rest = (s.bodyweightLog ?? []).filter((e) => e.date !== today)
           const next = [...rest, { date: today, weightKg }]
           next.sort((a, b) => a.date.localeCompare(b.date))
           return { bodyweightLog: next }
-        }),
+        })
+        import('./useSyncStore').then(({ useSyncStore }) => {
+          useSyncStore.getState().pushSync().catch(() => {})
+        })
+      },
     }),
     { name: 'lift-app-v1' }
   )

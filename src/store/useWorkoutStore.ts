@@ -340,15 +340,23 @@ export const useWorkoutStore = create<WorkoutStore>()(
 
       abandonSession: () => set({ activeSession: null }),
 
-      deleteLog: (id) =>
-        set((s) => ({ logs: s.logs.filter((l) => l.id !== id) })),
+      deleteLog: (id) => {
+        set((s) => ({ logs: s.logs.filter((l) => l.id !== id) }))
+        import('./useSyncStore').then(({ useSyncStore }) => {
+          useSyncStore.getState().pushSync().catch(() => {})
+        })
+      },
 
-      restoreLog: (log) =>
+      restoreLog: (log) => {
         set((s) => {
           const next = [log, ...s.logs.filter((l) => l.id !== log.id)]
           next.sort((a, b) => b.date.localeCompare(a.date))
           return { logs: next }
-        }),
+        })
+        import('./useSyncStore').then(({ useSyncStore }) => {
+          useSyncStore.getState().pushSync().catch(() => {})
+        })
+      },
     }),
     {
       name: 'lift-workout-v1',
