@@ -391,15 +391,14 @@ export default function ActiveWorkout() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-              style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
             >
               {/* Exercise name + PR chip */}
-              <div>
-                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+              <div style={{ marginBottom: 6 }}>
+                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                  <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 28, color: '#F0EDE8', lineHeight: 1.1, flex: 1 }}>
+                  <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 34, color: '#F0EDE8', lineHeight: 1.1, marginBottom: 6, flex: 1 }}>
                     {exercise?.name ?? currentEx?.exerciseId}
                   </h2>
                   {bestE1rm > 0 && (
@@ -421,7 +420,7 @@ export default function ActiveWorkout() {
 
               {/* Set counter + add/remove + circles + undo */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                     Set {setsCompleted + 1} of {currentEx?.targetSets} · {currentEx?.targetReps} reps
                   </p>
@@ -434,23 +433,23 @@ export default function ActiveWorkout() {
                     </motion.button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, flexWrap: 'wrap' }}>
                   {Array.from({ length: currentEx?.targetSets ?? 0 }).map((_, i) => {
                     const done = i < setsCompleted
                     const active = i === setsCompleted
                     return (
                       <div key={i} style={{
-                        width: 36, height: 36, borderRadius: '50%',
+                        width: 40, height: 40, borderRadius: '50%',
                         background: done ? '#C8A96E' : active ? 'rgba(200,169,110,0.1)' : '#1E1E1E',
                         border: done ? 'none' : active ? '2px solid #C8A96E' : '1px solid rgba(255,255,255,0.07)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                       }}>
                         {done ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M5 12l5 5L20 7" stroke="#0C0C0C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : (
-                          <span style={{ fontSize: 12, fontWeight: 600, color: active ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: active ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                             {i + 1}
                           </span>
                         )}
@@ -463,7 +462,7 @@ export default function ActiveWorkout() {
                       onClick={() => { hapticLight(); undoLastSet() }}
                       style={{
                         background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
-                        borderRadius: 12, padding: '5px 10px', fontSize: 11, color: '#FF453A',
+                        borderRadius: 12, padding: '6px 10px', fontSize: 11, color: '#FF453A',
                         cursor: 'pointer', flexShrink: 0, fontFamily: '"Outfit", system-ui, sans-serif',
                         display: 'flex', alignItems: 'center', gap: 4, WebkitTapHighlightColor: 'transparent',
                       }}
@@ -512,30 +511,30 @@ export default function ActiveWorkout() {
                 <div style={{
                   background: 'rgba(200,169,110,0.04)',
                   border: '1px solid rgba(200,169,110,0.15)',
-                  borderRadius: 12, padding: '10px 14px',
-                  display: 'flex', flexDirection: 'column', gap: 8,
+                  borderRadius: 12, padding: '12px 16px',
+                  display: 'flex', flexDirection: 'column', gap: 10,
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="10" stroke="#C8A96E" strokeWidth="1.6" />
                       <path d="M12 8v4m0 4h.01" stroke="#C8A96E" strokeWidth="1.8" strokeLinecap="round" />
                     </svg>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                       Form Cues
                     </span>
                   </div>
                   {exercise.formCues.map((cue, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                       <span style={{
-                        width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                        width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
                         background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.2)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, fontWeight: 700, color: '#C8A96E',
+                        fontSize: 10, fontWeight: 700, color: '#C8A96E',
                         fontFamily: '"Outfit", system-ui, sans-serif',
                       }}>
                         {i + 1}
                       </span>
-                      <p style={{ fontSize: 12, color: '#D4CFCA', lineHeight: 1.45, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
+                      <p style={{ fontSize: 13, color: '#D4CFCA', lineHeight: 1.55, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
                         {cue}
                       </p>
                     </div>
