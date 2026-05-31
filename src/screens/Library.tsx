@@ -6,6 +6,23 @@ import ExerciseDetailSheet from '../components/ExerciseDetailSheet'
 import { useLibraryStore } from '../store/useLibraryStore'
 import type { BodyGroup, Exercise, MuscleGroup } from '../types'
 
+/** Consolidated muscle categories — each label covers one or more primaryMuscle values */
+const MUSCLE_CATEGORIES: { label: string; muscles: MuscleGroup[] }[] = [
+  { label: 'Chest',      muscles: ['chest', 'upper-chest'] },
+  { label: 'Back',       muscles: ['lats', 'mid-back', 'rear-delts', 'traps', 'lower-back'] },
+  { label: 'Shoulders',  muscles: ['shoulders', 'side-delts', 'front-delts'] },
+  { label: 'Biceps',     muscles: ['biceps'] },
+  { label: 'Triceps',    muscles: ['triceps'] },
+  { label: 'Forearms',   muscles: ['forearms'] },
+  { label: 'Glutes',     muscles: ['glutes'] },
+  { label: 'Hamstrings', muscles: ['hamstrings'] },
+  { label: 'Quads',      muscles: ['quads'] },
+  { label: 'Calves',     muscles: ['calves'] },
+  { label: 'Abs',        muscles: ['abs'] },
+  { label: 'Obliques',   muscles: ['obliques'] },
+  { label: 'Adductors',  muscles: ['adductors'] },
+]
+
 /** Returns a match score (lower = better), or null if the query doesn't match. */
 function fuzzyScore(name: string, q: string): number | null {
   const lower = name.toLowerCase()
@@ -38,18 +55,10 @@ const groupTabs: { key: 'all' | BodyGroup; label: string }[] = [
   { key: 'core', label: 'Core' },
 ]
 
-const muscleLabels: Record<MuscleGroup, string> = {
-  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
-  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
-  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
-  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
-  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
-}
 
 export default function Library() {
   const [group, setGroup] = useState<'all' | BodyGroup>('all')
-  const [muscle, setMuscle] = useState<MuscleGroup | null>(null)
+  const [muscleCategory, setMuscleCategory] = useState<string | null>(null)
   const [selected, setSelected] = useState<Exercise | null>(null)
   const [query, setQuery] = useState('')
   const [trainedOnly, setTrainedOnly] = useState(false)
@@ -58,26 +67,34 @@ export default function Library() {
 
   const searching = query.trim().length > 0
 
+  // Muscles that exist in the current group — used to hide irrelevant chips
+  const presentMuscles = useMemo<Set<MuscleGroup>>(() => {
+    return new Set(getExercisesByGroup(group).map((e) => e.primaryMuscle))
+  }, [group])
+
+  // Only show categories that have at least one exercise in the current group
+  const visibleCategories = useMemo(() =>
+    MUSCLE_CATEGORIES.filter((c) => c.muscles.some((m) => presentMuscles.has(m))),
+  [presentMuscles])
+
   const filtered = useMemo(() => {
     let list: Exercise[]
     if (searching) {
       list = fuzzySearch(allExercises, query.trim().toLowerCase())
     } else {
       list = getExercisesByGroup(group)
-      if (muscle) list = list.filter((e) => e.primaryMuscle === muscle)
+      if (muscleCategory) {
+        const cat = MUSCLE_CATEGORIES.find((c) => c.label === muscleCategory)
+        if (cat) list = list.filter((e) => cat.muscles.includes(e.primaryMuscle))
+      }
     }
     if (trainedOnly) list = list.filter((e) => trainedIds.has(e.id))
     return list
-  }, [searching, query, group, muscle, trainedOnly, trainedIds])
-
-  const muscles = useMemo<MuscleGroup[]>(() => {
-    const base = getExercisesByGroup(group)
-    return [...new Set(base.map((e) => e.primaryMuscle))] as MuscleGroup[]
-  }, [group])
+  }, [searching, query, group, muscleCategory, trainedOnly, trainedIds])
 
   function handleGroupChange(g: 'all' | BodyGroup) {
     setGroup(g)
-    setMuscle(null)
+    setMuscleCategory(null)
   }
 
   return (
@@ -217,38 +234,32 @@ export default function Library() {
         {/* Muscle chips */}
         <div className="scroll-x" style={{ display: 'flex', gap: 6, padding: '10px 24px 14px' }}>
           <button
-            onClick={() => setMuscle(null)}
+            onClick={() => setMuscleCategory(null)}
             style={{
-              padding: '4px 12px',
-              borderRadius: 999,
-              border: muscle === null
-                ? '1px solid rgba(200,169,110,0.3)'
-                : '1px solid rgba(255,255,255,0.05)',
-              background: muscle === null ? 'rgba(200,169,110,0.08)' : 'transparent',
-              color: muscle === null ? '#C8A96E' : '#8A8680',
+              padding: '4px 12px', borderRadius: 999,
+              border: muscleCategory === null ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.05)',
+              background: muscleCategory === null ? 'rgba(200,169,110,0.08)' : 'transparent',
+              color: muscleCategory === null ? '#C8A96E' : '#8A8680',
               fontSize: 11, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}
           >
             All
           </button>
-          {muscles.map((m) => (
+          {visibleCategories.map(({ label }) => (
             <button
-              key={m}
-              onClick={() => setMuscle(m === muscle ? null : m)}
+              key={label}
+              onClick={() => setMuscleCategory(label === muscleCategory ? null : label)}
               style={{
-                padding: '4px 12px',
-                borderRadius: 999,
-                border: muscle === m
-                  ? '1px solid rgba(200,169,110,0.3)'
-                  : '1px solid rgba(255,255,255,0.05)',
-                background: muscle === m ? 'rgba(200,169,110,0.08)' : 'transparent',
-                color: muscle === m ? '#C8A96E' : '#8A8680',
+                padding: '4px 12px', borderRadius: 999,
+                border: muscleCategory === label ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.05)',
+                background: muscleCategory === label ? 'rgba(200,169,110,0.08)' : 'transparent',
+                color: muscleCategory === label ? '#C8A96E' : '#8A8680',
                 fontSize: 11, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}
             >
-              {muscleLabels[m] ?? m}
+              {label}
             </button>
           ))}
         </div>
