@@ -13,6 +13,7 @@ const KG_TO_LB = 2.20462
 const LB_TO_KG = 1 / KG_TO_LB
 
 import { muscleLabel, muscleColor as muscleColors } from '../lib/muscleLabels'
+import { toWestern } from '../lib/numerals'
 
 const MUSCLE_CATEGORIES: { label: string; muscles: string[] }[] = [
   { label: 'Chest',      muscles: ['chest', 'upper-chest'] },
@@ -351,7 +352,7 @@ export default function Builder() {
                       <input
                         ref={weightInputRef}
                         value={editingWeight.val}
-                        onChange={(e) => setEditingWeight({ uid: item.uid, val: e.target.value })}
+                        onChange={(e) => setEditingWeight({ uid: item.uid, val: toWestern(e.target.value) })}
                         onBlur={commitWeightEdit}
                         onKeyDown={(e) => { if (e.key === 'Enter') commitWeightEdit() }}
                         inputMode="decimal"

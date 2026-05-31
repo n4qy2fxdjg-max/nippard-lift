@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
+import { toWestern } from '../lib/numerals'
 
 const KG_TO_LB = 2.20462
 const LB_TO_KG = 1 / KG_TO_LB
@@ -58,7 +59,7 @@ export default function WeightStepper({ weight, onChange }: Props) {
           <input
             autoFocus
             value={inputVal}
-            onChange={(e) => setInputVal(e.target.value)}
+            onChange={(e) => setInputVal(toWestern(e.target.value))}
             onBlur={commitEdit}
             onKeyDown={(e) => { if (e.key === 'Enter') commitEdit() }}
             inputMode="decimal"
