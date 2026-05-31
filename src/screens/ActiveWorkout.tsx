@@ -391,21 +391,22 @@ export default function ActiveWorkout() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
             >
-              <div style={{ marginBottom: 6 }}>
-                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+              {/* Exercise name + PR chip */}
+              <div>
+                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                  <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 34, color: '#F0EDE8', lineHeight: 1.1, marginBottom: 6, flex: 1 }}>
+                  <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 28, color: '#F0EDE8', lineHeight: 1.1, flex: 1 }}>
                     {exercise?.name ?? currentEx?.exerciseId}
                   </h2>
-                  {/* PR chip */}
                   {bestE1rm > 0 && (
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
                       background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
-                      borderRadius: 10, padding: '5px 9px', marginTop: 4,
+                      borderRadius: 10, padding: '5px 9px', marginTop: 2,
                     }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#C8A96E" />
@@ -418,91 +419,91 @@ export default function ActiveWorkout() {
                 </div>
               </div>
 
-              {/* Set counter + add/remove controls */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                  Set {setsCompleted + 1} of {currentEx?.targetSets} · {currentEx?.targetReps} reps
-                </p>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <motion.button whileTap={{ scale: 0.85 }} onClick={removeTargetSet} style={smallCtrlBtn} title="Remove a set">
-                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.85 }} onClick={addTargetSet} style={smallCtrlBtn} title="Add a set">
-                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
-                  </motion.button>
+              {/* Set counter + add/remove + circles + undo */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                    Set {setsCompleted + 1} of {currentEx?.targetSets} · {currentEx?.targetReps} reps
+                  </p>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={removeTargetSet} style={smallCtrlBtn}>
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={addTargetSet} style={smallCtrlBtn}>
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    </motion.button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  {Array.from({ length: currentEx?.targetSets ?? 0 }).map((_, i) => {
+                    const done = i < setsCompleted
+                    const active = i === setsCompleted
+                    return (
+                      <div key={i} style={{
+                        width: 36, height: 36, borderRadius: '50%',
+                        background: done ? '#C8A96E' : active ? 'rgba(200,169,110,0.1)' : '#1E1E1E',
+                        border: done ? 'none' : active ? '2px solid #C8A96E' : '1px solid rgba(255,255,255,0.07)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        {done ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M5 12l5 5L20 7" stroke="#0C0C0C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : (
+                          <span style={{ fontSize: 12, fontWeight: 600, color: active ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                            {i + 1}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {setsCompleted > 0 && (
+                    <motion.button
+                      whileTap={{ scale: 0.85 }}
+                      onClick={() => { hapticLight(); undoLastSet() }}
+                      style={{
+                        background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
+                        borderRadius: 12, padding: '5px 10px', fontSize: 11, color: '#FF453A',
+                        cursor: 'pointer', flexShrink: 0, fontFamily: '"Outfit", system-ui, sans-serif',
+                        display: 'flex', alignItems: 'center', gap: 4, WebkitTapHighlightColor: 'transparent',
+                      }}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 7h11a5 5 0 010 10H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M6 4l-3 3 3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Undo
+                    </motion.button>
+                  )}
                 </div>
               </div>
 
-              {/* Set circles + undo */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, flexWrap: 'wrap' }}>
-                {Array.from({ length: currentEx?.targetSets ?? 0 }).map((_, i) => {
-                  const done = i < setsCompleted
-                  const active = i === setsCompleted
-                  return (
-                    <div key={i} style={{
-                      width: 40, height: 40, borderRadius: '50%',
-                      background: done ? '#C8A96E' : active ? 'rgba(200,169,110,0.1)' : '#1E1E1E',
-                      border: done ? 'none' : active ? '2px solid #C8A96E' : '1px solid rgba(255,255,255,0.07)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      {done ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                          <path d="M5 12l5 5L20 7" stroke="#0C0C0C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      ) : (
-                        <span style={{ fontSize: 13, fontWeight: 600, color: active ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                          {i + 1}
-                        </span>
-                      )}
-                    </div>
-                  )
-                })}
-                {setsCompleted > 0 && (
-                  <motion.button
-                    whileTap={{ scale: 0.85 }}
-                    onClick={() => { hapticLight(); undoLastSet() }}
-                    style={{
-                      background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
-                      borderRadius: 12, padding: '6px 10px', fontSize: 11, color: '#FF453A',
-                      cursor: 'pointer', flexShrink: 0, fontFamily: '"Outfit", system-ui, sans-serif',
-                      display: 'flex', alignItems: 'center', gap: 4, WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                      <path d="M3 7h11a5 5 0 010 10H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M6 4l-3 3 3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Undo
-                  </motion.button>
-                )}
-              </div>
-
-              {/* Weight stepper */}
-              <div style={{ marginBottom: 28 }}>
-                <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
-                  Weight
-                </p>
-                <WeightStepper
-                  weight={currentEx?.currentWeight ?? 0}
-                  onChange={(w) => { hapticLight(); currentEx && adjustWeight(currentEx.exerciseId, w - currentEx.currentWeight) }}
-                />
-              </div>
-
-              {/* Reps */}
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
-                  Reps
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                  <button onClick={() => { hapticLight(); setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
-                  </button>
-                  <span style={{ fontSize: 28, fontWeight: 700, color: '#F0EDE8', minWidth: 64, textAlign: 'center', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
-                    {reps}
-                  </span>
-                  <button onClick={() => { hapticLight(); setReps(reps + 1) }} style={bigBtnStyle}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
-                  </button>
+              {/* Weight + Reps side by side */}
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1, background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '12px 14px' }}>
+                  <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                    Weight
+                  </p>
+                  <WeightStepper
+                    weight={currentEx?.currentWeight ?? 0}
+                    onChange={(w) => { hapticLight(); currentEx && adjustWeight(currentEx.exerciseId, w - currentEx.currentWeight) }}
+                  />
+                </div>
+                <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '12px 14px', display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                    Reps
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                    <button onClick={() => { hapticLight(); setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    </button>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8', minWidth: 44, textAlign: 'center', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
+                      {reps}
+                    </span>
+                    <button onClick={() => { hapticLight(); setReps(reps + 1) }} style={bigBtnStyle}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -511,30 +512,30 @@ export default function ActiveWorkout() {
                 <div style={{
                   background: 'rgba(200,169,110,0.04)',
                   border: '1px solid rgba(200,169,110,0.15)',
-                  borderRadius: 12, padding: '12px 16px',
-                  display: 'flex', flexDirection: 'column', gap: 10,
+                  borderRadius: 12, padding: '10px 14px',
+                  display: 'flex', flexDirection: 'column', gap: 8,
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="10" stroke="#C8A96E" strokeWidth="1.6" />
                       <path d="M12 8v4m0 4h.01" stroke="#C8A96E" strokeWidth="1.8" strokeLinecap="round" />
                     </svg>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                       Form Cues
                     </span>
                   </div>
                   {exercise.formCues.map((cue, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                       <span style={{
-                        width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                        width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
                         background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.2)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 10, fontWeight: 700, color: '#C8A96E',
+                        fontSize: 9, fontWeight: 700, color: '#C8A96E',
                         fontFamily: '"Outfit", system-ui, sans-serif',
                       }}>
                         {i + 1}
                       </span>
-                      <p style={{ fontSize: 13, color: '#D4CFCA', lineHeight: 1.55, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
+                      <p style={{ fontSize: 12, color: '#D4CFCA', lineHeight: 1.45, fontFamily: '"Outfit", system-ui, sans-serif', margin: 0 }}>
                         {cue}
                       </p>
                     </div>
