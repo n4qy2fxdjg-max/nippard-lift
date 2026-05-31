@@ -1719,6 +1719,24 @@ export const exercises: Exercise[] = [
     equipment: 'bodyweight',
   },
 
+  {
+    id: 'reverse-curl',
+    name: 'Reverse Barbell Curl',
+    bodyGroup: 'upper',
+    primaryMuscle: 'forearms',
+    secondaryMuscles: ['biceps'],
+    defaultSets: 3,
+    defaultReps: '12–15',
+    restSeconds: 60,
+    restLabel: '1 min',
+    formCues: [
+      'Pronated (overhand) grip — directly targets the brachioradialis and extensors',
+      'Elbows stay pinned at sides; only the forearms move',
+      'Use an EZ-bar to reduce wrist strain; go lighter than a regular curl',
+    ],
+    equipment: 'barbell',
+  },
+
   // ─── ADDUCTORS ───────────────────────────────────────────────
   {
     id: 'adductor-machine',
