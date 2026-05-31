@@ -478,7 +478,7 @@ export default function ActiveWorkout() {
               </div>
 
               {/* Weight + Reps side by side */}
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
                 <div style={{ flex: 1, background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '12px 14px' }}>
                   <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                     Weight
