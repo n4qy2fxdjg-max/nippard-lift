@@ -4,7 +4,7 @@ import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkoutStore, buildWarmupSets } from '../store/useWorkoutStore'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
-import type { Program, ProgramExercise, BodyGroup, MuscleGroup, SessionExercise } from '../types'
+import type { Program, ProgramExercise, BodyGroup, SessionExercise } from '../types'
 
 import { muscleLabel, muscleColor as muscleColors } from '../lib/muscleLabels'
 const muscleLabels = muscleLabel
@@ -34,7 +34,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
   const [items, setItems] = useState<EditableItem[]>(initialItems)
   const [substituteFor, setSubstituteFor] = useState<EditableItem | null>(null)
   const [pickerGroup, setPickerGroup] = useState<'all' | BodyGroup>('all')
-  const [pickerMuscle, setPickerMuscle] = useState<MuscleGroup | null>(null)
+  const [pickerMuscle, setPickerMuscle] = useState<string | null>(null)
 
   // Reset when program changes
   const [lastProgramId, setLastProgramId] = useState<string | undefined>(undefined)
@@ -47,14 +47,36 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
     }
   }
 
-  const pickerMuscles = useMemo<MuscleGroup[]>(() => {
-    const base = getExercisesByGroup(pickerGroup)
-    return [...new Set(base.map((e) => e.primaryMuscle))] as MuscleGroup[]
-  }, [pickerGroup])
+  const MUSCLE_CATEGORIES: { label: string; muscles: string[] }[] = [
+    { label: 'Chest',      muscles: ['chest', 'upper-chest'] },
+    { label: 'Back',       muscles: ['lats', 'mid-back', 'rear-delts', 'traps', 'lower-back'] },
+    { label: 'Shoulders',  muscles: ['shoulders', 'side-delts', 'front-delts'] },
+    { label: 'Biceps',     muscles: ['biceps'] },
+    { label: 'Triceps',    muscles: ['triceps'] },
+    { label: 'Forearms',   muscles: ['forearms'] },
+    { label: 'Glutes',     muscles: ['glutes'] },
+    { label: 'Hamstrings', muscles: ['hamstrings'] },
+    { label: 'Quads',      muscles: ['quads'] },
+    { label: 'Calves',     muscles: ['calves'] },
+    { label: 'Abs',        muscles: ['abs'] },
+    { label: 'Obliques',   muscles: ['obliques'] },
+    { label: 'Adductors',  muscles: ['adductors'] },
+  ]
+
+  const presentMuscles = useMemo(() =>
+    new Set<string>(getExercisesByGroup(pickerGroup).map((e) => e.primaryMuscle)),
+  [pickerGroup])
+
+  const visibleCategories = useMemo(() =>
+    MUSCLE_CATEGORIES.filter((c) => c.muscles.some((m) => presentMuscles.has(m))),
+  [presentMuscles])
 
   const filteredExercises = useMemo(() => {
     let list = getExercisesByGroup(pickerGroup)
-    if (pickerMuscle) list = list.filter((e) => e.primaryMuscle === pickerMuscle)
+    if (pickerMuscle) {
+      const cat = MUSCLE_CATEGORIES.find((c) => c.label === pickerMuscle)
+      if (cat) list = list.filter((e) => cat.muscles.includes(e.primaryMuscle))
+    }
     return list
   }, [pickerGroup, pickerMuscle])
 
@@ -331,9 +353,9 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                   {/* Muscle chips */}
                   <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, paddingBottom: 10, marginBottom: 4, scrollbarWidth: 'none' }}>
                     <button onClick={() => setPickerMuscle(null)} style={chipStyle(pickerMuscle === null)}>All</button>
-                    {pickerMuscles.map((m) => (
-                      <button key={m} onClick={() => setPickerMuscle(pickerMuscle === m ? null : m)} style={chipStyle(pickerMuscle === m)}>
-                        {muscleLabels[m] ?? m}
+                    {visibleCategories.map(({ label }) => (
+                      <button key={label} onClick={() => setPickerMuscle(pickerMuscle === label ? null : label)} style={chipStyle(pickerMuscle === label)}>
+                        {label}
                       </button>
                     ))}
                   </div>

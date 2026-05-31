@@ -7,30 +7,28 @@ import { useBuilderStore } from '../store/useBuilderStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import { useAppStore } from '../store/useAppStore'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
-import type { BuilderItem as BuilderItemType, MuscleGroup, BodyGroup } from '../types'
+import type { BuilderItem as BuilderItemType, BodyGroup } from '../types'
 
 const KG_TO_LB = 2.20462
 const LB_TO_KG = 1 / KG_TO_LB
 
-/* ── Muscle colour + label map (shared with ExerciseRow) ── */
-const muscleColors: Record<string, string> = {
-  chest: '#E87B6A', 'upper-chest': '#E87B6A',
-  lats: '#6A9CE8', 'mid-back': '#6A9CE8',
-  'rear-delts': '#7ABCE8', 'side-delts': '#C8A96E', 'front-delts': '#C8A96E',
-  shoulders: '#C8A96E', triceps: '#B06AE8',
-  biceps: '#7DD87D', forearms: '#7DD87D',
-  quads: '#E8C56A', hamstrings: '#E89A6A', glutes: '#E8886A', calves: '#6AE8C8',
-  adductors: '#E8886A', abs: '#A8E86A', obliques: '#A8E86A', 'lower-back': '#E8A06A',
-  traps: '#C8A96E', neck: '#A0A09E',
-}
-const muscleLabels: Record<string, string> = {
-  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
-  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
-  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
-  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
-  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
-}
+import { muscleLabel, muscleColor as muscleColors } from '../lib/muscleLabels'
+
+const MUSCLE_CATEGORIES: { label: string; muscles: string[] }[] = [
+  { label: 'Chest',      muscles: ['chest', 'upper-chest'] },
+  { label: 'Back',       muscles: ['lats', 'mid-back', 'rear-delts', 'traps', 'lower-back'] },
+  { label: 'Shoulders',  muscles: ['shoulders', 'side-delts', 'front-delts'] },
+  { label: 'Biceps',     muscles: ['biceps'] },
+  { label: 'Triceps',    muscles: ['triceps'] },
+  { label: 'Forearms',   muscles: ['forearms'] },
+  { label: 'Glutes',     muscles: ['glutes'] },
+  { label: 'Hamstrings', muscles: ['hamstrings'] },
+  { label: 'Quads',      muscles: ['quads'] },
+  { label: 'Calves',     muscles: ['calves'] },
+  { label: 'Abs',        muscles: ['abs'] },
+  { label: 'Obliques',   muscles: ['obliques'] },
+  { label: 'Adductors',  muscles: ['adductors'] },
+]
 
 const groupTabs: { key: 'all' | BodyGroup; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -56,7 +54,7 @@ export default function Builder() {
   const [planName, setPlanName] = useState('')
   const [showPicker, setShowPicker] = useState(false)
   const [pickerGroup, setPickerGroup] = useState<'all' | BodyGroup>('all')
-  const [pickerMuscle, setPickerMuscle] = useState<MuscleGroup | null>(null)
+  const [pickerMuscle, setPickerMuscle] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [editingWeight, setEditingWeight] = useState<{ uid: string; val: string } | null>(null)
   const weightInputRef = useRef<HTMLInputElement>(null)
@@ -126,14 +124,20 @@ export default function Builder() {
   }
 
   /* Picker filtering */
-  const pickerMuscles = useMemo<MuscleGroup[]>(() => {
-    const base = getExercisesByGroup(pickerGroup)
-    return [...new Set(base.map((e) => e.primaryMuscle))] as MuscleGroup[]
-  }, [pickerGroup])
+  const presentMuscles = useMemo(() =>
+    new Set<string>(getExercisesByGroup(pickerGroup).map((e) => e.primaryMuscle)),
+  [pickerGroup])
+
+  const visibleCategories = useMemo(() =>
+    MUSCLE_CATEGORIES.filter((c) => c.muscles.some((m) => presentMuscles.has(m))),
+  [presentMuscles])
 
   const filteredExercises = useMemo(() => {
     let list = getExercisesByGroup(pickerGroup)
-    if (pickerMuscle) list = list.filter((e) => e.primaryMuscle === pickerMuscle)
+    if (pickerMuscle) {
+      const cat = MUSCLE_CATEGORIES.find((c) => c.label === pickerMuscle)
+      if (cat) list = list.filter((e) => cat.muscles.includes(e.primaryMuscle))
+    }
     return list
   }, [pickerGroup, pickerMuscle])
 
@@ -224,7 +228,7 @@ export default function Builder() {
             const ex = getExerciseById(item.exerciseId)
             if (!ex) return null
             const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
-            const mLabel = muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle
+            const mLabel = muscleLabel[ex.primaryMuscle] ?? ex.primaryMuscle
 
             return (
               <Reorder.Item
@@ -575,13 +579,13 @@ export default function Builder() {
                 >
                   All
                 </button>
-                {pickerMuscles.map((m) => (
+                {visibleCategories.map(({ label }) => (
                   <button
-                    key={m}
-                    onClick={() => setPickerMuscle(pickerMuscle === m ? null : m)}
-                    style={chipStyle(pickerMuscle === m)}
+                    key={label}
+                    onClick={() => setPickerMuscle(pickerMuscle === label ? null : label)}
+                    style={chipStyle(pickerMuscle === label)}
                   >
-                    {muscleLabels[m] ?? m}
+                    {label}
                   </button>
                 ))}
               </div>
@@ -640,7 +644,7 @@ export default function Builder() {
                         flexShrink: 0,
                         whiteSpace: 'nowrap',
                       }}>
-                        {already ? 'Added' : (muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle)}
+                        {already ? 'Added' : (muscleLabel[ex.primaryMuscle] ?? ex.primaryMuscle)}
                       </span>
                     </motion.div>
                   )
