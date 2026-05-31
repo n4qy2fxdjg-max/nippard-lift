@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { exercises as allExercises, getExercisesByGroup } from '../data/exercises'
 import ExerciseRow from '../components/ExerciseRow'
 import ExerciseDetailSheet from '../components/ExerciseDetailSheet'
+import { useLibraryStore } from '../store/useLibraryStore'
 import type { BodyGroup, Exercise, MuscleGroup } from '../types'
 
 /** Returns a match score (lower = better), or null if the query doesn't match. */
@@ -51,15 +52,23 @@ export default function Library() {
   const [muscle, setMuscle] = useState<MuscleGroup | null>(null)
   const [selected, setSelected] = useState<Exercise | null>(null)
   const [query, setQuery] = useState('')
+  const [trainedOnly, setTrainedOnly] = useState(false)
+  const weightHistory = useLibraryStore((s) => s.weightHistory)
+  const trainedIds = useMemo(() => new Set(Object.keys(weightHistory)), [weightHistory])
 
   const searching = query.trim().length > 0
 
   const filtered = useMemo(() => {
-    if (searching) return fuzzySearch(allExercises, query.trim().toLowerCase())
-    let list = getExercisesByGroup(group)
-    if (muscle) list = list.filter((e) => e.primaryMuscle === muscle)
+    let list: Exercise[]
+    if (searching) {
+      list = fuzzySearch(allExercises, query.trim().toLowerCase())
+    } else {
+      list = getExercisesByGroup(group)
+      if (muscle) list = list.filter((e) => e.primaryMuscle === muscle)
+    }
+    if (trainedOnly) list = list.filter((e) => trainedIds.has(e.id))
     return list
-  }, [searching, query, group, muscle])
+  }, [searching, query, group, muscle, trainedOnly, trainedIds])
 
   const muscles = useMemo<MuscleGroup[]>(() => {
     const base = getExercisesByGroup(group)
@@ -173,6 +182,36 @@ export default function Library() {
               {label}
             </motion.button>
           ))}
+
+          {/* Separator */}
+          <div style={{ width: 1, background: 'rgba(255,255,255,0.08)', flexShrink: 0, margin: '4px 0' }} />
+
+          {/* Trained filter */}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => setTrainedOnly((v) => !v)}
+            style={{
+              padding: '7px 14px',
+              borderRadius: 999,
+              border: trainedOnly
+                ? '1px solid rgba(52,199,89,0.4)'
+                : '1px solid rgba(255,255,255,0.07)',
+              background: trainedOnly ? 'rgba(52,199,89,0.1)' : 'transparent',
+              color: trainedOnly ? '#34C759' : '#8A8680',
+              fontSize: 13,
+              fontWeight: trainedOnly ? 600 : 400,
+              cursor: 'pointer',
+              flexShrink: 0,
+              fontFamily: '"Outfit", system-ui, sans-serif',
+              letterSpacing: '0.2px',
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Trained
+          </motion.button>
         </div>
 
         {/* Muscle chips */}
