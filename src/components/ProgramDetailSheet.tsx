@@ -6,25 +6,8 @@ import { useWorkoutStore, buildWarmupSets } from '../store/useWorkoutStore'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
 import type { Program, ProgramExercise, BodyGroup, MuscleGroup, SessionExercise } from '../types'
 
-// ── Colour / label maps (same as Builder) ────────────────────────────
-const muscleColors: Record<string, string> = {
-  chest: '#E87B6A', 'upper-chest': '#E87B6A',
-  lats: '#6A9CE8', 'mid-back': '#6A9CE8',
-  'rear-delts': '#7ABCE8', 'side-delts': '#C8A96E', 'front-delts': '#C8A96E',
-  shoulders: '#C8A96E', triceps: '#B06AE8',
-  biceps: '#7DD87D', forearms: '#7DD87D',
-  quads: '#E8C56A', hamstrings: '#E89A6A', glutes: '#E8886A', calves: '#6AE8C8',
-  adductors: '#E8886A', abs: '#A8E86A', obliques: '#A8E86A', 'lower-back': '#E8A06A',
-  traps: '#C8A96E', neck: '#A0A09E',
-}
-const muscleLabels: Record<string, string> = {
-  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
-  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
-  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
-  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
-  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
-}
+import { muscleLabel, muscleColor as muscleColors } from '../lib/muscleLabels'
+const muscleLabels = muscleLabel
 const groupTabs: { key: 'all' | BodyGroup; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'upper', label: 'Upper' },

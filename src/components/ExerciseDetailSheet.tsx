@@ -6,14 +6,7 @@ import { useBuilderStore } from '../store/useBuilderStore'
 import OverloadChart from './OverloadChart'
 import { nanoid } from 'nanoid'
 
-const muscleLabels: Record<string, string> = {
-  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
-  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
-  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
-  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
-  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
-}
+import { muscleLabel } from '../lib/muscleLabels'
 
 interface Props {
   exercise: Exercise | null
@@ -124,7 +117,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
                     color: '#C8A96E', border: '1px solid rgba(200,169,110,0.2)',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                   }}>
-                    {muscleLabels[exercise.primaryMuscle] ?? exercise.primaryMuscle}
+                    {muscleLabel[exercise.primaryMuscle] ?? exercise.primaryMuscle}
                   </span>
                   <span style={{
                     fontSize: 11, fontWeight: 600, padding: '4px 10px',

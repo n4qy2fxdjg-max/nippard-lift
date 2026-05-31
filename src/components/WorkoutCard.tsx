@@ -9,41 +9,17 @@ interface Props {
   onOpen: () => void      // tap card → detail sheet
 }
 
-const muscleLabels: Record<string, string> = {
-  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
-  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
-  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
-  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
-  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
-}
-
-const muscleChipColors: Record<string, { bg: string; text: string }> = {
-  chest: { bg: 'rgba(232,123,106,0.14)', text: '#E87B6A' },
-  'upper-chest': { bg: 'rgba(232,123,106,0.14)', text: '#E87B6A' },
-  lats: { bg: 'rgba(106,156,232,0.14)', text: '#6A9CE8' },
-  'mid-back': { bg: 'rgba(106,156,232,0.14)', text: '#6A9CE8' },
-  'rear-delts': { bg: 'rgba(122,188,232,0.14)', text: '#7ABCE8' },
-  'side-delts': { bg: 'rgba(200,169,110,0.14)', text: '#C8A96E' },
-  'front-delts': { bg: 'rgba(200,169,110,0.14)', text: '#C8A96E' },
-  shoulders: { bg: 'rgba(200,169,110,0.14)', text: '#C8A96E' },
-  triceps: { bg: 'rgba(176,106,232,0.14)', text: '#B06AE8' },
-  biceps: { bg: 'rgba(125,216,125,0.14)', text: '#7DD87D' },
-  forearms: { bg: 'rgba(125,216,125,0.14)', text: '#7DD87D' },
-  quads: { bg: 'rgba(232,197,106,0.14)', text: '#E8C56A' },
-  hamstrings: { bg: 'rgba(232,154,106,0.14)', text: '#E89A6A' },
-  glutes: { bg: 'rgba(232,136,106,0.14)', text: '#E8886A' },
-  calves: { bg: 'rgba(106,232,200,0.14)', text: '#6AE8C8' },
-  abs: { bg: 'rgba(168,232,106,0.14)', text: '#A8E86A' },
-  traps: { bg: 'rgba(200,169,110,0.14)', text: '#C8A96E' },
-}
+import { muscleLabel } from '../lib/muscleLabels'
 
 export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
-  // Derive unique primary muscles from exercises
+  // Derive unique consolidated muscle labels from exercises
   const muscles = Array.from(
     new Set(
       program.exercises
-        .map((e) => getExerciseById(e.exerciseId)?.primaryMuscle)
+        .map((e) => {
+          const m = getExerciseById(e.exerciseId)?.primaryMuscle
+          return m ? muscleLabel[m] ?? m : null
+        })
         .filter(Boolean) as string[]
     )
   )
@@ -118,13 +94,13 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
         {/* Muscle chips */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
           {muscles.slice(0, 4).map((m) => {
-            const c = muscleChipColors[m] ?? { bg: 'rgba(200,169,110,0.14)', text: '#C8A96E' }
+            const color = '#C8A96E'
             return (
               <span
                 key={m}
                 style={{
-                  background: c.bg,
-                  color: c.text,
+                  background: 'rgba(200,169,110,0.12)',
+                  color,
                   borderRadius: 12,
                   padding: '4px 10px',
                   fontSize: 11,
@@ -133,7 +109,7 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
                   letterSpacing: '0.2px',
                 }}
               >
-                {muscleLabels[m] ?? m}
+                {m}
               </span>
             )
           })}

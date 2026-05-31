@@ -1,26 +1,5 @@
 import type { Exercise, MuscleGroup } from '../types'
-
-const muscleLabels: Record<string, string> = {
-  chest: 'Chest', 'upper-chest': 'Upper Chest', lats: 'Lats',
-  'mid-back': 'Mid Back', 'rear-delts': 'Rear Delts', 'side-delts': 'Side Delts',
-  'front-delts': 'Front Delts', shoulders: 'Shoulders', triceps: 'Triceps',
-  biceps: 'Biceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors', abs: 'Abs',
-  obliques: 'Obliques', 'lower-back': 'Lower Back', traps: 'Traps', neck: 'Neck',
-}
-
-const muscleColors: Record<MuscleGroup, string> = {
-  chest: '#E87B6A', 'upper-chest': '#E87B6A',
-  lats: '#6A9CE8', 'mid-back': '#6A9CE8',
-  'rear-delts': '#7ABCE8', 'side-delts': '#C8A96E', 'front-delts': '#C8A96E',
-  shoulders: '#C8A96E',
-  triceps: '#B06AE8',
-  biceps: '#7DD87D', forearms: '#7DD87D',
-  quads: '#E8C56A', hamstrings: '#E89A6A', glutes: '#E8886A', calves: '#6AE8C8',
-  adductors: '#E8886A',
-  abs: '#A8E86A', obliques: '#A8E86A', 'lower-back': '#E8A06A',
-  traps: '#C8A96E', neck: '#A0A09E',
-}
+import { muscleLabel, muscleColor } from '../lib/muscleLabels'
 
 interface Props {
   exercise: Exercise
@@ -28,7 +7,7 @@ interface Props {
 }
 
 export default function ExerciseRow({ exercise, onClick }: Props) {
-  const accentColor = muscleColors[exercise.primaryMuscle as MuscleGroup] ?? '#8A8680'
+  const accentColor = muscleColor[exercise.primaryMuscle as MuscleGroup] ?? '#8A8680'
 
   return (
     <div
@@ -76,7 +55,7 @@ export default function ExerciseRow({ exercise, onClick }: Props) {
           marginTop: 3,
           fontFamily: '"Outfit", system-ui, sans-serif',
         }}>
-          {muscleLabels[exercise.primaryMuscle] ?? exercise.primaryMuscle}
+          {muscleLabel[exercise.primaryMuscle] ?? exercise.primaryMuscle}
           <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
           {exercise.defaultSets}×{exercise.defaultReps}
         </p>
