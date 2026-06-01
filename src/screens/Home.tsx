@@ -12,6 +12,7 @@ import WorkoutCard from '../components/WorkoutCard'
 import StreakChip from '../components/StreakChip'
 import ProgramDetailSheet from '../components/ProgramDetailSheet'
 import WorkoutDetailSheet from '../components/WorkoutDetailSheet'
+import MuscleVolumeTracker from '../components/MuscleVolumeTracker'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
 import type { Program, CustomPlan, WorkoutLog } from '../types'
 
@@ -204,6 +205,9 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        {/* Weekly muscle-group volume */}
+        <MuscleVolumeTracker />
 
         {/* Programmes */}
         <div style={{ marginBottom: 36 }}>

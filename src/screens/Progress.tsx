@@ -8,7 +8,7 @@ import { exercises as exerciseList } from '../data/exercises'
 import type { WorkoutLog } from '../types'
 import HeatmapGrid from '../components/HeatmapGrid'
 import LineChart from '../components/LineChart'
-import { format, parseISO, startOfWeek, isWithinInterval } from 'date-fns'
+import { format, parseISO, subDays, startOfDay, isAfter } from 'date-fns'
 
 const KG_TO_LB = 2.20462
 
@@ -62,11 +62,9 @@ export default function Progress() {
   const logDates = useMemo(() => logs.map((l) => l.date), [logs])
 
   const weeklyStats = useMemo(() => {
-    const now = new Date()
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 })
-    const thisWeekLogs = logs.filter((l) =>
-      isWithinInterval(parseISO(l.date), { start: weekStart, end: now })
-    )
+    // Trailing 7 days, inclusive of today
+    const cutoff = startOfDay(subDays(new Date(), 6))
+    const thisWeekLogs = logs.filter((l) => !isAfter(cutoff, parseISO(l.date)))
     const sessions = thisWeekLogs.length
     const volume = thisWeekLogs.reduce((sum, l) => sum + l.totalVolume, 0)
     const avgDuration = sessions > 0
@@ -147,7 +145,7 @@ export default function Progress() {
             letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
-            This Week
+            Last 7 Days
           </p>
           <div style={{
             background: '#161616',
