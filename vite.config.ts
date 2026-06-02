@@ -14,7 +14,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'pwa-192.png', 'pwa-512.png', 'pwa-512-maskable.png', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'pwa-192.png', 'pwa-512.png', 'pwa-512-maskable.png', 'apple-touch-icon.png', 'push-sw.js'],
+      workbox: {
+        // Pull in the push/notificationclick handlers (background reminders)
+        importScripts: ['push-sw.js'],
+      },
       manifest: {
         name: 'Lift',
         short_name: 'Lift',

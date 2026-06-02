@@ -24,12 +24,6 @@ export function buildWarmupSets(workingWeightKg: number, exerciseId: string): Wa
   ]
 }
 
-function haptic(pattern: number | number[]) {
-  if ('vibrate' in navigator) {
-    try { navigator.vibrate(pattern) } catch (_) { /* ignore on unsupported */ }
-  }
-}
-
 interface WorkoutStore {
   activeSession: ActiveSession | null
   logs: WorkoutLog[]
@@ -159,8 +153,6 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const isLastExercise = session.currentExIdx >= session.exercises.length - 1
         const restSecs = exercise?.restSeconds ?? 90
 
-        haptic(60)
-
         if (allSetsForEx && isLastExercise) {
           set({ activeSession: { ...session, exercises: updatedExercises, phase: 'done' } })
           return
@@ -285,7 +277,6 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const elapsed = Math.floor((Date.now() - session.timerStartAt) / 1000)
         const remaining = Math.max(0, session.restTotal - elapsed)
         if (remaining === 0) {
-          haptic([200, 80, 200, 80, 400])  // distinctive pattern when rest ends
           const nextEx = session.exercises[session.currentExIdx]
           const goWarmup = session.currentSetIdx === 0 &&
             (nextEx?.warmupSets?.length ?? 0) > 0 &&

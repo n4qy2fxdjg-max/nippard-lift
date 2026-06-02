@@ -19,5 +19,17 @@
       "database_name": "lift-db",
       "database_id": "0e9ba5ee-3a1a-4492-8df6-cdafb1763d34"
     }
-  ]
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "REMINDER", "class_name": "ReminderScheduler" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["ReminderScheduler"] }
+  ],
+  "vars": {
+    "VAPID_PUBLIC": "BK-hK5pkM8R0O7mslPEBatWU74wAaw4JYkfTxiK6mo-moirU8_cD86z3YmOFViXMrvklwb8iQiMe--dHQHTDp7s",
+    "VAPID_SUBJECT": "mailto:abdulwahabeak@gmail.com"
+  }
 }

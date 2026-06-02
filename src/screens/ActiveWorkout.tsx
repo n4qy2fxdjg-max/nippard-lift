@@ -7,7 +7,6 @@ import { useLibraryStore } from '../store/useLibraryStore'
 import { getExerciseById } from '../data/exercises'
 import WeightStepper from '../components/WeightStepper'
 import RestTimer from '../components/RestTimer'
-import { hapticLight, hapticMedium, hapticHeavy, hapticRestDone } from '../lib/haptic'
 import {
   requestNotificationPermission,
   scheduleRestDoneNotification,
@@ -109,7 +108,7 @@ export default function ActiveWorkout() {
     return () => clearInterval(interval)
   }, [activeSession?.startedAt])
 
-  // Rest countdown + haptic/notification when done
+  // Rest countdown — drives the in-app timer + schedules the background push
   useEffect(() => {
     if (!activeSession || activeSession.phase !== 'rest') {
       if (timerRef.current) clearInterval(timerRef.current)
@@ -119,7 +118,6 @@ export default function ActiveWorkout() {
     timerRef.current = setInterval(() => {
       const prev = useWorkoutStore.getState().activeSession
       if (prev?.phase === 'rest' && prev.restRemaining <= 1) {
-        hapticRestDone()
         clearRestTimer()
       }
       tickRest()
@@ -164,7 +162,6 @@ export default function ActiveWorkout() {
     : `${bestE1rm.toFixed(1)} kg`
 
   function handleComplete() {
-    hapticHeavy()
     clearAllNotificationTimers()
     completeSession()
     navigate('/progress?new=1')
@@ -177,14 +174,12 @@ export default function ActiveWorkout() {
   }
 
   function handleMarkSet() {
-    hapticMedium()
     clearSetReminder()
     markSetComplete(reps, rpe)
     setRpe(undefined) // reset after logging
   }
 
   function handleCompleteWarmup() {
-    hapticLight()
     completeWarmupSet()
   }
 
@@ -351,7 +346,7 @@ export default function ActiveWorkout() {
                 {warmupSetIdx > 0 && (
                   <motion.button
                     whileTap={{ scale: 0.85 }}
-                    onClick={() => { hapticLight(); undoWarmupSet() }}
+                    onClick={() => { undoWarmupSet() }}
                     style={{
                       background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
                       borderRadius: 12, padding: '6px 10px', fontSize: 11, color: '#FF453A',
@@ -379,7 +374,7 @@ export default function ActiveWorkout() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <motion.button
                         whileTap={{ scale: 0.85 }}
-                        onClick={() => { hapticLight(); adjustWarmupWeight(-warmupStep(unit)) }}
+                        onClick={() => { adjustWarmupWeight(-warmupStep(unit)) }}
                         style={warmupAdjBtn}
                       >
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#FBBF24" strokeWidth="1.75" strokeLinecap="round" /></svg>
@@ -389,7 +384,7 @@ export default function ActiveWorkout() {
                       </span>
                       <motion.button
                         whileTap={{ scale: 0.85 }}
-                        onClick={() => { hapticLight(); adjustWarmupWeight(warmupStep(unit)) }}
+                        onClick={() => { adjustWarmupWeight(warmupStep(unit)) }}
                         style={warmupAdjBtn}
                       >
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#FBBF24" strokeWidth="1.75" strokeLinecap="round" /></svg>
@@ -483,7 +478,7 @@ export default function ActiveWorkout() {
                   {setsCompleted > 0 && (
                     <motion.button
                       whileTap={{ scale: 0.85 }}
-                      onClick={() => { hapticLight(); undoLastSet() }}
+                      onClick={() => { undoLastSet() }}
                       style={{
                         background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
                         borderRadius: 12, padding: '6px 10px', fontSize: 11, color: '#FF453A',
@@ -509,7 +504,7 @@ export default function ActiveWorkout() {
                   </p>
                   <WeightStepper
                     weight={currentEx?.currentWeight ?? 0}
-                    onChange={(w) => { hapticLight(); currentEx && adjustWeight(currentEx.exerciseId, w - currentEx.currentWeight) }}
+                    onChange={(w) => { currentEx && adjustWeight(currentEx.exerciseId, w - currentEx.currentWeight) }}
                   />
                 </div>
                 <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '12px 14px', display: 'flex', flexDirection: 'column' }}>
@@ -517,13 +512,13 @@ export default function ActiveWorkout() {
                     Reps
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                    <button onClick={() => { hapticLight(); setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle}>
+                    <button onClick={() => { setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle}>
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </button>
                     <span style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8', minWidth: 44, textAlign: 'center', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
                       {reps}
                     </span>
-                    <button onClick={() => { hapticLight(); setReps(reps + 1) }} style={bigBtnStyle}>
+                    <button onClick={() => { setReps(reps + 1) }} style={bigBtnStyle}>
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </button>
                   </div>
@@ -542,7 +537,7 @@ export default function ActiveWorkout() {
                       <motion.button
                         key={v}
                         whileTap={{ scale: 0.88 }}
-                        onClick={() => { hapticLight(); setRpe(sel ? undefined : v) }}
+                        onClick={() => { setRpe(sel ? undefined : v) }}
                         style={{
                           padding: '5px 10px',
                           borderRadius: 10,

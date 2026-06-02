@@ -52,5 +52,14 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   count INTEGER NOT NULL
 );
 
+-- The text a scheduled push should show, written by the DO at fire time and
+-- fetched by the service worker (bodyless push carries no payload).
+CREATE TABLE IF NOT EXISTS push_pending (
+  endpoint TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  updated_at INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE INDEX IF NOT EXISTS idx_logs_sync   ON workout_logs(sync_code);
 CREATE INDEX IF NOT EXISTS idx_plans_sync  ON custom_plans(sync_code);

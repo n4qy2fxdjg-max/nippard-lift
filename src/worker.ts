@@ -3,6 +3,121 @@
 export interface Env {
   DB: D1Database
   ASSETS: Fetcher
+  REMINDER: DurableObjectNamespace
+  VAPID_PUBLIC: string
+  VAPID_PRIVATE_JWK: string
+  VAPID_SUBJECT: string
+}
+
+// ── Web Push (VAPID, bodyless) ────────────────────────────────────────
+function b64url(bytes: ArrayBuffer | Uint8Array): string {
+  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
+  let s = ''
+  for (const x of b) s += String.fromCharCode(x)
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+function b64urlStr(str: string): string {
+  return b64url(new TextEncoder().encode(str))
+}
+
+let _vapidKey: CryptoKey | null = null
+async function vapidKey(env: Env): Promise<CryptoKey> {
+  if (_vapidKey) return _vapidKey
+  _vapidKey = await crypto.subtle.importKey(
+    'jwk',
+    JSON.parse(env.VAPID_PRIVATE_JWK),
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  )
+  return _vapidKey
+}
+
+async function signVapid(aud: string, env: Env): Promise<string> {
+  const header = b64urlStr(JSON.stringify({ typ: 'JWT', alg: 'ES256' }))
+  const payload = b64urlStr(JSON.stringify({
+    aud,
+    exp: Math.floor(Date.now() / 1000) + 12 * 3600,
+    sub: env.VAPID_SUBJECT,
+  }))
+  const data = `${header}.${payload}`
+  const sig = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    await vapidKey(env),
+    new TextEncoder().encode(data)
+  )
+  return `${data}.${b64url(sig)}`
+}
+
+/** Send a bodyless web push (the SW fetches the text). iOS vibrates on delivery. */
+async function sendPush(subscription: { endpoint: string }, env: Env): Promise<void> {
+  const endpoint = subscription.endpoint
+  const aud = new URL(endpoint).origin
+  const jwt = await signVapid(aud, env)
+  await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      TTL: '120',
+      Urgency: 'high',
+      Authorization: `vapid t=${jwt}, k=${env.VAPID_PUBLIC}`,
+    },
+  })
+}
+
+// ── Durable Object: one alarm per (device endpoint + kind) ────────────
+// Schedules a single reminder; the alarm fires a web push at the set time,
+// even when the PWA is backgrounded or the screen is off.
+export class ReminderScheduler {
+  state: DurableObjectState
+  env: Env
+  constructor(state: DurableObjectState, env: Env) {
+    this.state = state
+    this.env = env
+  }
+
+  async fetch(req: Request): Promise<Response> {
+    const action = new URL(req.url).pathname.split('/').pop()
+    if (action === 'schedule') {
+      const { subscription, fireAt, title, body, endpoint } = (await req.json()) as {
+        subscription: { endpoint: string }
+        fireAt: number
+        title: string
+        body: string
+        endpoint: string
+      }
+      await this.state.storage.put('sub', subscription)
+      await this.state.storage.put('endpoint', endpoint)
+      await this.state.storage.put('msg', { title, body })
+      const when = Number(fireAt)
+      if (when && when > Date.now()) await this.state.storage.setAlarm(when)
+      else await this.fire()
+      return new Response('ok')
+    }
+    if (action === 'cancel') {
+      await this.state.storage.deleteAlarm()
+      return new Response('ok')
+    }
+    return new Response('not found', { status: 404 })
+  }
+
+  async alarm(): Promise<void> {
+    await this.fire()
+  }
+
+  async fire(): Promise<void> {
+    const sub = (await this.state.storage.get('sub')) as { endpoint: string } | undefined
+    const endpoint = (await this.state.storage.get('endpoint')) as string | undefined
+    const msg = (await this.state.storage.get('msg')) as { title: string; body: string } | undefined
+    if (!sub || !endpoint) return
+    // Record the message so the service worker can show the right text.
+    try {
+      await this.env.DB.prepare(
+        'INSERT INTO push_pending (endpoint, title, body, updated_at) VALUES (?, ?, ?, ?) ' +
+          'ON CONFLICT(endpoint) DO UPDATE SET title = excluded.title, body = excluded.body, updated_at = excluded.updated_at'
+      ).bind(endpoint, msg?.title ?? 'Lift', msg?.body ?? 'Back to your workout', Date.now()).run()
+    } catch { /* ignore */ }
+    try { await sendPush(sub, this.env) } catch { /* push endpoint may be gone */ }
+  }
 }
 
 // ── CORS ──────────────────────────────────────────────────────────────
@@ -128,6 +243,53 @@ export default {
 
 async function handleApi(request: Request, env: Env, url: URL, origin: string | null): Promise<Response> {
   const path = url.pathname.replace('/api', '')
+
+  // ── Push: schedule / cancel a backgrounded reminder ───────────────
+  // One Durable Object per (endpoint + kind) so the rest-end and the
+  // 2-minute reminders are independent and don't cancel each other.
+  if (path === '/push/schedule' && request.method === 'POST') {
+    const body = (await readJson(request)) as {
+      subscription?: { endpoint?: string }
+      fireAt?: number
+      title?: string
+      body?: string
+      kind?: string
+    } | null
+    const endpoint = body?.subscription?.endpoint
+    if (!body || !isStr(endpoint)) return err('Invalid subscription', origin)
+    const kind = body.kind === 'set' ? 'set' : 'rest'
+    const stub = env.REMINDER.get(env.REMINDER.idFromName(`${endpoint}:${kind}`))
+    await stub.fetch('https://do/schedule', {
+      method: 'POST',
+      body: JSON.stringify({
+        subscription: body.subscription,
+        endpoint,
+        fireAt: body.fireAt,
+        title: body.title ?? 'Lift',
+        body: body.body ?? 'Back to your workout',
+      }),
+    })
+    return json({ ok: true }, origin)
+  }
+
+  if (path === '/push/cancel' && request.method === 'POST') {
+    const body = (await readJson(request)) as { endpoint?: string; kind?: string } | null
+    const endpoint = body?.endpoint
+    if (!body || !isStr(endpoint)) return err('Invalid endpoint', origin)
+    const kind = body.kind === 'set' ? 'set' : 'rest'
+    const stub = env.REMINDER.get(env.REMINDER.idFromName(`${endpoint}:${kind}`))
+    await stub.fetch('https://do/cancel', { method: 'POST' })
+    return json({ ok: true }, origin)
+  }
+
+  // GET /api/push/pending?endpoint=… — the SW fetches the text to show
+  if (path === '/push/pending' && request.method === 'GET') {
+    const endpoint = url.searchParams.get('endpoint')
+    if (!endpoint) return json({ title: 'Lift', body: 'Back to your workout' }, origin)
+    const row = await env.DB.prepare('SELECT title, body FROM push_pending WHERE endpoint = ?')
+      .bind(endpoint).first<{ title: string; body: string }>()
+    return json(row ?? { title: 'Lift', body: 'Back to your workout' }, origin)
+  }
 
   // ── POST /api/sync/create ─────────────────────────────────────────
   if (path === '/sync/create' && request.method === 'POST') {

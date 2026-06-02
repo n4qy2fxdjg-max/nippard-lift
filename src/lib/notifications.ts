@@ -1,73 +1,32 @@
 /**
- * Local notification helpers for workout events.
- * Uses the browser Notification API — no server or push subscription needed.
- *
- * NOTE on reliability: these are best-effort. They only fire while the JS
- * timer is still alive, and iOS suspends timers shortly after a PWA is
- * backgrounded — exactly when a background notification would matter most.
- * So the reliable path is the in-app rest timer + screen wake lock (see
- * ActiveWorkout); these notifications are a bonus for foreground/desktop/Android.
- * Truly reliable backgrounded timing would require the Push API + a push
- * server delivering via APNs (out of scope for now).
+ * Workout reminders, delivered via background web push so they fire even when
+ * the app is closed or the screen is locked (see ./push.ts for why setTimeout
+ * can't do this on iOS). These wrappers keep the call sites in ActiveWorkout
+ * unchanged.
  */
+import { requestNotificationPermission as requestPerm, scheduleReminder, cancelReminder } from './push'
 
-export async function requestNotificationPermission(): Promise<boolean> {
-  if (!('Notification' in window)) return false
-  if (Notification.permission === 'granted') return true
-  if (Notification.permission === 'denied') return false
-  const result = await Notification.requestPermission()
-  return result === 'granted'
-}
+export const requestNotificationPermission = requestPerm
 
-export function canNotify(): boolean {
-  return 'Notification' in window && Notification.permission === 'granted'
-}
-
-let restDoneTimer: ReturnType<typeof setTimeout> | null = null
-let setReminderTimer: ReturnType<typeof setTimeout> | null = null
-
-/** Schedule a "rest done" notification after `seconds`. Call clearRestTimer() if user skips. */
+/** Notify when the rest period ends. */
 export function scheduleRestDoneNotification(seconds: number) {
-  clearRestTimer()
-  if (!canNotify()) return
-  restDoneTimer = setTimeout(() => {
-    // Only show if page is hidden (in-app timer handles foreground)
-    if (document.visibilityState === 'hidden') {
-      new Notification('⏱ Rest Complete', {
-        body: 'Time to hit your next set!',
-        icon: '/pwa-192.png',
-        badge: '/pwa-192.png',
-        silent: false,
-      })
-    }
-  }, seconds * 1000)
+  void scheduleReminder('rest', seconds, '⏱ Rest complete', 'Time for your next set')
 }
 
 export function clearRestTimer() {
-  if (restDoneTimer !== null) { clearTimeout(restDoneTimer); restDoneTimer = null }
+  void cancelReminder('rest')
 }
 
-/** Schedule a "don't forget to log" reminder after 2 minutes of no set logged. */
+/** Nudge after 2 minutes in the working-set screen without logging anything. */
 export function scheduleSetReminder() {
-  clearSetReminder()
-  if (!canNotify()) return
-  setReminderTimer = setTimeout(() => {
-    if (document.visibilityState === 'hidden') {
-      new Notification('🏋️ Still going?', {
-        body: "Don't forget to log your set!",
-        icon: '/pwa-192.png',
-        badge: '/pwa-192.png',
-        silent: true,
-      })
-    }
-  }, 2 * 60 * 1000)
+  void scheduleReminder('set', 2 * 60, '🏋️ Still going?', "Don't forget to log your set")
 }
 
 export function clearSetReminder() {
-  if (setReminderTimer !== null) { clearTimeout(setReminderTimer); setReminderTimer = null }
+  void cancelReminder('set')
 }
 
 export function clearAllNotificationTimers() {
-  clearRestTimer()
-  clearSetReminder()
+  void cancelReminder('rest')
+  void cancelReminder('set')
 }
