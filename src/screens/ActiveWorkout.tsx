@@ -510,7 +510,7 @@ export default function ActiveWorkout() {
               </div>
 
               {/* RPE selector — optional, tap a chip to log effort */}
-              <div>
+              <div style={{ marginBottom: 20 }}>
                 <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   RPE <span style={{ fontWeight: 400, letterSpacing: 0, textTransform: 'none' }}>(optional)</span>
                 </p>
