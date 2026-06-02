@@ -52,6 +52,7 @@ export default function ActiveWorkout() {
     activeSession,
     markSetComplete,
     completeWarmupSet,
+    undoWarmupSet,
     undoLastSet,
     addTargetSet,
     removeTargetSet,
@@ -322,7 +323,7 @@ export default function ActiveWorkout() {
               </div>
 
               {/* Warmup set circles */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, flexWrap: 'wrap' }}>
                 {warmupSets.map((ws, i) => {
                   const done = ws.completed || i < warmupSetIdx
                   const active = i === warmupSetIdx
@@ -345,6 +346,26 @@ export default function ActiveWorkout() {
                     </div>
                   )
                 })}
+
+                {/* Undo last warm-up set */}
+                {warmupSetIdx > 0 && (
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => { hapticLight(); undoWarmupSet() }}
+                    style={{
+                      background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)',
+                      borderRadius: 12, padding: '6px 10px', fontSize: 11, color: '#FF453A',
+                      cursor: 'pointer', flexShrink: 0, fontFamily: '"Outfit", system-ui, sans-serif',
+                      display: 'flex', alignItems: 'center', gap: 4, WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 7h11a5 5 0 010 10H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M6 4l-3 3 3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Undo
+                  </motion.button>
+                )}
               </div>
 
               {/* Warmup weight (editable) + reps */}

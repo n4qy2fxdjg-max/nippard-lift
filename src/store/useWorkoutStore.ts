@@ -36,6 +36,7 @@ interface WorkoutStore {
   startSession: (planId: string, planName: string, sessionExercises: SessionExercise[]) => void
   markSetComplete: (reps: number, rpe?: number) => void
   completeWarmupSet: () => void
+  undoWarmupSet: () => void
   undoLastSet: () => void
   addTargetSet: () => void
   removeTargetSet: () => void
@@ -56,7 +57,23 @@ export const useWorkoutStore = create<WorkoutStore>()(
       logs: [],
 
       startSession: (planId, planName, sessionExercises) => {
-        const firstEx = sessionExercises[0]
+        // Pre-fill each exercise with the weight used last time (most recent
+        // logged session for that exercise), falling back to the plan weight.
+        // Warm-up ramps are recomputed from the resolved working weight.
+        const history = useLibraryStore.getState().weightHistory
+        const exercises = sessionExercises.map((ex) => {
+          const entries = history[ex.exerciseId]
+          const last = entries && entries.length > 0 ? entries[entries.length - 1].weight : undefined
+          if (last == null || last === ex.currentWeight) return ex
+          const warm = buildWarmupSets(last, ex.exerciseId)
+          return {
+            ...ex,
+            currentWeight: last,
+            warmupSets: warm.length > 0 ? warm : ex.warmupSets,
+          }
+        })
+
+        const firstEx = exercises[0]
         const hasWarmup = firstEx && (firstEx.warmupSets?.length ?? 0) > 0
         set({
           activeSession: {
@@ -64,7 +81,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
             planId,
             planName,
             startedAt: Date.now(),
-            exercises: sessionExercises,
+            exercises,
             currentExIdx: 0,
             currentSetIdx: 0,
             phase: hasWarmup ? 'warmup' : 'exercise',
@@ -102,6 +119,21 @@ export const useWorkoutStore = create<WorkoutStore>()(
           )
           set({ activeSession: { ...session, exercises: updatedExercises, warmupSetIdx: nextIdx } })
         }
+      },
+
+      // Step back one warm-up set (re-marks it incomplete). No-op on the first set.
+      undoWarmupSet: () => {
+        const session = get().activeSession
+        if (!session || session.phase !== 'warmup' || session.warmupSetIdx === 0) return
+        const prevIdx = session.warmupSetIdx - 1
+        const ex = session.exercises[session.currentExIdx]
+        const warmupSets = (ex.warmupSets ?? []).map((w, i) =>
+          i === prevIdx ? { ...w, completed: false } : w
+        )
+        const updatedExercises = session.exercises.map((e, i) =>
+          i === session.currentExIdx ? { ...e, warmupSets } : e
+        )
+        set({ activeSession: { ...session, exercises: updatedExercises, warmupSetIdx: prevIdx } })
       },
 
       markSetComplete: (reps, rpe) => {
