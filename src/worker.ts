@@ -231,12 +231,22 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
           ).bind(code, JSON.stringify(weightHistory), nowIso)
         )
       }
-      if (bwArr.length > 0) {
+      // Per-entry upsert keyed by date — a weigh-in on one device can no longer
+      // overwrite the whole history written by another.
+      for (const entry of bwArr) {
+        if (typeof entry !== 'object' || entry === null) continue
+        const date = (entry as { date?: unknown }).date
+        if (!isStr(date)) continue
+        const updatedMs = Number((entry as { updatedAt?: unknown }).updatedAt) || 0
+        const deleted = (entry as { deleted?: unknown }).deleted ? 1 : 0
         stmts.push(
           env.DB.prepare(
-            'INSERT INTO bodyweight (sync_code, data, updated_at) VALUES (?, ?, ?) ' +
-              'ON CONFLICT(sync_code) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at'
-          ).bind(code, JSON.stringify(bwArr), nowIso)
+            'INSERT INTO bodyweight_entries (sync_code, date, data, updated_ms, deleted) ' +
+              'VALUES (?, ?, ?, ?, ?) ' +
+              'ON CONFLICT(sync_code, date) DO UPDATE SET data = excluded.data, ' +
+              'updated_ms = excluded.updated_ms, deleted = excluded.deleted ' +
+              'WHERE excluded.updated_ms > bodyweight_entries.updated_ms'
+          ).bind(code, date, JSON.stringify(entry), updatedMs, deleted)
         )
       }
 
@@ -247,10 +257,11 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
 
     // ── pull: return everything, incl. tombstones so deletions propagate ──
     if (action === 'pull' && request.method === 'GET') {
-      const [logsResult, plansResult, historyResult, bwResult] = await env.DB.batch([
+      const [logsResult, plansResult, historyResult, bwEntriesResult, bwBlobResult] = await env.DB.batch([
         env.DB.prepare('SELECT data FROM workout_logs WHERE sync_code = ? ORDER BY updated_ms DESC').bind(code),
         env.DB.prepare('SELECT data FROM custom_plans WHERE sync_code = ?').bind(code),
         env.DB.prepare('SELECT data FROM weight_history WHERE sync_code = ?').bind(code),
+        env.DB.prepare('SELECT data FROM bodyweight_entries WHERE sync_code = ? ORDER BY date').bind(code),
         env.DB.prepare('SELECT data FROM bodyweight WHERE sync_code = ?').bind(code),
       ])
 
@@ -261,8 +272,13 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
       const plans = parse(plansResult)
       const historyRow = historyResult.results?.[0] as { data: string } | undefined
       const weightHistory = historyRow ? JSON.parse(historyRow.data) : {}
-      const bwRow = bwResult.results?.[0] as { data: string } | undefined
-      const bodyweight = bwRow ? JSON.parse(bwRow.data) : []
+
+      // Union per-entry rows with any legacy blob; the client merges by date
+      // (last-write-wins on updatedAt), so duplicates resolve correctly.
+      const bwEntries = parse(bwEntriesResult)
+      const bwBlobRow = bwBlobResult.results?.[0] as { data: string } | undefined
+      const bwBlob = bwBlobRow ? JSON.parse(bwBlobRow.data) : []
+      const bodyweight = [...(Array.isArray(bwBlob) ? bwBlob : []), ...bwEntries]
 
       return json({ logs, plans, weightHistory, bodyweight }, origin)
     }

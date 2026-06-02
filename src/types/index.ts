@@ -136,4 +136,6 @@ export interface BodyweightEntry {
   weightKg: number
   /** ms epoch of last edit — used for last-write-wins sync (optional for legacy entries) */
   updatedAt?: number
+  /** tombstone, so a removed weigh-in propagates instead of being restored on pull */
+  deleted?: boolean
 }

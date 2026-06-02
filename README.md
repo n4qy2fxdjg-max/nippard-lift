@@ -48,10 +48,15 @@ Apply any pending DB migrations first, then deploy:
 
 ```bash
 npx wrangler d1 execute lift-db --file=migrations/0001_lww.sql --remote
-npm run deploy          # builds + wrangler deploy
+npx wrangler d1 execute lift-db --file=migrations/0002_bodyweight_entries.sql --remote
+npm run deploy          # builds, then deploys Workers + mirrors to Pages
 ```
 
-CI runs `wrangler deploy` automatically on push to `main`. PRs trigger build + typecheck only (no deploy, so forked PRs don't fail on missing secrets).
+`npm run deploy` ships the same build to both the Workers URL and the legacy
+`nippard-lift` Pages project (both bound to the shared `lift-db`), so neither
+front door drifts onto stale sync logic. Use `npm run deploy:worker` for
+Workers only. CI does the same pair on push to `main`; PRs run build + typecheck
+only (no deploy, so forked PRs don't fail on missing secrets).
 
 ---
 

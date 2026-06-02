@@ -28,10 +28,21 @@ CREATE TABLE IF NOT EXISTS weight_history (
   updated_at TEXT NOT NULL
 );
 
+-- Legacy whole-blob bodyweight (kept for read-only transition; no longer written)
 CREATE TABLE IF NOT EXISTS bodyweight (
   sync_code TEXT PRIMARY KEY,
   data TEXT NOT NULL,
   updated_at TEXT NOT NULL
+);
+
+-- Per-entry bodyweight so weigh-ins on different devices can't clobber each other
+CREATE TABLE IF NOT EXISTS bodyweight_entries (
+  sync_code TEXT NOT NULL,
+  date TEXT NOT NULL,
+  data TEXT NOT NULL,
+  updated_ms INTEGER NOT NULL DEFAULT 0,
+  deleted INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (sync_code, date)
 );
 
 -- Basic per-IP fixed-window rate limiting
