@@ -1,8 +1,12 @@
 /**
  * Haptic feedback utility.
- * - Android: navigator.vibrate() (Web Vibration API)
- * - iOS PWA: Web Audio API trick — low-frequency triangle wave triggers Taptic Engine
- *   Must be called from a direct user interaction (tap/click) or iOS blocks the AudioContext.
+ * - Android / Chrome: navigator.vibrate() (Web Vibration API) — works.
+ * - iOS: there is NO reliable web haptics path. Safari ignores navigator.vibrate
+ *   entirely, and the Web Audio "low-frequency tone nudges the Taptic Engine"
+ *   trick below does NOT reliably fire it (at best a faint sound, usually
+ *   nothing). It's kept as harmless best-effort; do not rely on tactile
+ *   feedback on iOS. Must be called from a user gesture or iOS blocks the
+ *   AudioContext anyway.
  */
 
 let _ctx: AudioContext | null = null

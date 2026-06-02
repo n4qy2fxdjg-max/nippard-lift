@@ -34,7 +34,7 @@ interface WorkoutStore {
   activeSession: ActiveSession | null
   logs: WorkoutLog[]
   startSession: (planId: string, planName: string, sessionExercises: SessionExercise[]) => void
-  markSetComplete: (reps: number) => void
+  markSetComplete: (reps: number, rpe?: number) => void
   completeWarmupSet: () => void
   undoLastSet: () => void
   addTargetSet: () => void
@@ -104,7 +104,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         }
       },
 
-      markSetComplete: (reps) => {
+      markSetComplete: (reps, rpe) => {
         const session = get().activeSession
         if (!session || session.phase !== 'exercise') return
 
@@ -114,6 +114,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
           completed: true,
           weight: ex.currentWeight,
           reps,
+          rpe,
           timestamp: Date.now(),
         }
 
@@ -135,8 +136,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
 
         if (allSetsForEx) {
           const nextExIdx = session.currentExIdx + 1
-          const nextEx = session.exercises[nextExIdx]
-          const nextHasWarmup = (nextEx?.warmupSets?.length ?? 0) > 0
+          // Whether the next exercise needs a warm-up is re-derived in
+          // skipRest/tickRest when the rest period ends — no need to flag it here.
           set({
             activeSession: {
               ...session,
@@ -148,15 +149,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
               restRemaining: restSecs,
               timerStartAt: Date.now(),
               warmupSetIdx: 0,
-              // we'll switch to warmup after rest ends if next ex has warmup sets
-              // store a flag in a temp field — actually we handle it in skipRest/tickRest
             },
           })
-          // Store whether next exercise needs warmup — we check after rest
-          if (nextHasWarmup) {
-            // tag the session so we know to go to warmup after rest
-            get() // side effect: will be read in skipRest/tickRest
-          }
         } else {
           set({
             activeSession: {
@@ -300,12 +294,12 @@ export const useWorkoutStore = create<WorkoutStore>()(
             })
 
             const newE1rm = bestSet.weight * (1 + bestSet.reps / 30)
-            const prevBest = (prevHistory[ex.exerciseId] ?? []).reduce(
-              (max, h) => (h.e1rm > max ? h.e1rm : max),
-              0
-            )
+            const prior = prevHistory[ex.exerciseId] ?? []
+            const prevBest = prior.reduce((max, h) => (h.e1rm > max ? h.e1rm : max), 0)
 
-            if (newE1rm > prevBest) personalRecords.push(ex.exerciseId)
+            // Only a PR if there's prior history to beat — otherwise the first
+            // set on any exercise would always "PR" against a baseline of 0.
+            if (prior.length > 0 && newE1rm > prevBest) personalRecords.push(ex.exerciseId)
 
             recordSession(
               ex.exerciseId,
@@ -328,6 +322,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
           totalVolume: Math.round(totalVolume),
           exerciseResults,
           personalRecords,
+          updatedAt: Date.now(),
         }
 
         set((s) => ({ logs: [log, ...s.logs], activeSession: null }))
@@ -340,8 +335,14 @@ export const useWorkoutStore = create<WorkoutStore>()(
 
       abandonSession: () => set({ activeSession: null }),
 
+      // Soft-delete: tombstone the record (kept + synced) instead of removing it,
+      // so the deletion propagates to other devices instead of being resurrected.
       deleteLog: (id) => {
-        set((s) => ({ logs: s.logs.filter((l) => l.id !== id) }))
+        set((s) => ({
+          logs: s.logs.map((l) =>
+            l.id === id ? { ...l, deleted: true, updatedAt: Date.now() } : l
+          ),
+        }))
         import('./useSyncStore').then(({ useSyncStore }) => {
           useSyncStore.getState().pushSync().catch(() => {})
         })
@@ -349,9 +350,14 @@ export const useWorkoutStore = create<WorkoutStore>()(
 
       restoreLog: (log) => {
         set((s) => {
-          const next = [log, ...s.logs.filter((l) => l.id !== log.id)]
-          next.sort((a, b) => b.date.localeCompare(a.date))
-          return { logs: next }
+          const exists = s.logs.some((l) => l.id === log.id)
+          const logs = exists
+            ? s.logs.map((l) =>
+                l.id === log.id ? { ...l, deleted: false, updatedAt: Date.now() } : l
+              )
+            : [{ ...log, deleted: false, updatedAt: Date.now() }, ...s.logs]
+          logs.sort((a, b) => b.date.localeCompare(a.date))
+          return { logs }
         })
         import('./useSyncStore').then(({ useSyncStore }) => {
           useSyncStore.getState().pushSync().catch(() => {})
@@ -371,6 +377,13 @@ export const useWorkoutStore = create<WorkoutStore>()(
         // Discard stale sessions (older than 6 h)
         if (state.activeSession && Date.now() - state.activeSession.startedAt > 6 * 60 * 60 * 1000) {
           state.activeSession = null
+        }
+        // Prune tombstones older than 90 days to bound storage growth
+        const NINETY_DAYS = 90 * 24 * 60 * 60 * 1000
+        if (state.logs?.length) {
+          state.logs = state.logs.filter(
+            (l) => !(l.deleted && l.updatedAt && Date.now() - l.updatedAt > NINETY_DAYS)
+          )
         }
       },
     }

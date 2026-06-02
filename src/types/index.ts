@@ -58,6 +58,10 @@ export interface CustomPlan {
   name: string
   createdAt: string
   items: BuilderItem[]
+  /** ms epoch of last mutation — used for last-write-wins sync */
+  updatedAt: number
+  /** tombstone: kept locally + synced so deletions propagate across devices */
+  deleted?: boolean
 }
 
 // Workout session types
@@ -111,6 +115,10 @@ export interface WorkoutLog {
     sets: SetResult[]
   }>
   personalRecords: string[]
+  /** ms epoch of last mutation — used for last-write-wins sync */
+  updatedAt: number
+  /** tombstone: kept locally + synced so deletions propagate across devices */
+  deleted?: boolean
 }
 
 // Library store types
@@ -126,4 +134,6 @@ export interface WeightHistoryEntry {
 export interface BodyweightEntry {
   date: string // yyyy-MM-dd
   weightKg: number
+  /** ms epoch of last edit — used for last-write-wins sync (optional for legacy entries) */
+  updatedAt?: number
 }

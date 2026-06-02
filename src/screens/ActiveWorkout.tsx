@@ -66,6 +66,7 @@ export default function ActiveWorkout() {
   const [elapsed, setElapsed] = useState(0)
   const [showAbandon, setShowAbandon] = useState(false)
   const [reps, setReps] = useState(8)
+  const [rpe, setRpe] = useState<number | undefined>(undefined)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
@@ -141,6 +142,7 @@ export default function ActiveWorkout() {
       const ex = getExerciseById(currentEx.exerciseId)
       setReps(ex ? parseInt(ex.defaultReps.split('–')[0]) : 8)
     }
+    setRpe(undefined) // reset RPE when exercise changes
   }, [activeSession?.currentExIdx])
 
   if (!activeSession) return null
@@ -176,7 +178,8 @@ export default function ActiveWorkout() {
   function handleMarkSet() {
     hapticMedium()
     clearSetReminder()
-    markSetComplete(reps)
+    markSetComplete(reps, rpe)
+    setRpe(undefined) // reset after logging
   }
 
   function handleCompleteWarmup() {
@@ -503,6 +506,38 @@ export default function ActiveWorkout() {
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* RPE selector — optional, tap a chip to log effort */}
+              <div>
+                <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                  RPE <span style={{ fontWeight: 400, letterSpacing: 0, textTransform: 'none' }}>(optional)</span>
+                </p>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  {[6, 7, 7.5, 8, 8.5, 9, 9.5, 10].map((v) => {
+                    const sel = rpe === v
+                    return (
+                      <motion.button
+                        key={v}
+                        whileTap={{ scale: 0.88 }}
+                        onClick={() => { hapticLight(); setRpe(sel ? undefined : v) }}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: 10,
+                          border: sel ? '1px solid rgba(200,169,110,0.5)' : '1px solid rgba(255,255,255,0.07)',
+                          background: sel ? 'rgba(200,169,110,0.15)' : '#161616',
+                          color: sel ? '#C8A96E' : '#8A8680',
+                          fontSize: 13, fontWeight: sel ? 700 : 400,
+                          fontFamily: '"Outfit", system-ui, sans-serif',
+                          cursor: 'pointer',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
+                      >
+                        {v}
+                      </motion.button>
+                    )
+                  })}
                 </div>
               </div>
 

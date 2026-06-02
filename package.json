@@ -1,12 +1,12 @@
 {
-  "name": "workout-app",
+  "name": "lift",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && npx esbuild src/worker.ts --bundle --format=esm --outfile=dist/_worker.js --platform=neutral",
-    "deploy": "npm run build && npx wrangler pages deploy dist --project-name nippard-lift --branch main",
+    "deploy": "npm run build && npx wrangler deploy",
     "lint": "eslint .",
     "preview": "vite preview"
   },

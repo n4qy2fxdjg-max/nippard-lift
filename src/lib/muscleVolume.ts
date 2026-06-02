@@ -53,6 +53,7 @@ export function trailingWeekSets(logs: WorkoutLog[], days = 7): Record<string, n
   for (const t of MUSCLE_TARGETS) counts[t.key] = 0
 
   for (const log of logs) {
+    if (log.deleted) continue // skip tombstoned workouts
     const d = parseISO(log.date)
     if (isAfter(cutoff, d)) continue // log is before the trailing window
     for (const ex of log.exerciseResults) {

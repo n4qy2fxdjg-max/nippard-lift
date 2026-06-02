@@ -13,6 +13,7 @@ interface BuilderStore {
   currentItems: BuilderItem[]
   addPlan: (plan: CustomPlan) => void
   deletePlan: (id: string) => void
+  restorePlan: (plan: CustomPlan) => void
   updatePlan: (id: string, items: BuilderItem[]) => void
   reorderPlans: (plans: CustomPlan[]) => void
   setCurrentItems: (items: BuilderItem[]) => void
@@ -25,19 +26,41 @@ export const useBuilderStore = create<BuilderStore>()(
       currentItems: [],
 
       addPlan: (plan) => {
-        set((s) => ({ plans: [plan, ...s.plans] }))
+        set((s) => ({ plans: [{ ...plan, updatedAt: Date.now(), deleted: false }, ...s.plans] }))
         autoSync()
       },
 
+      // Soft-delete so the deletion propagates instead of being resurrected on the next pull.
       deletePlan: (id) => {
-        set((s) => ({ plans: s.plans.filter((p) => p.id !== id) }))
+        set((s) => ({
+          plans: s.plans.map((p) =>
+            p.id === id ? { ...p, deleted: true, updatedAt: Date.now() } : p
+          ),
+        }))
         autoSync()
       },
 
-      updatePlan: (id, items) =>
+      restorePlan: (plan) => {
+        set((s) => {
+          const exists = s.plans.some((p) => p.id === plan.id)
+          const plans = exists
+            ? s.plans.map((p) =>
+                p.id === plan.id ? { ...p, deleted: false, updatedAt: Date.now() } : p
+              )
+            : [{ ...plan, deleted: false, updatedAt: Date.now() }, ...s.plans]
+          return { plans }
+        })
+        autoSync()
+      },
+
+      updatePlan: (id, items) => {
         set((s) => ({
-          plans: s.plans.map((p) => (p.id === id ? { ...p, items } : p)),
-        })),
+          plans: s.plans.map((p) =>
+            p.id === id ? { ...p, items, updatedAt: Date.now() } : p
+          ),
+        }))
+        autoSync()
+      },
 
       reorderPlans: (plans) => {
         set({ plans })

@@ -13,7 +13,7 @@ const LB_TO_KG = 1 / KG_TO_LB
 export default function Settings() {
   const { userName, unit, setUserName, setUnit, bodyweightLog, logBodyweight } = useAppStore()
   const { syncCode, lastSyncAt, isSyncing, syncError, createSync, verifyAndJoin, pullSync, clearSync, clearError } = useSyncStore()
-  const logs = useWorkoutStore((s) => s.logs)
+  const logs = useWorkoutStore((s) => s.logs).filter((l) => !l.deleted)
 
   // Profile form — uncontrolled input avoids iOS Safari dropping controlled values
   const nameRef = useRef<HTMLInputElement>(null)
@@ -332,8 +332,8 @@ export default function Settings() {
                 <input
                   value={codeInput}
                   onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); clearError() }}
-                  placeholder="e.g. ZAI-482"
-                  maxLength={7}
+                  placeholder="e.g. ZAI4-K29P"
+                  maxLength={9}
                   style={{
                     ...inputStyle,
                     fontSize: 26, fontWeight: 700,

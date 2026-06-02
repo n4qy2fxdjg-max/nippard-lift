@@ -3,22 +3,40 @@ import { persist } from 'zustand/middleware'
 import { useWorkoutStore } from './useWorkoutStore'
 import { useBuilderStore } from './useBuilderStore'
 import { useLibraryStore } from './useLibraryStore'
-import type { WorkoutLog, CustomPlan } from '../types'
+import { useAppStore } from './useAppStore'
+import type { WorkoutLog, CustomPlan, BodyweightEntry } from '../types'
 
 // API base — always /api (Vite proxies to :8787 in dev, Worker serves it in prod)
 const API = '/api'
 
-// ── Merge helpers ────────────────────────────────────────────────────
+// ── Merge helpers — record-level last-write-wins by updatedAt ─────────
+// Tombstones (deleted) are carried through so a delete on one device wins
+// over a stale copy on another, instead of being resurrected on the next pull.
 function mergeLogs(a: WorkoutLog[], b: WorkoutLog[]): WorkoutLog[] {
   const map = new Map(a.map((l) => [l.id, l]))
-  b.forEach((l) => { if (!map.has(l.id)) map.set(l.id, l) })
+  for (const l of b) {
+    const cur = map.get(l.id)
+    if (!cur || (l.updatedAt ?? 0) > (cur.updatedAt ?? 0)) map.set(l.id, l)
+  }
   return Array.from(map.values()).sort((x, y) => y.date.localeCompare(x.date))
 }
 
 function mergePlans(a: CustomPlan[], b: CustomPlan[]): CustomPlan[] {
   const map = new Map(a.map((p) => [p.id, p]))
-  b.forEach((p) => { if (!map.has(p.id)) map.set(p.id, p) })
+  for (const p of b) {
+    const cur = map.get(p.id)
+    if (!cur || (p.updatedAt ?? 0) > (cur.updatedAt ?? 0)) map.set(p.id, p)
+  }
   return Array.from(map.values()).sort((x, y) => y.createdAt.localeCompare(x.createdAt))
+}
+
+function mergeBodyweight(a: BodyweightEntry[], b: BodyweightEntry[]): BodyweightEntry[] {
+  const map = new Map(a.map((e) => [e.date, e]))
+  for (const e of b) {
+    const cur = map.get(e.date)
+    if (!cur || (e.updatedAt ?? 0) > (cur.updatedAt ?? 0)) map.set(e.date, e)
+  }
+  return Array.from(map.values()).sort((x, y) => x.date.localeCompare(y.date))
 }
 
 function mergeHistory(
@@ -116,16 +134,17 @@ export const useSyncStore = create<SyncStore>()(
           const logs = useWorkoutStore.getState().logs
           const plans = useBuilderStore.getState().plans
           const weightHistory = useLibraryStore.getState().weightHistory
+          const bodyweight = useAppStore.getState().bodyweightLog
 
           const res = await fetch(`${API}/sync/${syncCode}/push`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ logs, plans, weightHistory }),
+            body: JSON.stringify({ logs, plans, weightHistory, bodyweight }),
           })
-          if (!res.ok) throw new Error('Push failed')
-          set({ lastSyncAt: Date.now(), isSyncing: false })
-        } catch {
-          set({ isSyncing: false })
+          if (!res.ok) throw new Error(`Sync upload failed (${res.status})`)
+          set({ lastSyncAt: Date.now(), isSyncing: false, syncError: null })
+        } catch (e: any) {
+          set({ isSyncing: false, syncError: e?.message ?? 'Sync upload failed' })
         }
       },
 
@@ -136,12 +155,13 @@ export const useSyncStore = create<SyncStore>()(
         set({ isSyncing: true })
         try {
           const res = await fetch(`${API}/sync/${syncCode}/pull`)
-          if (!res.ok) { set({ isSyncing: false }); return }
+          if (!res.ok) throw new Error(`Sync download failed (${res.status})`)
 
           const remote = await res.json() as {
             logs: WorkoutLog[]
             plans: CustomPlan[]
             weightHistory: Record<string, any[]>
+            bodyweight?: BodyweightEntry[]
           }
 
           const mergedLogs = mergeLogs(useWorkoutStore.getState().logs, remote.logs ?? [])
@@ -156,9 +176,15 @@ export const useSyncStore = create<SyncStore>()(
           )
           useLibraryStore.setState({ weightHistory: mergedHistory })
 
-          set({ lastSyncAt: Date.now(), isSyncing: false })
-        } catch {
-          set({ isSyncing: false })
+          const mergedBw = mergeBodyweight(
+            useAppStore.getState().bodyweightLog ?? [],
+            remote.bodyweight ?? []
+          )
+          useAppStore.setState({ bodyweightLog: mergedBw })
+
+          set({ lastSyncAt: Date.now(), isSyncing: false, syncError: null })
+        } catch (e: any) {
+          set({ isSyncing: false, syncError: e?.message ?? 'Sync download failed' })
         }
       },
 

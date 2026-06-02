@@ -8,6 +8,7 @@ import { exercises as exerciseList } from '../data/exercises'
 import type { WorkoutLog } from '../types'
 import HeatmapGrid from '../components/HeatmapGrid'
 import LineChart from '../components/LineChart'
+import { activeLogs } from '../lib/active'
 import { format, parseISO, subDays, startOfDay, isAfter } from 'date-fns'
 
 const KG_TO_LB = 2.20462
@@ -31,12 +32,15 @@ const itemVariants = {
 }
 
 export default function Progress() {
-  const logs = useWorkoutStore((s) => s.logs)
+  const allLogs = useWorkoutStore((s) => s.logs)
   const deleteLog = useWorkoutStore((s) => s.deleteLog)
   const restoreLog = useWorkoutStore((s) => s.restoreLog)
   const showToast = useToastStore((s) => s.show)
   const unit = useAppStore((s) => s.unit)
   const bodyweightLog = useAppStore((s) => s.bodyweightLog)
+
+  // Exclude tombstoned workouts from history, stats, and the heatmap
+  const logs = useMemo(() => activeLogs(allLogs), [allLogs])
 
   function handleDeleteLog(log: WorkoutLog) {
     deleteLog(log.id)
@@ -448,7 +452,7 @@ export default function Progress() {
                                               borderRadius: 12, padding: '2px 7px',
                                             }}
                                           >
-                                            {w} × {set.reps}
+                                            {w} × {set.reps}{set.rpe != null ? ` @${set.rpe}` : ''}
                                           </span>
                                         )
                                       })}

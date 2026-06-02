@@ -13,6 +13,7 @@ import StreakChip from '../components/StreakChip'
 import ProgramDetailSheet from '../components/ProgramDetailSheet'
 import WorkoutDetailSheet from '../components/WorkoutDetailSheet'
 import MuscleVolumeTracker from '../components/MuscleVolumeTracker'
+import { activeLogs, activePlans } from '../lib/active'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
 import type { Program, CustomPlan, WorkoutLog } from '../types'
 
@@ -51,22 +52,26 @@ function computeStreak(logs: { date: string }[]): number {
 export default function Home() {
   const userName = useAppStore((s) => s.userName)
   const unit = useAppStore((s) => s.unit)
-  const logs = useWorkoutStore((s) => s.logs)
-  const plans = useBuilderStore((s) => s.plans)
+  const allLogs = useWorkoutStore((s) => s.logs)
+  const allPlans = useBuilderStore((s) => s.plans)
   const reorderPlans = useBuilderStore((s) => s.reorderPlans)
   const deletePlan = useBuilderStore((s) => s.deletePlan)
+  const restorePlan = useBuilderStore((s) => s.restorePlan)
   const startSession = useWorkoutStore((s) => s.startSession)
   const showToast = useToastStore((s) => s.show)
   const navigate = useNavigate()
 
+  // Exclude tombstoned records from everything the UI shows
+  const logs = useMemo(() => activeLogs(allLogs), [allLogs])
+  const plans = useMemo(() => activePlans(allPlans), [allPlans])
+
   function handleDeletePlan(plan: CustomPlan) {
-    const snapshot = plans // exact order before deletion
     deletePlan(plan.id)
     setExpandedPlanId(null)
     showToast({
       message: 'Plan deleted',
       actionLabel: 'Undo',
-      onAction: () => reorderPlans(snapshot),
+      onAction: () => restorePlan(plan),
     })
   }
 
@@ -274,7 +279,7 @@ export default function Home() {
             <Reorder.Group
               axis="y"
               values={plans}
-              onReorder={reorderPlans}
+              onReorder={(reordered) => reorderPlans([...reordered, ...allPlans.filter((p) => p.deleted)])}
               style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}
             >
               {plans.map((plan) => (

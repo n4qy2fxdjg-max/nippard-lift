@@ -102,7 +102,7 @@ export default function Builder() {
 
   function savePlan() {
     if (!canSave) return
-    addPlan({ id: nanoid(), name: planName.trim(), createdAt: new Date().toISOString(), items })
+    addPlan({ id: nanoid(), name: planName.trim(), createdAt: new Date().toISOString(), items, updatedAt: Date.now() })
     setSaved(true)
     setTimeout(() => {
       setSaved(false)

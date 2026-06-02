@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# Lift
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Jeff Nippard-style progressive overload workout tracker, built as a PWA with offline-first storage and optional cross-device sync.
 
-Currently, two official plugins are available:
+**Live:** https://lift.n4qy2fxdjg.workers.dev
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **100 exercises** with Jeff Nippard form cues, grouped by muscle (Chest → Back → Shoulders → Arms → Lower → Core)
+- **Automatic warmup sets** for compound lifts (45 / 65 / 80 % of working weight, rounded to nearest plate)
+- **Progressive overload tracking** — e1RM chart per exercise (Epley formula), PR detection on completion
+- **Weekly muscle-volume tracker** — trailing 7-day working sets vs. intermediate MEV–MRV targets
+- **Custom plans** — drag-to-reorder, add/swap exercises mid-session
+- **Featured programmes** — Push / Pull / Legs / Upper / Lower / Full Body
+- **Cross-device sync** via a 9-character code (Workers + D1); last-write-wins per record, tombstone deletes that actually propagate
+- **Session recovery** — active session persisted to localStorage; reopening the app mid-workout picks up where you left off (sessions > 6 h auto-discarded)
+- **Screen wake lock** held for the full workout, re-acquired on visibility change
+- **Bodyweight log** with chart on the Progress tab
+- **PWA** — installable, works offline, iOS home-screen icon
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Layer | Choice |
+|---|---|
+| UI | React 19 + TypeScript, Framer Motion, Zustand |
+| Routing | React Router v7 |
+| Build | Vite 8 + vite-plugin-pwa |
+| Backend | Cloudflare Workers + D1 (SQLite) |
+| Fonts | DM Serif Display (headings), Outfit (body) |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Development
+
+```bash
+npm install
+npx wrangler dev        # starts Worker on :8787 (D1 bound)
+npm run dev             # Vite on :5173, proxies /api → :8787
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Deploy
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Apply any pending DB migrations first, then deploy:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npx wrangler d1 execute lift-db --file=migrations/0001_lww.sql --remote
+npm run deploy          # builds + wrangler deploy
 ```
+
+CI runs `wrangler deploy` automatically on push to `main`. PRs trigger build + typecheck only (no deploy, so forked PRs don't fail on missing secrets).
+
+---
+
+## Sync design
+
+Each device shares a **9-character code** (`XXXX-XXXX`, ~850 billion combinations, CSPRNG). Records carry an `updatedAt` ms timestamp and a `deleted` tombstone flag. The server upserts by `id` and only overwrites a row when the incoming `updatedAt` is newer — so the last writer wins and deletions propagate instead of resurrecting on the next pull.
+
+The sync code is the only credential; guard it like a password.

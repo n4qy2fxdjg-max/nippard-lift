@@ -29,7 +29,7 @@ export const useAppStore = create<AppStore>()(
         set((s) => {
           const today = format(new Date(), 'yyyy-MM-dd')
           const rest = (s.bodyweightLog ?? []).filter((e) => e.date !== today)
-          const next = [...rest, { date: today, weightKg }]
+          const next = [...rest, { date: today, weightKg, updatedAt: Date.now() }]
           next.sort((a, b) => a.date.localeCompare(b.date))
           return { bodyweightLog: next }
         })

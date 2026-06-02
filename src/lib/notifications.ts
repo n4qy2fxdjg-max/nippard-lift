@@ -1,7 +1,14 @@
 /**
  * Local notification helpers for workout events.
  * Uses the browser Notification API — no server or push subscription needed.
- * Notifications only show when the app is backgrounded (iOS hides them in foreground).
+ *
+ * NOTE on reliability: these are best-effort. They only fire while the JS
+ * timer is still alive, and iOS suspends timers shortly after a PWA is
+ * backgrounded — exactly when a background notification would matter most.
+ * So the reliable path is the in-app rest timer + screen wake lock (see
+ * ActiveWorkout); these notifications are a bonus for foreground/desktop/Android.
+ * Truly reliable backgrounded timing would require the Push API + a push
+ * server delivering via APNs (out of scope for now).
  */
 
 export async function requestNotificationPermission(): Promise<boolean> {
@@ -28,8 +35,8 @@ export function scheduleRestDoneNotification(seconds: number) {
     if (document.visibilityState === 'hidden') {
       new Notification('⏱ Rest Complete', {
         body: 'Time to hit your next set!',
-        icon: '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
+        icon: '/pwa-192.png',
+        badge: '/pwa-192.png',
         silent: false,
       })
     }
@@ -48,8 +55,8 @@ export function scheduleSetReminder() {
     if (document.visibilityState === 'hidden') {
       new Notification('🏋️ Still going?', {
         body: "Don't forget to log your set!",
-        icon: '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
+        icon: '/pwa-192.png',
+        badge: '/pwa-192.png',
         silent: true,
       })
     }
