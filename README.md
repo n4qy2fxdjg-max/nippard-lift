@@ -49,8 +49,19 @@ Apply any pending DB migrations first, then deploy:
 ```bash
 npx wrangler d1 execute lift-db --file=migrations/0001_lww.sql --remote
 npx wrangler d1 execute lift-db --file=migrations/0002_bodyweight_entries.sql --remote
+npx wrangler d1 execute lift-db --file=migrations/0003_push.sql --remote
 npm run deploy          # builds, then deploys Workers + mirrors to Pages
 ```
+
+Background push also needs the VAPID private key set once as a Worker secret:
+
+```bash
+printf '%s' '<VAPID_PRIVATE_JWK json>' | npx wrangler secret put VAPID_PRIVATE_JWK
+```
+
+The public key + subject live in `wrangler.jsonc` vars; the client's copy of the
+public key is in `src/lib/push.ts`. Push runs on the Workers deployment (it owns
+the Durable Object binding + secret); the Pages mirror serves the app and sync.
 
 `npm run deploy` ships the same build to both the Workers URL and the legacy
 `nippard-lift` Pages project (both bound to the shared `lift-db`), so neither
