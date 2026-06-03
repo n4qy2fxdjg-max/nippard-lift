@@ -15,6 +15,7 @@ import {
   clearSetReminder,
   clearAllNotificationTimers,
 } from '../lib/notifications'
+import { z } from '../lib/theme'
 
 const KG_TO_LB = 2.20462
 
@@ -200,7 +201,7 @@ export default function ActiveWorkout() {
         display: 'flex', flexDirection: 'column',
         paddingTop: 'max(30px, env(safe-area-inset-top))',
         paddingBottom: 'max(34px, env(safe-area-inset-bottom))',
-        zIndex: 200,
+        zIndex: z.fullscreen,
       }}
     >
       {/* Top bar */}
@@ -283,7 +284,7 @@ export default function ActiveWorkout() {
           {/* ── Rest ── */}
           {phase === 'rest' && (
             <motion.div key="rest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', justifyContent: 'center' }}>
-              <RestTimer remaining={restRemaining} total={restTotal} onSkip={handleSkipRest} />
+              <RestTimer remaining={restRemaining} total={restTotal} startAt={activeSession.timerStartAt} onSkip={handleSkipRest} />
             </motion.div>
           )}
 
@@ -624,7 +625,7 @@ export default function ActiveWorkout() {
               position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
               backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 300, padding: 24,
+              zIndex: z.dialog, padding: 24,
             }}
           >
             <motion.div

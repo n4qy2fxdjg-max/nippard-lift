@@ -1,16 +1,38 @@
+import { useEffect, useRef } from 'react'
+
 interface Props {
   remaining: number
   total: number
+  startAt: number
   onSkip: () => void
 }
 
-export default function RestTimer({ remaining, total, onSkip }: Props) {
-  const fraction = total > 0 ? remaining / total : 0
+export default function RestTimer({ remaining, total, startAt, onSkip }: Props) {
   const radius = 64
   const circumference = 2 * Math.PI * radius
-  const dashOffset = circumference * (1 - fraction)
+  const circleRef = useRef<SVGCircleElement>(null)
   const mins = Math.floor(remaining / 60)
   const secs = remaining % 60
+
+  // Drive the ring continuously off the wall clock via rAF so it stays perfectly
+  // in sync with the once-per-second digits. The old approach eased a 1s CSS
+  // transition toward an integer that stepped every second, so the ring always
+  // trailed the number by up to a full second.
+  useEffect(() => {
+    let raf: number
+    const update = () => {
+      const elapsed = (Date.now() - startAt) / 1000
+      const frac = total > 0 ? Math.max(0, Math.min(1, (total - elapsed) / total)) : 0
+      if (circleRef.current) {
+        circleRef.current.style.strokeDashoffset = String(circumference * (1 - frac))
+      }
+      raf = requestAnimationFrame(update)
+    }
+    raf = requestAnimationFrame(update)
+    return () => cancelAnimationFrame(raf)
+  }, [startAt, total, circumference])
+
+  const initialFrac = total > 0 ? Math.max(0, Math.min(1, remaining / total)) : 0
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
@@ -34,14 +56,14 @@ export default function RestTimer({ remaining, total, onSkip }: Props) {
             strokeWidth={6}
           />
           <circle
+            ref={circleRef}
             cx={76} cy={76} r={radius}
             fill="none"
             stroke="#C8A96E"
             strokeWidth={6}
             strokeLinecap="round"
             strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-            style={{ transition: 'stroke-dashoffset 1s linear' }}
+            style={{ strokeDashoffset: circumference * (1 - initialFrac) }}
           />
         </svg>
         <div style={{
