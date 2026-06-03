@@ -49,6 +49,10 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Pin to the project's wrangler 4.x. Without this the action falls back
+          # to its bundled wrangler 3.90.0, which mis-reads the assets+main config
+          # ("Missing entry-point") since wrangler isn't a project dependency.
+          wranglerVersion: '4.97.0'
           command: deploy
 
       # Mirror the same build to the legacy Pages URL so both front doors run
@@ -58,4 +62,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.97.0'
           command: pages deploy dist --project-name nippard-lift --branch main
