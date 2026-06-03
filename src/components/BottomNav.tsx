@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 
@@ -14,6 +14,7 @@ const tabs = [
 export default function BottomNav() {
   const activeSession = useWorkoutStore((s) => s.activeSession)
   const navigate = useNavigate()
+  const reduceMotion = useReducedMotion()
 
   return createPortal(
     <nav
@@ -105,8 +106,8 @@ export default function BottomNav() {
           }}
         >
           <motion.div
-            animate={{ opacity: [1, 0.4, 1] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: [1, 0.4, 1] }}
+            transition={reduceMotion ? undefined : { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               width: 6, height: 6,
               borderRadius: '50%',

@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react'
-import { createPortal } from 'react-dom'
-import { motion, AnimatePresence, Reorder } from 'framer-motion'
+import { motion, Reorder } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkoutStore, buildWarmupSets } from '../store/useWorkoutStore'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
 import type { Program, ProgramExercise, BodyGroup, SessionExercise } from '../types'
+import Sheet from './Sheet'
 
 import { muscleLabel, muscleColor as muscleColors } from '../lib/muscleLabels'
 const muscleLabels = muscleLabel
@@ -119,50 +119,14 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
     navigate('/active')
   }
 
-  return createPortal(
-    <AnimatePresence>
-      {program && (
-        <>
-          <motion.div
-            key="detail-bg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={substituteFor ? () => setSubstituteFor(null) : onClose}
-            style={{
-              position: 'fixed', inset: 0,
-              background: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-              zIndex: 400,
-            }}
-          />
-          <motion.div
-            key="detail-sheet"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 32, stiffness: 300 }}
-            style={{
-              position: 'fixed',
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
-              left: 0, right: 0,
-              background: '#111111',
-              borderRadius: '24px 24px 0 0',
-              paddingBottom: '16px',
-              maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 50px - 60px)',
-              display: 'flex',
-              flexDirection: 'column',
-              zIndex: 401,
-            }}
-          >
-            {/* Drag handle */}
-            <div style={{ padding: '16px 24px 0', flexShrink: 0 }}>
-              <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2, margin: '0 auto 18px' }} />
-
-              {/* Top accent strip */}
-              <div style={{ height: 3, background: program.tagColor, borderRadius: 2, marginBottom: 16 }} />
-
+  return (
+    <>
+      {/* Base sheet — programme detail */}
+      <Sheet open={!!program} onClose={onClose} accent={program?.tagColor}>
+        {program && (
+          <>
+            {/* Header */}
+            <div style={{ padding: '0 24px', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
                 <div>
                   <span style={{
@@ -184,12 +148,20 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                     {items.length} exercises · {program.estimatedMinutes}m · drag to reorder
                   </p>
                 </div>
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.85 }}
                   onClick={onClose}
-                  style={{ background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginTop: 4 }}
+                  style={{
+                    width: 32, height: 32,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '50%', color: '#8A8680', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, marginTop: 4,
+                  }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#8A8680" strokeWidth="2.5" strokeLinecap="round" /></svg>
-                </button>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                </motion.button>
               </div>
             </div>
 
@@ -291,126 +263,95 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                 Start Workout
               </motion.button>
             </div>
-          </motion.div>
+          </>
+        )}
+      </Sheet>
 
-          {/* Substitute picker — second sheet on top */}
-          <AnimatePresence>
-            {substituteFor && (
-              <>
-                <motion.div
-                  key="sub-bg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setSubstituteFor(null)}
-                  style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 500 }}
-                />
-                <motion.div
-                  key="sub-sheet"
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 32, stiffness: 300 }}
+      {/* Substitute picker — stacked sheet */}
+      <Sheet open={!!substituteFor} onClose={() => setSubstituteFor(null)} level={1}>
+        {substituteFor && (
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, padding: '0 20px 16px' }}>
+            <h3 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 22, color: '#F0EDE8', lineHeight: 1, marginBottom: 14, flexShrink: 0 }}>
+              Swap exercise
+            </h3>
+
+            {/* Body group tabs */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexShrink: 0 }}>
+              {groupTabs.map(({ key, label }) => (
+                <button key={key} onClick={() => { setPickerGroup(key); setPickerMuscle(null) }}
                   style={{
-                    position: 'fixed', bottom: 0, left: 0, right: 0,
-                    background: '#111111', borderRadius: '24px 24px 0 0',
-                    padding: '16px 20px 0',
-                    paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
-                    maxHeight: '78svh', display: 'flex', flexDirection: 'column',
-                    zIndex: 501,
+                    flex: 1,
+                    background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
+                    color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
+                    border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                    borderRadius: 12, padding: '8px 0',
+                    fontSize: 12, fontWeight: pickerGroup === key ? 700 : 400,
+                    cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+                    WebkitTapHighlightColor: 'transparent',
                   }}
                 >
-                  <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2, margin: '0 auto 16px' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                    <button onClick={() => setSubstituteFor(null)} style={{ background: 'none', border: 'none', color: '#8A8680', cursor: 'pointer', padding: 0 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
-                    </button>
-                    <h3 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 22, color: '#F0EDE8', lineHeight: 1 }}>
-                      Swap exercise
-                    </h3>
-                  </div>
+                  {label}
+                </button>
+              ))}
+            </div>
 
-                  {/* Body group tabs */}
-                  <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexShrink: 0 }}>
-                    {groupTabs.map(({ key, label }) => (
-                      <button key={key} onClick={() => { setPickerGroup(key); setPickerMuscle(null) }}
-                        style={{
-                          flex: 1,
-                          background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
-                          color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
-                          border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                          borderRadius: 12, padding: '8px 0',
-                          fontSize: 12, fontWeight: pickerGroup === key ? 700 : 400,
-                          cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
-                          WebkitTapHighlightColor: 'transparent',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+            {/* Muscle chips */}
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, paddingBottom: 10, marginBottom: 4, scrollbarWidth: 'none' }}>
+              <button onClick={() => setPickerMuscle(null)} style={chipStyle(pickerMuscle === null)}>All</button>
+              {visibleCategories.map(({ label }) => (
+                <button key={label} onClick={() => setPickerMuscle(pickerMuscle === label ? null : label)} style={chipStyle(pickerMuscle === label)}>
+                  {label}
+                </button>
+              ))}
+            </div>
 
-                  {/* Muscle chips */}
-                  <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, paddingBottom: 10, marginBottom: 4, scrollbarWidth: 'none' }}>
-                    <button onClick={() => setPickerMuscle(null)} style={chipStyle(pickerMuscle === null)}>All</button>
-                    {visibleCategories.map(({ label }) => (
-                      <button key={label} onClick={() => setPickerMuscle(pickerMuscle === label ? null : label)} style={chipStyle(pickerMuscle === label)}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Exercise list */}
-                  <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16 }}>
-                    {filteredExercises.map((ex) => {
-                      const isCurrent = ex.id === substituteFor.exerciseId
-                      const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
-                      return (
-                        <motion.div
-                          key={ex.id}
-                          whileTap={isCurrent ? undefined : { scale: 0.97 }}
-                          onClick={() => !isCurrent && applySubstitute(ex.id)}
-                          style={{
-                            background: isCurrent ? '#181818' : '#1E1E1E',
-                            borderRadius: 16, padding: '12px 14px',
-                            display: 'flex', alignItems: 'center', gap: 10,
-                            cursor: isCurrent ? 'default' : 'pointer',
-                            opacity: isCurrent ? 0.4 : 1,
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: 14, fontWeight: 500, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {ex.name}
-                            </p>
-                            <p style={{ fontSize: 11, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                              {ex.defaultSets} sets · {ex.defaultReps} reps
-                            </p>
-                          </div>
-                          <span style={{
-                            background: isCurrent ? 'rgba(138,134,128,0.12)' : mColor + '18',
-                            color: isCurrent ? '#8A8680' : mColor,
-                            border: isCurrent ? '1px solid rgba(138,134,128,0.2)' : `1px solid ${mColor}35`,
-                            borderRadius: 12, padding: '3px 9px',
-                            fontSize: 11, fontWeight: 500,
-                            fontFamily: '"Outfit", system-ui, sans-serif',
-                            flexShrink: 0, whiteSpace: 'nowrap',
-                          }}>
-                            {isCurrent ? 'Current' : (muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle)}
-                          </span>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </>
-      )}
-    </AnimatePresence>,
-    document.body
+            {/* Exercise list */}
+            <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16 }}>
+              {filteredExercises.map((ex) => {
+                const isCurrent = ex.id === substituteFor.exerciseId
+                const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+                return (
+                  <motion.div
+                    key={ex.id}
+                    whileTap={isCurrent ? undefined : { scale: 0.97 }}
+                    onClick={() => !isCurrent && applySubstitute(ex.id)}
+                    style={{
+                      background: isCurrent ? '#181818' : '#1E1E1E',
+                      borderRadius: 16, padding: '12px 14px',
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      cursor: isCurrent ? 'default' : 'pointer',
+                      opacity: isCurrent ? 0.4 : 1,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ex.name}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                        {ex.defaultSets} sets · {ex.defaultReps} reps
+                      </p>
+                    </div>
+                    <span style={{
+                      background: isCurrent ? 'rgba(138,134,128,0.12)' : mColor + '18',
+                      color: isCurrent ? '#8A8680' : mColor,
+                      border: isCurrent ? '1px solid rgba(138,134,128,0.2)' : `1px solid ${mColor}35`,
+                      borderRadius: 12, padding: '3px 9px',
+                      fontSize: 11, fontWeight: 500,
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                      flexShrink: 0, whiteSpace: 'nowrap',
+                    }}>
+                      {isCurrent ? 'Current' : (muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle)}
+                    </span>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </Sheet>
+    </>
   )
 }
 

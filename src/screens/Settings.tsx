@@ -180,16 +180,16 @@ export default function Settings() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               style={{
-                background: 'rgba(255,59,48,0.08)',
-                border: '1px solid rgba(255,59,48,0.2)',
+                background: 'rgba(255,69,58,0.08)',
+                border: '1px solid rgba(255,69,58,0.2)',
                 borderRadius: 12, padding: '10px 14px',
-                marginBottom: 14, fontSize: 13, color: '#FF3B30',
+                marginBottom: 14, fontSize: 13, color: '#FF453A',
                 fontFamily: '"Outfit", system-ui, sans-serif',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}
             >
               {syncError}
-              <button onClick={clearError} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF3B30', padding: 0 }}>
+              <button onClick={clearError} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF453A', padding: 0 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
               </button>
             </motion.div>
@@ -272,8 +272,8 @@ export default function Settings() {
                   style={{
                     width: '100%', height: 46,
                     background: 'transparent',
-                    border: '1px solid rgba(255,59,48,0.2)',
-                    borderRadius: 16, color: '#FF3B30',
+                    border: '1px solid rgba(255,69,58,0.2)',
+                    borderRadius: 16, color: '#FF453A',
                     fontSize: 13, cursor: 'pointer',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                     WebkitTapHighlightColor: 'transparent',
@@ -339,7 +339,7 @@ export default function Settings() {
                     fontSize: 26, fontWeight: 700,
                     letterSpacing: '5px', textAlign: 'center',
                     color: '#C8A96E', marginBottom: 12,
-                    borderColor: syncError ? 'rgba(255,59,48,0.4)' : 'rgba(255,255,255,0.09)',
+                    borderColor: syncError ? 'rgba(255,69,58,0.4)' : 'rgba(255,255,255,0.09)',
                   }}
                   onFocus={(e) => { e.target.style.borderColor = 'rgba(200,169,110,0.5)' }}
                   onBlur={(e) => { if (!syncError) e.target.style.borderColor = 'rgba(255,255,255,0.09)' }}

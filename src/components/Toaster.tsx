@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { useToastStore } from '../store/useToastStore'
+import { z } from '../lib/theme'
 
 export default function Toaster() {
   const { message, actionLabel, visible, runAction } = useToastStore()
@@ -18,7 +19,7 @@ export default function Toaster() {
             bottom: 'calc(env(safe-area-inset-bottom, 0px) + 78px)',
             left: 16, right: 16,
             margin: '0 auto', maxWidth: 398,
-            zIndex: 300,
+            zIndex: z.toast,
             background: 'rgba(30,30,30,0.96)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',

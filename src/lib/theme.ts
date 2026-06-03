@@ -13,12 +13,31 @@ export const colors = {
   bg: '#0C0C0C',
   surface: '#161616',
   elevated: '#1E1E1E',
+  sheet: 'rgba(18,18,18,0.98)', // single bottom-sheet surface (frosted)
   text: '#F0EDE8',
   muted: '#8A8680',
   gold: '#C8A96E',
   green: '#34C759',
-  red: '#FF3B30',
+  red: '#FF453A', // iOS dark-mode systemRed — single source (was split #FF3B30/#FF453A)
 } as const
+
+// z-index scale — one formal stacking order. Replaces the ad-hoc per-component
+// values (which had overlapping 200/200 and 300/300 bands).
+export const z = {
+  nav: 50,
+  sheetBackdrop: 100,
+  sheet: 101,
+  toast: 150,
+  fullscreen: 200, // ActiveWorkout, Onboarding
+  dialog: 300,     // confirm dialogs layered above everything
+} as const
+
+// Motion presets — one source for the app's animation feel.
+export const anim = {
+  tap: { type: 'spring' as const, stiffness: 400, damping: 28 },
+  sheet: { type: 'spring' as const, stiffness: 300, damping: 32 },
+  enter: { duration: 0.22, ease: [0.32, 0.72, 0, 1] as [number, number, number, number] },
+}
 
 export const font = {
   display: '"DM Serif Display", Georgia, serif',

@@ -1,10 +1,10 @@
 import { useState, useMemo, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { Reorder, motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { useBuilderStore } from '../store/useBuilderStore'
-import { useWorkoutStore } from '../store/useWorkoutStore'
+import { useWorkoutStore, buildWarmupSets } from '../store/useWorkoutStore'
+import Sheet from '../components/Sheet'
 import { useAppStore } from '../store/useAppStore'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
 import type { BuilderItem as BuilderItemType, BodyGroup } from '../types'
@@ -114,13 +114,19 @@ export default function Builder() {
 
   function startWorkout() {
     if (items.length === 0) return
-    startSession('custom', planName.trim() || 'Custom Workout', items.map((item) => ({
-      exerciseId: item.exerciseId,
-      targetSets: item.sets,
-      targetReps: String(item.reps),
-      currentWeight: item.weightKg,
-      sets: [],
-    })))
+    startSession('custom', planName.trim() || 'Custom Workout', items.map((item) => {
+      // Build warm-ups here too, so a routine started from the Builder behaves
+      // identically to one started from Home or a featured programme.
+      const warmupSets = buildWarmupSets(item.weightKg, item.exerciseId)
+      return {
+        exerciseId: item.exerciseId,
+        targetSets: item.sets,
+        targetReps: String(item.reps),
+        currentWeight: item.weightKg,
+        sets: [],
+        warmupSets: warmupSets.length > 0 ? warmupSets : undefined,
+      }
+    }))
     navigate('/active')
   }
 
@@ -487,176 +493,128 @@ export default function Builder() {
         </div>
       </div>
 
-      {/* Exercise picker — bottom sheet (Elevate signature) */}
-      {createPortal(
-      <AnimatePresence>
-        {showPicker && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="picker-bg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowPicker(false)}
-              style={{
-                position: 'fixed', inset: 0,
-                background: 'rgba(0,0,0,0.6)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                zIndex: 200,
-              }}
-            />
-            {/* Sheet */}
-            <motion.div
-              key="picker-sheet"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 32, stiffness: 300 }}
-              style={{
-                position: 'fixed',
-                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
-                left: 0, right: 0,
-                background: '#111111',
-                borderRadius: '24px 24px 0 0',
-                padding: '16px 20px 16px',
-                maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 50px - 60px)',
-                display: 'flex',
-                flexDirection: 'column',
-                zIndex: 201,
-              }}
+      {/* Exercise picker — bottom sheet */}
+      <Sheet open={showPicker} onClose={() => setShowPicker(false)}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, padding: '0 20px 16px' }}>
+          {/* Sheet heading */}
+          <h3 style={{
+            fontFamily: '"DM Serif Display", Georgia, serif',
+            fontSize: 26, color: '#F0EDE8',
+            marginBottom: 16, lineHeight: 1, flexShrink: 0,
+          }}>
+            Add Exercise
+          </h3>
+
+          {/* Body group tabs */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexShrink: 0 }}>
+            {groupTabs.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => selectGroup(key)}
+                style={{
+                  flex: 1,
+                  background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
+                  color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
+                  border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 12,
+                  padding: '8px 0',
+                  fontSize: 12,
+                  fontWeight: pickerGroup === key ? 700 : 400,
+                  cursor: 'pointer',
+                  fontFamily: '"Outfit", system-ui, sans-serif',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Muscle chips — horizontal scroll */}
+          <div style={{
+            display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0,
+            paddingBottom: 12, marginBottom: 4,
+            scrollbarWidth: 'none',
+          }}>
+            <button
+              onClick={() => setPickerMuscle(null)}
+              style={chipStyle(pickerMuscle === null)}
             >
-              {/* Drag handle */}
-              <div style={{
-                width: 36, height: 4,
-                background: 'rgba(255,255,255,0.15)',
-                borderRadius: 2, margin: '0 auto 18px',
-              }} />
+              All
+            </button>
+            {visibleCategories.map(({ label }) => (
+              <button
+                key={label}
+                onClick={() => setPickerMuscle(pickerMuscle === label ? null : label)}
+                style={chipStyle(pickerMuscle === label)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-              {/* Sheet heading */}
-              <h3 style={{
-                fontFamily: '"DM Serif Display", Georgia, serif',
-                fontSize: 26, color: '#F0EDE8',
-                marginBottom: 16, lineHeight: 1,
-              }}>
-                Add Exercise
-              </h3>
-
-              {/* Body group tabs */}
-              <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexShrink: 0 }}>
-                {groupTabs.map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => selectGroup(key)}
-                    style={{
-                      flex: 1,
-                      background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
-                      color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
-                      border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                      borderRadius: 12,
-                      padding: '8px 0',
-                      fontSize: 12,
-                      fontWeight: pickerGroup === key ? 700 : 400,
-                      cursor: 'pointer',
-                      fontFamily: '"Outfit", system-ui, sans-serif',
-                      WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Muscle chips — horizontal scroll */}
-              <div style={{
-                display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0,
-                paddingBottom: 12, marginBottom: 4,
-                scrollbarWidth: 'none',
-              }}>
-                <button
-                  onClick={() => setPickerMuscle(null)}
-                  style={chipStyle(pickerMuscle === null)}
+          {/* Exercise list */}
+          <div style={{
+            overflowY: 'auto', flex: 1, minHeight: 0,
+            display: 'flex', flexDirection: 'column', gap: 8,
+            paddingBottom: 16,
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            {filteredExercises.map((ex) => {
+              const already = items.some((i) => i.exerciseId === ex.id)
+              const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+              return (
+                <motion.div
+                  key={ex.id}
+                  whileTap={already ? undefined : { scale: 0.97 }}
+                  onClick={() => !already && addExercise(ex.id)}
+                  style={{
+                    background: already ? '#181818' : '#1E1E1E',
+                    borderRadius: 16,
+                    padding: '12px 14px',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    cursor: already ? 'default' : 'pointer',
+                    opacity: already ? 0.5 : 1,
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    flexShrink: 0,
+                  }}
                 >
-                  All
-                </button>
-                {visibleCategories.map(({ label }) => (
-                  <button
-                    key={label}
-                    onClick={() => setPickerMuscle(pickerMuscle === label ? null : label)}
-                    style={chipStyle(pickerMuscle === label)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Exercise list */}
-              <div style={{
-                overflowY: 'auto', flex: 1, minHeight: 0,
-                display: 'flex', flexDirection: 'column', gap: 8,
-                paddingBottom: 16,
-                WebkitOverflowScrolling: 'touch',
-              }}>
-                {filteredExercises.map((ex) => {
-                  const already = items.some((i) => i.exerciseId === ex.id)
-                  const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
-                  return (
-                    <motion.div
-                      key={ex.id}
-                      whileTap={already ? undefined : { scale: 0.97 }}
-                      onClick={() => !already && addExercise(ex.id)}
-                      style={{
-                        background: already ? '#181818' : '#1E1E1E',
-                        borderRadius: 16,
-                        padding: '12px 14px',
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        cursor: already ? 'default' : 'pointer',
-                        opacity: already ? 0.5 : 1,
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{
-                          fontSize: 15, fontWeight: 500, color: '#F0EDE8',
-                          fontFamily: '"Outfit", system-ui, sans-serif',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
-                          {ex.name}
-                        </p>
-                        <p style={{
-                          fontSize: 12, color: '#8A8680', marginTop: 2,
-                          fontFamily: '"Outfit", system-ui, sans-serif',
-                        }}>
-                          {ex.defaultSets} sets · {ex.defaultReps} reps
-                        </p>
-                      </div>
-                      <span style={{
-                        background: already ? 'rgba(138,134,128,0.12)' : mColor + '18',
-                        color: already ? '#8A8680' : mColor,
-                        border: already
-                          ? '1px solid rgba(138,134,128,0.2)'
-                          : `1px solid ${mColor}35`,
-                        borderRadius: 12,
-                        padding: '3px 9px',
-                        fontSize: 11, fontWeight: 500,
-                        fontFamily: '"Outfit", system-ui, sans-serif',
-                        flexShrink: 0,
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {already ? 'Added' : (muscleLabel[ex.primaryMuscle] ?? ex.primaryMuscle)}
-                      </span>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>,
-      document.body
-      )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      fontSize: 15, fontWeight: 500, color: '#F0EDE8',
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {ex.name}
+                    </p>
+                    <p style={{
+                      fontSize: 12, color: '#8A8680', marginTop: 2,
+                      fontFamily: '"Outfit", system-ui, sans-serif',
+                    }}>
+                      {ex.defaultSets} sets · {ex.defaultReps} reps
+                    </p>
+                  </div>
+                  <span style={{
+                    background: already ? 'rgba(138,134,128,0.12)' : mColor + '18',
+                    color: already ? '#8A8680' : mColor,
+                    border: already
+                      ? '1px solid rgba(138,134,128,0.2)'
+                      : `1px solid ${mColor}35`,
+                    borderRadius: 12,
+                    padding: '3px 9px',
+                    fontSize: 11, fontWeight: 500,
+                    fontFamily: '"Outfit", system-ui, sans-serif',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {already ? 'Added' : (muscleLabel[ex.primaryMuscle] ?? ex.primaryMuscle)}
+                  </span>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </Sheet>
     </div>
   )
 }
