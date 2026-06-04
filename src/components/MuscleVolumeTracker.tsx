@@ -10,6 +10,15 @@ import {
 export default function MuscleVolumeTracker() {
   const logs = useWorkoutStore((s) => s.logs)
   const counts = useMemo(() => trailingWeekSets(logs), [logs])
+  const totalSets = useMemo(
+    () => Object.values(counts).reduce((sum, n) => sum + n, 0),
+    [counts]
+  )
+
+  // Nothing trained in the trailing week → an all-zero chart is just noise
+  // (and on a tall screen it buries the actionable content). Hide it until
+  // there's something to show.
+  if (totalSets === 0) return null
 
   const onTrack = MUSCLE_TARGETS.filter((t) => {
     const s = counts[t.key] ?? 0

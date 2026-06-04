@@ -56,7 +56,7 @@ export default function Sheet({ open, onClose, children, accent, level = 0 }: Sh
             }}
             style={{
               position: 'fixed',
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)',
+              bottom: 0,
               left: 0, right: 0,
               margin: '0 auto', maxWidth: 430,
               background: colors.sheet,
@@ -65,7 +65,10 @@ export default function Sheet({ open, onClose, children, accent, level = 0 }: Sh
               borderRadius: '24px 24px 0 0',
               border: '1px solid rgba(255,255,255,0.08)',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 -20px 60px rgba(0,0,0,0.4)',
-              maxHeight: 'calc(100svh - env(safe-area-inset-bottom, 0px) - 110px)',
+              // Flush to the bottom (covers the nav) rather than floating above it;
+              // pad for the home indicator so content/footers clear it.
+              maxHeight: 'calc(100svh - 56px)',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
               display: 'flex', flexDirection: 'column',
               overflow: 'hidden',
               zIndex: baseZ + 1,

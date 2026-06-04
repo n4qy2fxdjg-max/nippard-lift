@@ -153,6 +153,10 @@ export default function ActiveWorkout() {
   const setsCompleted = currentEx?.sets.filter((s) => s.completed).length ?? 0
   const isDone = phase === 'done'
   const isWarmup = phase === 'warmup'
+  // Rest and the completion summary look best centered; the working/warm-up sets
+  // are a tall column that should flow from the top so it stays visually connected
+  // to the progress pills and doesn't float in the middle of a big screen.
+  const centerContent = phase === 'rest' || isDone
   const warmupSets = currentEx?.warmupSets ?? []
   const currentWarmup = isWarmup ? warmupSets[warmupSetIdx] : null
 
@@ -252,7 +256,7 @@ export default function ActiveWorkout() {
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 24px', gap: 28, overflowY: 'auto' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: centerContent ? 'center' : 'flex-start', padding: centerContent ? '0 24px' : '20px 24px 0', gap: 28, overflowY: 'auto' }}>
         <AnimatePresence mode="wait">
 
           {/* ── Done ── */}
@@ -445,11 +449,11 @@ export default function ActiveWorkout() {
                     Set {setsCompleted + 1} of {currentEx?.targetSets} · {currentEx?.targetReps} reps
                   </p>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    <motion.button whileTap={{ scale: 0.85 }} onClick={removeTargetSet} style={smallCtrlBtn}>
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={removeTargetSet} style={smallCtrlBtn} aria-label="Remove set">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </motion.button>
-                    <motion.button whileTap={{ scale: 0.85 }} onClick={addTargetSet} style={smallCtrlBtn}>
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={addTargetSet} style={smallCtrlBtn} aria-label="Add set">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </motion.button>
                   </div>
                 </div>
@@ -672,10 +676,10 @@ const warmupAdjBtn: React.CSSProperties = {
 }
 
 const smallCtrlBtn: React.CSSProperties = {
-  width: 28, height: 28, background: '#1E1E1E',
-  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+  width: 44, height: 44, background: '#1E1E1E',
+  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14,
   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-  WebkitTapHighlightColor: 'transparent',
+  WebkitTapHighlightColor: 'transparent', flexShrink: 0,
 }
 
 const bigBtnStyle: React.CSSProperties = {

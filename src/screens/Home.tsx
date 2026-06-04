@@ -13,6 +13,7 @@ import StreakChip from '../components/StreakChip'
 import ProgramDetailSheet from '../components/ProgramDetailSheet'
 import WorkoutDetailSheet from '../components/WorkoutDetailSheet'
 import MuscleVolumeTracker from '../components/MuscleVolumeTracker'
+import InstallPrompt from '../components/InstallPrompt'
 import { activeLogs, activePlans } from '../lib/active'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
 import type { Program, CustomPlan, WorkoutLog } from '../types'
@@ -159,6 +160,9 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        {/* iOS install nudge — only shows in Safari pre-install, until dismissed */}
+        <InstallPrompt />
 
         {/* Stats row */}
         <div style={{ display: 'flex', gap: 10, padding: '0 24px', marginBottom: 28 }}>
