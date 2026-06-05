@@ -13,7 +13,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' so a new version waits for an explicit tap (the in-app Update
+      // banner) instead of silently swapping under the user.
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'pwa-192.png', 'pwa-512.png', 'pwa-512-maskable.png', 'apple-touch-icon.png', 'push-sw.js'],
       workbox: {
         // Pull in the push/notificationclick handlers (background reminders)
