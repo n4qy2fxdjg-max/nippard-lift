@@ -10,6 +10,7 @@ import Progress from './screens/Progress'
 import Settings from './screens/Settings'
 import Onboarding from './screens/Onboarding'
 import Toaster from './components/Toaster'
+import UpdatePrompt from './components/UpdatePrompt'
 import { useAppStore } from './store/useAppStore'
 import { useSyncStore } from './store/useSyncStore'
 import { anim } from './lib/theme'
@@ -118,6 +119,7 @@ export default function App() {
       <AutoSync />
       <AnimatedRoutes />
       <Toaster />
+      <UpdatePrompt />
     </BrowserRouter>
   )
 }
