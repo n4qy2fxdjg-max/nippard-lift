@@ -1,4 +1,4 @@
-import type { WorkoutLog, CustomPlan } from '../types'
+import type { WorkoutLog, CustomPlan, ActivityLog } from '../types'
 
 /**
  * Tombstoned records (deleted === true) are kept in local state and synced so
@@ -11,4 +11,8 @@ export function activeLogs(logs: WorkoutLog[]): WorkoutLog[] {
 
 export function activePlans(plans: CustomPlan[]): CustomPlan[] {
   return plans.filter((p) => !p.deleted)
+}
+
+export function activeActivities(activities: ActivityLog[]): ActivityLog[] {
+  return activities.filter((a) => !a.deleted)
 }

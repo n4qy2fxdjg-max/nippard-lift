@@ -21,6 +21,16 @@ CREATE TABLE IF NOT EXISTS custom_plans (
   deleted INTEGER NOT NULL DEFAULT 0
 );
 
+-- Non-lifting sessions (running, walking, tennis, …) — same LWW model as workout_logs
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id TEXT PRIMARY KEY,
+  sync_code TEXT NOT NULL,
+  data TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  updated_ms INTEGER NOT NULL DEFAULT 0,
+  deleted INTEGER NOT NULL DEFAULT 0
+);
+
 -- Per-code JSON blobs (client merges these on pull)
 CREATE TABLE IF NOT EXISTS weight_history (
   sync_code TEXT PRIMARY KEY,
@@ -61,5 +71,6 @@ CREATE TABLE IF NOT EXISTS push_pending (
   updated_at INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE INDEX IF NOT EXISTS idx_logs_sync   ON workout_logs(sync_code);
-CREATE INDEX IF NOT EXISTS idx_plans_sync  ON custom_plans(sync_code);
+CREATE INDEX IF NOT EXISTS idx_logs_sync       ON workout_logs(sync_code);
+CREATE INDEX IF NOT EXISTS idx_plans_sync      ON custom_plans(sync_code);
+CREATE INDEX IF NOT EXISTS idx_activities_sync ON activity_logs(sync_code);

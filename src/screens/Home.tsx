@@ -14,9 +14,14 @@ import ProgramDetailSheet from '../components/ProgramDetailSheet'
 import WorkoutDetailSheet from '../components/WorkoutDetailSheet'
 import MuscleVolumeTracker from '../components/MuscleVolumeTracker'
 import InstallPrompt from '../components/InstallPrompt'
-import { activeLogs, activePlans } from '../lib/active'
+import LogActivitySheet from '../components/LogActivitySheet'
+import ActivityDetailSheet from '../components/ActivityDetailSheet'
+import { useActivityStore } from '../store/useActivityStore'
+import { activeLogs, activePlans, activeActivities } from '../lib/active'
+import { activityEmoji } from '../data/activities'
+import { activitySubtitle } from '../lib/activityFormat'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
-import type { Program, CustomPlan, WorkoutLog } from '../types'
+import type { Program, CustomPlan, WorkoutLog, ActivityLog } from '../types'
 
 const KG_TO_LB = 2.20462
 
@@ -62,9 +67,12 @@ export default function Home() {
   const showToast = useToastStore((s) => s.show)
   const navigate = useNavigate()
 
+  const allActivities = useActivityStore((s) => s.activities)
+
   // Exclude tombstoned records from everything the UI shows
   const logs = useMemo(() => activeLogs(allLogs), [allLogs])
   const plans = useMemo(() => activePlans(allPlans), [allPlans])
+  const activities = useMemo(() => activeActivities(allActivities), [allActivities])
 
   function handleDeletePlan(plan: CustomPlan) {
     deletePlan(plan.id)
@@ -76,12 +84,14 @@ export default function Home() {
     })
   }
 
-  const streak = useMemo(() => computeStreak(logs), [logs])
+  const streak = useMemo(() => computeStreak([...logs, ...activities]), [logs, activities])
   const { prefix, name } = greeting(userName)
   const today = format(new Date(), 'EEEE, d MMM')
 
   const [detailProgram, setDetailProgram] = useState<Program | null>(null)
   const [detailLog, setDetailLog] = useState<WorkoutLog | null>(null)
+  const [detailActivity, setDetailActivity] = useState<ActivityLog | null>(null)
+  const [showLogActivity, setShowLogActivity] = useState(false)
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null)
   const [editMode, setEditMode] = useState(false)
 
@@ -90,21 +100,25 @@ export default function Home() {
     const now = new Date()
     const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
     const weekLogs = logs.filter((l) => new Date(l.date) >= weekAgo)
+    const weekActivities = activities.filter((a) => new Date(a.date) >= weekAgo)
     const weeklyVolumeKg = weekLogs.reduce((sum, l) => sum + (l.totalVolume ?? 0), 0)
     const volume = unit === 'lb' ? weeklyVolumeKg * KG_TO_LB : weeklyVolumeKg
     return {
-      thisWeek: weekLogs.length,
+      thisWeek: weekLogs.length + weekActivities.length,
       volume: formatVolume(Math.round(volume)),
       volumeUnit: unit,
-      totalSessions: logs.length,
+      totalSessions: logs.length + activities.length,
     }
-  }, [logs, unit])
+  }, [logs, activities, unit])
 
-  const recentLogs = useMemo(() => {
-    return [...logs]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 4)
-  }, [logs])
+  // Merged recent feed: workouts + activities, newest first
+  const recentItems = useMemo(() => {
+    const w = logs.map((l) => ({ kind: 'workout' as const, id: l.id, date: l.date, log: l }))
+    const a = activities.map((act) => ({ kind: 'activity' as const, id: act.id, date: act.date, activity: act }))
+    return [...w, ...a]
+      .sort((x, y) => new Date(y.date).getTime() - new Date(x.date).getTime())
+      .slice(0, 5)
+  }, [logs, activities])
 
   function lastPerformed(programId: string): string | undefined {
     return logs.find((l) => l.planId === programId)?.date
@@ -355,8 +369,46 @@ export default function Home() {
           </motion.button>
         </div>
 
+        {/* Log a non-lifting session CTA */}
+        <div style={{ padding: '0 24px', marginBottom: 28 }}>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowLogActivity(true)}
+            style={{
+              width: '100%',
+              background: '#161616',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 24,
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            }}
+          >
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 20, color: '#F0EDE8', lineHeight: 1.2 }}>
+                Log a session
+              </div>
+              <div style={{ fontSize: 13, color: '#8A8680', marginTop: 3, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                Running, walking, tennis, stairs…
+              </div>
+            </div>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+              background: 'rgba(200,169,110,0.14)', border: '1px solid rgba(200,169,110,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="#C8A96E" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+            </div>
+          </motion.button>
+        </div>
+
         {/* Recent Activity */}
-        {recentLogs.length > 0 && (
+        {recentItems.length > 0 && (
           <div style={{ padding: '0 24px', marginTop: 4 }}>
             <p style={{
               fontSize: 10,
@@ -370,74 +422,72 @@ export default function Home() {
               Recent Activity
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {recentLogs.map((log) => (
-                <motion.button
-                  key={log.id}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setDetailLog(log)}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    background: '#161616',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: 16,
-                    padding: '12px 14px 12px 16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                    cursor: 'pointer',
-                    fontFamily: '"Outfit", system-ui, sans-serif',
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: '#F0EDE8',
-                      fontFamily: '"Outfit", system-ui, sans-serif',
-                    }}>
-                      {log.planName}
-                    </div>
-                    <div style={{
-                      fontSize: 12,
-                      color: '#8A8680',
-                      marginTop: 2,
-                      fontFamily: '"Outfit", system-ui, sans-serif',
-                    }}>
-                      {format(new Date(log.date), 'EEE, d MMM')}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{
-                        fontSize: 13,
-                        color: '#C8A96E',
-                        fontFamily: '"Outfit", system-ui, sans-serif',
-                        fontWeight: 600,
-                      }}>
-                        {Math.round(log.durationSec / 60)} min
-                      </div>
-                      {log.personalRecords?.length > 0 && (
-                        <div style={{
-                          fontSize: 10,
-                          color: '#34C759',
-                          marginTop: 2,
-                          fontFamily: '"Outfit", system-ui, sans-serif',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                        }}>
-                          {log.personalRecords.length} PR
+              {recentItems.map((item) => {
+                const rowStyle: React.CSSProperties = {
+                  width: '100%', textAlign: 'left', background: '#161616',
+                  border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16,
+                  padding: '12px 14px 12px 16px', display: 'flex',
+                  justifyContent: 'space-between', alignItems: 'center', gap: 12,
+                  cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+                }
+                const chevron = (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#8A8680', flexShrink: 0 }}>
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )
+
+                if (item.kind === 'workout') {
+                  const log = item.log
+                  return (
+                    <motion.button key={item.id} whileTap={{ scale: 0.98 }} onClick={() => setDetailLog(log)} style={rowStyle}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          {log.planName}
                         </div>
-                      )}
+                        <div style={{ fontSize: 12, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          {format(new Date(log.date), 'EEE, d MMM')}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 13, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                            {Math.round(log.durationSec / 60)} min
+                          </div>
+                          {log.personalRecords?.length > 0 && (
+                            <div style={{ fontSize: 10, color: '#34C759', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                              {log.personalRecords.length} PR
+                            </div>
+                          )}
+                        </div>
+                        {chevron}
+                      </div>
+                    </motion.button>
+                  )
+                }
+
+                const act = item.activity
+                return (
+                  <motion.button key={item.id} whileTap={{ scale: 0.98 }} onClick={() => setDetailActivity(act)} style={rowStyle}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                      <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{activityEmoji(act.type)}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {act.name}
+                        </div>
+                        <div style={{ fontSize: 12, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          {format(new Date(act.date), 'EEE, d MMM')}
+                        </div>
+                      </div>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#8A8680', flexShrink: 0 }}>
-                      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                </motion.button>
-              ))}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                      <div style={{ fontSize: 13, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                        {activitySubtitle(act, unit)}
+                      </div>
+                      {chevron}
+                    </div>
+                  </motion.button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -454,6 +504,10 @@ export default function Home() {
         log={detailLog}
         onClose={() => setDetailLog(null)}
       />
+
+      {/* Log activity + activity detail sheets */}
+      <LogActivitySheet open={showLogActivity} onClose={() => setShowLogActivity(false)} />
+      <ActivityDetailSheet activity={detailActivity} onClose={() => setDetailActivity(null)} />
     </div>
   )
 }

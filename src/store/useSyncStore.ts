@@ -4,7 +4,8 @@ import { useWorkoutStore } from './useWorkoutStore'
 import { useBuilderStore } from './useBuilderStore'
 import { useLibraryStore } from './useLibraryStore'
 import { useAppStore } from './useAppStore'
-import type { WorkoutLog, CustomPlan, BodyweightEntry } from '../types'
+import { useActivityStore } from './useActivityStore'
+import type { WorkoutLog, CustomPlan, BodyweightEntry, ActivityLog } from '../types'
 
 // API base — always /api (Vite proxies to :8787 in dev, Worker serves it in prod)
 const API = '/api'
@@ -28,6 +29,15 @@ function mergePlans(a: CustomPlan[], b: CustomPlan[]): CustomPlan[] {
     if (!cur || (p.updatedAt ?? 0) > (cur.updatedAt ?? 0)) map.set(p.id, p)
   }
   return Array.from(map.values()).sort((x, y) => y.createdAt.localeCompare(x.createdAt))
+}
+
+function mergeActivities(a: ActivityLog[], b: ActivityLog[]): ActivityLog[] {
+  const map = new Map(a.map((x) => [x.id, x]))
+  for (const x of b) {
+    const cur = map.get(x.id)
+    if (!cur || (x.updatedAt ?? 0) > (cur.updatedAt ?? 0)) map.set(x.id, x)
+  }
+  return Array.from(map.values()).sort((x, y) => y.date.localeCompare(x.date))
 }
 
 function mergeBodyweight(a: BodyweightEntry[], b: BodyweightEntry[]): BodyweightEntry[] {
@@ -135,11 +145,12 @@ export const useSyncStore = create<SyncStore>()(
           const plans = useBuilderStore.getState().plans
           const weightHistory = useLibraryStore.getState().weightHistory
           const bodyweight = useAppStore.getState().bodyweightLog
+          const activities = useActivityStore.getState().activities
 
           const res = await fetch(`${API}/sync/${syncCode}/push`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ logs, plans, weightHistory, bodyweight }),
+            body: JSON.stringify({ logs, plans, weightHistory, bodyweight, activities }),
           })
           if (!res.ok) throw new Error(`Sync upload failed (${res.status})`)
           set({ lastSyncAt: Date.now(), isSyncing: false, syncError: null })
@@ -162,10 +173,17 @@ export const useSyncStore = create<SyncStore>()(
             plans: CustomPlan[]
             weightHistory: Record<string, any[]>
             bodyweight?: BodyweightEntry[]
+            activities?: ActivityLog[]
           }
 
           const mergedLogs = mergeLogs(useWorkoutStore.getState().logs, remote.logs ?? [])
           useWorkoutStore.setState({ logs: mergedLogs })
+
+          const mergedActivities = mergeActivities(
+            useActivityStore.getState().activities,
+            remote.activities ?? []
+          )
+          useActivityStore.setState({ activities: mergedActivities })
 
           const mergedPlans = mergePlans(useBuilderStore.getState().plans, remote.plans ?? [])
           useBuilderStore.setState({ plans: mergedPlans })

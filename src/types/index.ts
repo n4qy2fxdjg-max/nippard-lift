@@ -130,6 +130,28 @@ export interface WeightHistoryEntry {
   e1rm: number
 }
 
+// Non-lifting sessions (cardio / sport)
+export type ActivityIntensity = 'easy' | 'moderate' | 'hard'
+
+export interface ActivityLog {
+  id: string
+  /** activity type id, e.g. 'running' (see data/activities.ts) */
+  type: string
+  /** display name — custom text for the 'other' type, else the catalog name */
+  name: string
+  date: string // yyyy-MM-dd
+  durationSec: number
+  /** distance in km (internal); displayed in mi for lb users */
+  distanceKm?: number
+  intensity?: ActivityIntensity
+  calories?: number
+  note?: string
+  /** ms epoch of last mutation — last-write-wins sync */
+  updatedAt: number
+  /** tombstone: kept locally + synced so deletions propagate across devices */
+  deleted?: boolean
+}
+
 // Bodyweight tracking (stored in kg internally)
 export interface BodyweightEntry {
   date: string // yyyy-MM-dd
