@@ -3,12 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import { useAppStore } from '../store/useAppStore'
+import { useActivityStore } from '../store/useActivityStore'
 import { useToastStore } from '../store/useToastStore'
 import { exercises as exerciseList } from '../data/exercises'
-import type { WorkoutLog } from '../types'
+import { activityEmoji } from '../data/activities'
+import { activitySubtitle } from '../lib/activityFormat'
+import type { WorkoutLog, ActivityLog } from '../types'
 import HeatmapGrid from '../components/HeatmapGrid'
 import LineChart from '../components/LineChart'
-import { activeLogs } from '../lib/active'
+import ActivityDetailSheet from '../components/ActivityDetailSheet'
+import { activeLogs, activeActivities } from '../lib/active'
 import { format, parseISO, subDays, startOfDay, isAfter } from 'date-fns'
 
 const KG_TO_LB = 2.20462
@@ -35,12 +39,22 @@ export default function Progress() {
   const allLogs = useWorkoutStore((s) => s.logs)
   const deleteLog = useWorkoutStore((s) => s.deleteLog)
   const restoreLog = useWorkoutStore((s) => s.restoreLog)
+  const allActivities = useActivityStore((s) => s.activities)
   const showToast = useToastStore((s) => s.show)
   const unit = useAppStore((s) => s.unit)
   const bodyweightLog = useAppStore((s) => s.bodyweightLog)
 
   // Exclude tombstoned workouts from history, stats, and the heatmap
   const logs = useMemo(() => activeLogs(allLogs), [allLogs])
+  const activities = useMemo(() => activeActivities(allActivities), [allActivities])
+  const [detailActivity, setDetailActivity] = useState<ActivityLog | null>(null)
+
+  // Merged history feed (workouts + activities), newest first
+  const historyItems = useMemo(() => {
+    const w = logs.map((l) => ({ kind: 'workout' as const, id: l.id, date: l.date, log: l }))
+    const a = activities.map((act) => ({ kind: 'activity' as const, id: act.id, date: act.date, activity: act }))
+    return [...w, ...a].sort((x, y) => y.date.localeCompare(x.date))
+  }, [logs, activities])
 
   function handleDeleteLog(log: WorkoutLog) {
     deleteLog(log.id)
@@ -63,19 +77,24 @@ export default function Progress() {
   const isNew = params.get('new') === '1'
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const logDates = useMemo(() => logs.map((l) => l.date), [logs])
+  const logDates = useMemo(
+    () => [...logs.map((l) => l.date), ...activities.map((a) => a.date)],
+    [logs, activities]
+  )
 
   const weeklyStats = useMemo(() => {
     // Trailing 7 days, inclusive of today
     const cutoff = startOfDay(subDays(new Date(), 6))
     const thisWeekLogs = logs.filter((l) => !isAfter(cutoff, parseISO(l.date)))
-    const sessions = thisWeekLogs.length
+    const thisWeekActs = activities.filter((a) => !isAfter(cutoff, parseISO(a.date)))
+    const sessions = thisWeekLogs.length + thisWeekActs.length
     const volume = thisWeekLogs.reduce((sum, l) => sum + l.totalVolume, 0)
-    const avgDuration = sessions > 0
-      ? Math.round(thisWeekLogs.reduce((sum, l) => sum + l.durationSec, 0) / sessions)
-      : 0
+    const totalDuration =
+      thisWeekLogs.reduce((sum, l) => sum + l.durationSec, 0) +
+      thisWeekActs.reduce((sum, a) => sum + a.durationSec, 0)
+    const avgDuration = sessions > 0 ? Math.round(totalDuration / sessions) : 0
     return { sessions, volume, avgDuration }
-  }, [logs])
+  }, [logs, activities])
 
   function formatVolume(kg: number): string {
     if (unit === 'lb') {
@@ -272,11 +291,11 @@ export default function Progress() {
               fontSize: 11, color: 'rgba(138,134,128,0.6)',
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}>
-              {logs.length} workout{logs.length !== 1 ? 's' : ''}
+              {historyItems.length} session{historyItems.length !== 1 ? 's' : ''}
             </p>
           </div>
 
-          {logs.length === 0 && (
+          {historyItems.length === 0 && (
             <div style={{ padding: '40px 0 32px', textAlign: 'center' }}>
               <svg width="40" height="32" viewBox="0 0 40 32" fill="none" style={{ marginBottom: 16, opacity: 0.2 }}>
                 <rect x="0" y="20" width="6" height="12" rx="2" fill="#8A8680" />
@@ -289,20 +308,63 @@ export default function Progress() {
                 fontSize: 15, fontWeight: 600, color: '#F0EDE8', marginBottom: 6,
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}>
-                No workouts yet
+                Nothing logged yet
               </p>
               <p style={{
                 fontSize: 13, color: '#8A8680',
                 fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6,
               }}>
-                Complete a workout to see your history here
+                Finish a workout or log a session to see it here
               </p>
             </div>
           )}
 
           <AnimatePresence>
             <motion.div initial="hidden" animate="visible" variants={listVariants}>
-              {logs.map((log, i) => {
+              {historyItems.map((item, i) => {
+                if (item.kind === 'activity') {
+                  const act = item.activity
+                  return (
+                    <motion.div
+                      key={item.id}
+                      exit={{ opacity: 0, x: -48, height: 0, marginBottom: 0 }}
+                      transition={{ duration: 0.22 }}
+                      style={{ marginBottom: 10 }}
+                    >
+                      <motion.button
+                        whileTap={{ scale: 0.985 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        onClick={() => setDetailActivity(act)}
+                        style={{
+                          width: '100%', textAlign: 'left', background: '#161616',
+                          border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16,
+                          position: 'relative', overflow: 'hidden',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          gap: 12, padding: '16px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                          <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{activityEmoji(act.type)}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 15, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {act.name}
+                            </p>
+                            <p style={{ fontSize: 12, color: '#8A8680', marginTop: 4, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                              {format(parseISO(act.date), 'EEE, MMM d')}
+                              <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
+                              {activitySubtitle(act, unit)}
+                            </p>
+                          </div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#8A8680', flexShrink: 0 }}>
+                          <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </motion.button>
+                    </motion.div>
+                  )
+                }
+                const log = item.log
                 const isExpanded = expandedId === log.id
                 return (
                   <motion.div
@@ -472,6 +534,8 @@ export default function Progress() {
           </AnimatePresence>
         </div>
       </div>
+
+      <ActivityDetailSheet activity={detailActivity} onClose={() => setDetailActivity(null)} />
     </div>
   )
 }

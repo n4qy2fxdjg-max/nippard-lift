@@ -179,6 +179,7 @@ const MAX_BODY_BYTES = 2_000_000
 const MAX_LOGS = 5000
 const MAX_PLANS = 500
 const MAX_BODYWEIGHT = 5000
+const MAX_ACTIVITIES = 5000
 
 /** Parse a JSON body, returning null on malformed/oversized input (never throws). */
 async function readJson(request: Request): Promise<unknown | null> {
@@ -333,20 +334,23 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
       const body = await readJson(request)
       if (!body || typeof body !== 'object') return err('Invalid request body', origin)
 
-      const { logs, plans, weightHistory, bodyweight } = body as {
+      const { logs, plans, weightHistory, bodyweight, activities } = body as {
         logs?: unknown
         plans?: unknown
         weightHistory?: unknown
         bodyweight?: unknown
+        activities?: unknown
       }
 
       if (logs !== undefined && !Array.isArray(logs)) return err('logs must be an array', origin)
       if (plans !== undefined && !Array.isArray(plans)) return err('plans must be an array', origin)
       if (bodyweight !== undefined && !Array.isArray(bodyweight)) return err('bodyweight must be an array', origin)
+      if (activities !== undefined && !Array.isArray(activities)) return err('activities must be an array', origin)
       const logsArr = (logs as unknown[]) ?? []
       const plansArr = (plans as unknown[]) ?? []
       const bwArr = (bodyweight as unknown[]) ?? []
-      if (logsArr.length > MAX_LOGS || plansArr.length > MAX_PLANS || bwArr.length > MAX_BODYWEIGHT) {
+      const actArr = (activities as unknown[]) ?? []
+      if (logsArr.length > MAX_LOGS || plansArr.length > MAX_PLANS || bwArr.length > MAX_BODYWEIGHT || actArr.length > MAX_ACTIVITIES) {
         return err('Payload too large', origin, 413)
       }
 
@@ -412,6 +416,21 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
         )
       }
 
+      for (const act of actArr) {
+        if (!hasStrId(act)) continue
+        const updatedMs = Number((act as { updatedAt?: unknown }).updatedAt) || 0
+        const deleted = (act as { deleted?: unknown }).deleted ? 1 : 0
+        stmts.push(
+          env.DB.prepare(
+            'INSERT INTO activity_logs (id, sync_code, data, updated_at, updated_ms, deleted) ' +
+              'VALUES (?, ?, ?, ?, ?, ?) ' +
+              'ON CONFLICT(id) DO UPDATE SET data = excluded.data, sync_code = excluded.sync_code, ' +
+              'updated_at = excluded.updated_at, updated_ms = excluded.updated_ms, deleted = excluded.deleted ' +
+              'WHERE excluded.updated_ms > activity_logs.updated_ms'
+          ).bind((act as { id: string }).id, code, JSON.stringify(act), nowIso, updatedMs, deleted)
+        )
+      }
+
       if (stmts.length > 0) await env.DB.batch(stmts)
 
       return json({ ok: true, synced: nowIso }, origin)
@@ -419,12 +438,13 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
 
     // ── pull: return everything, incl. tombstones so deletions propagate ──
     if (action === 'pull' && request.method === 'GET') {
-      const [logsResult, plansResult, historyResult, bwEntriesResult, bwBlobResult] = await env.DB.batch([
+      const [logsResult, plansResult, historyResult, bwEntriesResult, bwBlobResult, activitiesResult] = await env.DB.batch([
         env.DB.prepare('SELECT data FROM workout_logs WHERE sync_code = ? ORDER BY updated_ms DESC').bind(code),
         env.DB.prepare('SELECT data FROM custom_plans WHERE sync_code = ?').bind(code),
         env.DB.prepare('SELECT data FROM weight_history WHERE sync_code = ?').bind(code),
         env.DB.prepare('SELECT data FROM bodyweight_entries WHERE sync_code = ? ORDER BY date').bind(code),
         env.DB.prepare('SELECT data FROM bodyweight WHERE sync_code = ?').bind(code),
+        env.DB.prepare('SELECT data FROM activity_logs WHERE sync_code = ? ORDER BY updated_ms DESC').bind(code),
       ])
 
       const parse = (res: D1Result) =>
@@ -441,8 +461,9 @@ async function handleApi(request: Request, env: Env, url: URL, origin: string | 
       const bwBlobRow = bwBlobResult.results?.[0] as { data: string } | undefined
       const bwBlob = bwBlobRow ? JSON.parse(bwBlobRow.data) : []
       const bodyweight = [...(Array.isArray(bwBlob) ? bwBlob : []), ...bwEntries]
+      const activities = parse(activitiesResult)
 
-      return json({ logs, plans, weightHistory, bodyweight }, origin)
+      return json({ logs, plans, weightHistory, bodyweight, activities }, origin)
     }
   }
 
