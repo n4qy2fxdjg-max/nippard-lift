@@ -481,7 +481,7 @@ export default function Home() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                       <div style={{ fontSize: 13, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
-                        {activitySubtitle(act, unit)}
+                        {activitySubtitle(act)}
                       </div>
                       {chevron}
                     </div>

@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { format, parseISO } from 'date-fns'
 import Sheet from './Sheet'
-import { useAppStore } from '../store/useAppStore'
 import { useActivityStore } from '../store/useActivityStore'
 import { useToastStore } from '../store/useToastStore'
 import { activityEmoji } from '../data/activities'
@@ -14,7 +13,6 @@ interface Props {
 }
 
 export default function ActivityDetailSheet({ activity, onClose }: Props) {
-  const unit = useAppStore((s) => s.unit)
   const deleteActivity = useActivityStore((s) => s.deleteActivity)
   const restoreActivity = useActivityStore((s) => s.restoreActivity)
   const showToast = useToastStore((s) => s.show)
@@ -35,8 +33,8 @@ export default function ActivityDetailSheet({ activity, onClose }: Props) {
   if (activity) {
     stats.push({ label: 'duration', value: fmtActivityDuration(activity.durationSec) })
     if (activity.distanceKm && activity.distanceKm > 0) {
-      stats.push({ label: 'distance', value: fmtActivityDistance(activity.distanceKm, unit) })
-      const pace = fmtActivityPace(activity.durationSec, activity.distanceKm, unit)
+      stats.push({ label: 'distance', value: fmtActivityDistance(activity.distanceKm) })
+      const pace = fmtActivityPace(activity.durationSec, activity.distanceKm)
       if (pace) stats.push({ label: 'pace', value: pace })
     }
     if (activity.calories) stats.push({ label: 'calories', value: `${activity.calories}` })

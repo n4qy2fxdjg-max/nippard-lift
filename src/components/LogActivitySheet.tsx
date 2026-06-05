@@ -5,11 +5,8 @@ import { nanoid } from 'nanoid'
 import Sheet from './Sheet'
 import { ACTIVITY_TYPES, type ActivityType } from '../data/activities'
 import { useActivityStore } from '../store/useActivityStore'
-import { useAppStore } from '../store/useAppStore'
 import { useToastStore } from '../store/useToastStore'
 import type { ActivityIntensity } from '../types'
-
-const MI_TO_KM = 1.60934
 
 interface Props {
   open: boolean
@@ -17,10 +14,8 @@ interface Props {
 }
 
 export default function LogActivitySheet({ open, onClose }: Props) {
-  const unit = useAppStore((s) => s.unit)
   const addActivity = useActivityStore((s) => s.addActivity)
   const showToast = useToastStore((s) => s.show)
-  const distanceUnit = unit === 'lb' ? 'mi' : 'km'
 
   const [selected, setSelected] = useState<ActivityType | null>(null)
   const [customName, setCustomName] = useState('')
@@ -48,20 +43,18 @@ export default function LogActivitySheet({ open, onClose }: Props) {
   const hasDistance = showDistance && distNum > 0
   const canSave = !!selected && durationSec > 0 && (selected.id !== 'other' || customName.trim().length > 0)
 
-  // Pace per display unit, M:SS
+  // Pace, M:SS per km
   let paceLabel: string | null = null
   if (hasDistance) {
-    const secPerUnit = durationSec / distNum
-    const pm = Math.floor(secPerUnit / 60)
-    const ps = Math.round(secPerUnit % 60)
-    paceLabel = `${pm}:${String(ps).padStart(2, '0')} /${distanceUnit}`
+    const secPerKm = durationSec / distNum
+    const pm = Math.floor(secPerKm / 60)
+    const ps = Math.round(secPerKm % 60)
+    paceLabel = `${pm}:${String(ps).padStart(2, '0')} /km`
   }
 
   function save() {
     if (!selected || !canSave) return
-    const distanceKm = hasDistance
-      ? parseFloat((unit === 'lb' ? distNum * MI_TO_KM : distNum).toFixed(3))
-      : undefined
+    const distanceKm = hasDistance ? parseFloat(distNum.toFixed(3)) : undefined
     const name = selected.id === 'other' ? customName.trim() : selected.name
     addActivity({
       id: nanoid(),
@@ -81,7 +74,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
 
   return (
     <Sheet open={open} onClose={handleClose}>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, padding: '0 20px 16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, padding: '0 20px 14px' }}>
 
         {!selected ? (
           /* ── Activity picker ── */
@@ -113,20 +106,20 @@ export default function LogActivitySheet({ open, onClose }: Props) {
             </div>
           </>
         ) : (
-          /* ── Detail form ── */
+          /* ── Detail form (compact, fits one screen) ── */
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexShrink: 0 }}>
               <button onClick={() => setSelected(null)} aria-label="Back"
                 style={{ background: 'none', border: 'none', color: '#8A8680', cursor: 'pointer', padding: 0, display: 'flex' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               <span style={{ fontSize: 22 }}>{selected.emoji}</span>
-              <h3 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 24, color: '#F0EDE8', lineHeight: 1 }}>
+              <h3 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 23, color: '#F0EDE8', lineHeight: 1 }}>
                 {selected.id === 'other' ? 'Activity' : selected.name}
               </h3>
             </div>
 
-            <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 18, paddingBottom: 8 }}>
+            <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 13, paddingBottom: 4 }}>
               {selected.id === 'other' && (
                 <Field label="Name">
                   <input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Padel" maxLength={28} style={inputStyle} />
@@ -141,9 +134,9 @@ export default function LogActivitySheet({ open, onClose }: Props) {
               </Field>
 
               {showDistance && (
-                <Field label={`Distance`}>
+                <Field label="Distance">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <NumInput value={distance} onChange={setDistance} placeholder="0.0" suffix={distanceUnit} decimal />
+                    <NumInput value={distance} onChange={setDistance} placeholder="0.0" suffix="km" decimal />
                     {paceLabel && (
                       <span style={{ fontSize: 13, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                         {paceLabel}
@@ -160,7 +153,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
                     return (
                       <button key={lvl} onClick={() => setIntensity(sel ? undefined : lvl)}
                         style={{
-                          flex: 1, padding: '10px 0', borderRadius: 12,
+                          flex: 1, padding: '9px 0', borderRadius: 12,
                           background: sel ? 'rgba(200,169,110,0.15)' : '#1A1A1A',
                           border: sel ? '1px solid rgba(200,169,110,0.5)' : '1px solid rgba(255,255,255,0.07)',
                           color: sel ? '#C8A96E' : '#8A8680', fontSize: 13, fontWeight: sel ? 700 : 400,
@@ -182,7 +175,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <Field label="Date">
-                    <input type="date" value={date} max={format(new Date(), 'yyyy-MM-dd')} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyle, padding: '12px 12px' }} />
+                    <input type="date" value={date} max={format(new Date(), 'yyyy-MM-dd')} onChange={(e) => setDate(e.target.value)} style={{ ...inputStyle, padding: '10px 12px' }} />
                   </Field>
                 </div>
               </div>
@@ -197,7 +190,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
               onClick={save}
               disabled={!canSave}
               style={{
-                flexShrink: 0, marginTop: 12, width: '100%', height: 54, borderRadius: 16,
+                flexShrink: 0, marginTop: 10, width: '100%', height: 50, borderRadius: 16,
                 background: canSave ? '#C8A96E' : '#1A1A1A',
                 color: canSave ? '#0C0C0C' : '#8A8680',
                 border: canSave ? 'none' : '1px solid rgba(255,255,255,0.07)',
@@ -217,7 +210,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 8, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
         {label}
       </p>
       {children}
@@ -238,7 +231,7 @@ function NumInput({ value, onChange, placeholder, suffix, decimal }: {
         }}
         placeholder={placeholder}
         inputMode={decimal ? 'decimal' : 'numeric'}
-        style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 18, fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif', padding: '13px 0', WebkitAppearance: 'none' }}
+        style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 18, fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif', padding: '11px 0', WebkitAppearance: 'none' }}
       />
       <span style={{ fontSize: 12, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', flexShrink: 0 }}>{suffix}</span>
     </div>
@@ -247,7 +240,7 @@ function NumInput({ value, onChange, placeholder, suffix, decimal }: {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', background: '#161616', border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: 14, padding: '13px 14px', fontSize: 16, color: '#F0EDE8',
+  borderRadius: 14, padding: '11px 14px', fontSize: 16, color: '#F0EDE8',
   fontFamily: '"Outfit", system-ui, sans-serif', outline: 'none', boxSizing: 'border-box',
   WebkitAppearance: 'none',
 }
