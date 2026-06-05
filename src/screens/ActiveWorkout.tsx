@@ -7,6 +7,7 @@ import { useLibraryStore } from '../store/useLibraryStore'
 import { getExerciseById } from '../data/exercises'
 import WeightStepper from '../components/WeightStepper'
 import RestTimer from '../components/RestTimer'
+import PRCelebration from '../components/PRCelebration'
 import {
   requestNotificationPermission,
   scheduleRestDoneNotification,
@@ -44,6 +45,16 @@ function getBestE1rm(weightHistory: Record<string, { e1rm: number }[]>, exercise
   return (weightHistory[exerciseId] ?? []).reduce((max, h) => (h.e1rm > max ? h.e1rm : max), 0)
 }
 
+/** The best logged set for an exercise (the lift behind the e1RM) — your PR. */
+function getBestSet(
+  weightHistory: Record<string, { weight: number; reps: number; e1rm: number }[]>,
+  exerciseId: string
+): { weight: number; reps: number; e1rm: number } | null {
+  const hist = weightHistory[exerciseId] ?? []
+  if (hist.length === 0) return null
+  return hist.reduce((best, h) => (h.e1rm > best.e1rm ? h : best))
+}
+
 export default function ActiveWorkout() {
   const navigate = useNavigate()
   const unit = useAppStore((s) => s.unit)
@@ -68,6 +79,8 @@ export default function ActiveWorkout() {
   const [showAbandon, setShowAbandon] = useState(false)
   const [reps, setReps] = useState(8)
   const [rpe, setRpe] = useState<number | undefined>(undefined)
+  const [prCelebration, setPrCelebration] = useState<string | null>(null)
+  const celebratedRef = useRef<Set<number>>(new Set())
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
@@ -165,6 +178,10 @@ export default function ActiveWorkout() {
   const bestE1rmDisplay = unit === 'lb'
     ? `${Math.round(bestE1rm * KG_TO_LB)} lb`
     : `${bestE1rm.toFixed(1)} kg`
+  const bestSet = getBestSet(weightHistory, currentEx?.exerciseId ?? '')
+  const bestSetDisplay = bestSet
+    ? `${unit === 'lb' ? Math.round(bestSet.weight * KG_TO_LB) : (bestSet.weight % 1 === 0 ? bestSet.weight : parseFloat(bestSet.weight.toFixed(1)))} ${unit} × ${bestSet.reps}`
+    : null
 
   function handleComplete() {
     clearAllNotificationTimers()
@@ -180,6 +197,19 @@ export default function ActiveWorkout() {
 
   function handleMarkSet() {
     clearSetReminder()
+    // Detect a PR the instant the set is logged. weightHistory only updates at
+    // completeSession, so bestE1rm here is the pre-workout best for this exercise.
+    // Celebrate once per exercise (the first set that beats the old best).
+    if (currentEx) {
+      const newE1rm = currentEx.currentWeight * (1 + reps / 30)
+      if (bestE1rm > 0 && newE1rm > bestE1rm + 0.01 && !celebratedRef.current.has(currentExIdx)) {
+        celebratedRef.current.add(currentExIdx)
+        const w = unit === 'lb'
+          ? Math.round(currentEx.currentWeight * KG_TO_LB)
+          : (currentEx.currentWeight % 1 === 0 ? currentEx.currentWeight : parseFloat(currentEx.currentWeight.toFixed(1)))
+        setPrCelebration(`${w} ${unit} × ${reps}`)
+      }
+    }
     markSetComplete(reps, rpe)
     setRpe(undefined) // reset after logging
   }
@@ -425,18 +455,38 @@ export default function ActiveWorkout() {
                   <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 34, color: '#F0EDE8', lineHeight: 1.1, marginBottom: 6, flex: 1 }}>
                     {exercise?.name ?? currentEx?.exerciseId}
                   </h2>
-                  {bestE1rm > 0 && (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                      background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
-                      borderRadius: 10, padding: '5px 9px', marginTop: 2,
-                    }}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#C8A96E" />
-                      </svg>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                        {bestE1rmDisplay} e1RM
-                      </span>
+                  {(bestE1rm > 0 || bestSet) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0, marginTop: 2 }}>
+                      {bestE1rm > 0 && (
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
+                          borderRadius: 10, padding: '5px 9px',
+                        }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#C8A96E" />
+                          </svg>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                            {bestE1rmDisplay} e1RM
+                          </span>
+                        </div>
+                      )}
+                      {bestSet && (
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: 5,
+                          background: 'rgba(200,169,110,0.04)', border: '1px solid rgba(200,169,110,0.16)',
+                          borderRadius: 10, padding: '5px 9px',
+                        }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 9V4h12v5a6 6 0 01-12 0z" stroke="#C8A96E" strokeWidth="1.6" strokeLinejoin="round" />
+                            <path d="M9 21h6M12 15v6" stroke="#C8A96E" strokeWidth="1.6" strokeLinecap="round" />
+                            <path d="M6 5H3.5v1.5A2.5 2.5 0 006 9M18 5h2.5v1.5A2.5 2.5 0 0118 9" stroke="#C8A96E" strokeWidth="1.6" strokeLinecap="round" />
+                          </svg>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                            PR {bestSetDisplay}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -618,6 +668,13 @@ export default function ActiveWorkout() {
           </motion.button>
         ) : null}
       </div>
+
+      {/* PR celebration */}
+      <PRCelebration
+        show={prCelebration !== null}
+        headline={prCelebration ?? ''}
+        onDone={() => setPrCelebration(null)}
+      />
 
       {/* Abandon dialog */}
       <AnimatePresence>
