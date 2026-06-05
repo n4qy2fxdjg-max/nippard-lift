@@ -353,7 +353,7 @@ export default function Progress() {
                             <p style={{ fontSize: 12, color: '#8A8680', marginTop: 4, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                               {format(parseISO(act.date), 'EEE, MMM d')}
                               <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
-                              {activitySubtitle(act, unit)}
+                              {activitySubtitle(act)}
                             </p>
                           </div>
                         </div>
