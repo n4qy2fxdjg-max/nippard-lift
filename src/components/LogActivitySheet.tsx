@@ -119,7 +119,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
               </h3>
             </div>
 
-            <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 13, paddingBottom: 4 }}>
+            <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 13, paddingBottom: 4 }}>
               {selected.id === 'other' && (
                 <Field label="Name">
                   <input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Padel" maxLength={28} style={inputStyle} />
@@ -128,8 +128,8 @@ export default function LogActivitySheet({ open, onClose }: Props) {
 
               <Field label="Duration">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <NumInput value={min} onChange={setMin} placeholder="0" suffix="min" />
-                  <NumInput value={sec} onChange={(v) => setSec(v.replace(/[^0-9]/g, '').slice(0, 2))} placeholder="00" suffix="sec" />
+                  <NumInput value={min} onChange={setMin} placeholder="0" suffix="min" width={108} />
+                  <NumInput value={sec} onChange={(v) => setSec(v.replace(/[^0-9]/g, '').slice(0, 2))} placeholder="00" suffix="sec" width={108} />
                 </div>
               </Field>
 
@@ -218,11 +218,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-function NumInput({ value, onChange, placeholder, suffix, decimal }: {
-  value: string; onChange: (v: string) => void; placeholder: string; suffix: string; decimal?: boolean
+function NumInput({ value, onChange, placeholder, suffix, decimal, width }: {
+  value: string; onChange: (v: string) => void; placeholder: string; suffix: string; decimal?: boolean; width?: number
 }) {
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#161616', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '0 14px' }}>
+    <div style={{
+      ...(width ? { width, flexShrink: 0 } : { flex: 1, minWidth: 0 }),
+      display: 'flex', alignItems: 'center', background: '#161616',
+      border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '0 14px',
+    }}>
       <input
         value={value}
         onChange={(e) => {
@@ -231,7 +235,8 @@ function NumInput({ value, onChange, placeholder, suffix, decimal }: {
         }}
         placeholder={placeholder}
         inputMode={decimal ? 'decimal' : 'numeric'}
-        style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 18, fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif', padding: '11px 0', WebkitAppearance: 'none' }}
+        size={1}
+        style={{ flex: 1, minWidth: 0, width: '100%', background: 'none', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 18, fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif', padding: '11px 0', WebkitAppearance: 'none' }}
       />
       <span style={{ fontSize: 12, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', flexShrink: 0 }}>{suffix}</span>
     </div>
