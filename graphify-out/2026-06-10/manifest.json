@@ -318,5 +318,55 @@
     "mtime": 1781070367.391928,
     "ast_hash": "b850d96b857ce09ddf80ef7e0001f0d1",
     "semantic_hash": "b850d96b857ce09ddf80ef7e0001f0d1"
+  },
+  ".claude/settings.json": {
+    "mtime": 1781071661.5088267,
+    "ast_hash": "bfee062c3962c14264fd704e975a6b38",
+    "semantic_hash": "bfee062c3962c14264fd704e975a6b38"
+  },
+  ".github/workflows/deploy.yml": {
+    "mtime": 1781070367.3637636,
+    "ast_hash": "82198e34c2f549b9d7667d4b51a34672",
+    "semantic_hash": "82198e34c2f549b9d7667d4b51a34672"
+  },
+  "README.md": {
+    "mtime": 1781070367.3637636,
+    "ast_hash": "45ba5485c20abaab129cb1a221b25d71",
+    "semantic_hash": "45ba5485c20abaab129cb1a221b25d71"
+  },
+  "index.html": {
+    "mtime": 1781070367.3637636,
+    "ast_hash": "6f0be1a0362d286820a78c913ca6a486",
+    "semantic_hash": "6f0be1a0362d286820a78c913ca6a486"
+  },
+  "public/apple-touch-icon.png": {
+    "mtime": 1781070367.3706048,
+    "ast_hash": "3b85c55d2cd05d0b245f8e3ef0bdb431",
+    "semantic_hash": "3b85c55d2cd05d0b245f8e3ef0bdb431"
+  },
+  "public/favicon.svg": {
+    "mtime": 1781070367.3706048,
+    "ast_hash": "75c8eae091d4c884391c1aaac7a8e269",
+    "semantic_hash": "75c8eae091d4c884391c1aaac7a8e269"
+  },
+  "public/icons.svg": {
+    "mtime": 1781070367.3706048,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": "3b4fcfcf393eca4d264dca4a4663bc37"
+  },
+  "public/pwa-192.png": {
+    "mtime": 1781070367.3706048,
+    "ast_hash": "a919e07d7bb54bec890790c2ed2bf8e1",
+    "semantic_hash": "a919e07d7bb54bec890790c2ed2bf8e1"
+  },
+  "public/pwa-512-maskable.png": {
+    "mtime": 1781070367.3706048,
+    "ast_hash": "afe871311092c9005b0d81bbd8dc16c7",
+    "semantic_hash": "afe871311092c9005b0d81bbd8dc16c7"
+  },
+  "public/pwa-512.png": {
+    "mtime": 1781070367.3706048,
+    "ast_hash": "9f63bd72c916ddb6d755bd30d524fe91",
+    "semantic_hash": "9f63bd72c916ddb6d755bd30d524fe91"
   }
 }

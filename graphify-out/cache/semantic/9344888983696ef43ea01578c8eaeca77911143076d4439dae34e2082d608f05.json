@@ -1,1 +1,1 @@
-{"nodes": [{"id": "activities_data", "label": "Activities Static Data (activities.ts)", "file_type": "code", "source_file": "src/data/activities.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}
+{"nodes": [{"id": "activities_activities", "label": "activities", "file_type": "code", "source_file": "src/data/activities.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}
