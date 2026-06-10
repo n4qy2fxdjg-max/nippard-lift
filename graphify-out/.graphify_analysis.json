@@ -1,8 +1,8 @@
 {
   "communities": {
     "0": [
-      "builder_builder",
       "components_exercisedetailsheet",
+      "components_exercisedetailsheet_exercisedetailsheet",
       "components_exercisedetailsheet_props",
       "components_exerciserow",
       "components_exerciserow_exerciserow",
@@ -18,30 +18,20 @@
       "components_programdetailsheet_props",
       "components_workoutcard",
       "components_workoutcard_props",
+      "components_workoutcard_workoutcard",
       "data_exercises",
+      "data_exercises_exercises",
       "data_exercises_getexercisesbygroup",
       "data_programs",
+      "data_programs_featuredprograms",
       "exercisedetailsheet_exercisedetailsheet",
-      "exercises_exercises",
-      "exercises_getexercisebyid",
-      "index_activesession",
-      "index_equipment",
-      "index_exercise",
-      "index_musclegroup",
-      "index_program",
-      "index_programexercise",
-      "index_programtag",
-      "index_sessionexercise",
-      "index_setresult",
-      "index_warmupset",
-      "index_weighthistoryentry",
-      "index_workoutlog",
       "lib_musclelabels",
       "lib_musclelabels_musclecolor",
       "lib_musclelabels_musclelabel",
-      "library_library",
-      "programs_featuredprograms",
+      "lib_numerals",
+      "lib_numerals_towestern",
       "screens_builder",
+      "screens_builder_builder",
       "screens_builder_chipstyle",
       "screens_builder_fmtweight",
       "screens_builder_grouptabs",
@@ -51,28 +41,42 @@
       "screens_library_fuzzyscore",
       "screens_library_fuzzysearch",
       "screens_library_grouptabs",
+      "screens_library_library",
       "screens_library_muscle_categories",
+      "sheet_sheet",
       "store_uselibrarystore",
       "store_uselibrarystore_librarystore",
+      "store_uselibrarystore_uselibrarystore",
       "store_useworkoutstore",
+      "store_useworkoutstore_buildsessionfromprogram",
+      "store_useworkoutstore_buildwarmupsets",
+      "store_useworkoutstore_useworkoutstore",
       "store_useworkoutstore_warmup_exercise_ids",
       "store_useworkoutstore_workoutstore",
       "types_index",
+      "types_index_activesession",
       "types_index_bodygroup",
-      "uselibrarystore_uselibrarystore",
+      "types_index_equipment",
+      "types_index_exercise",
+      "types_index_musclegroup",
+      "types_index_program",
+      "types_index_programexercise",
+      "types_index_programtag",
+      "types_index_sessionexercise",
+      "types_index_setresult",
+      "types_index_warmupset",
+      "types_index_weighthistoryentry",
+      "types_index_workoutlog",
       "useworkoutstore_buildsessionfromprogram",
-      "useworkoutstore_buildwarmupsets",
-      "useworkoutstore_useworkoutstore",
-      "workoutcard_workoutcard"
+      "useworkoutstore_buildwarmupsets"
     ],
     "1": [
+      "activeworkout_activeworkout",
       "app_animatedroutes",
       "app_app",
       "app_autosync",
-      "app_pagefade",
-      "components_sheet",
-      "components_sheet_sheetprops",
-      "components_updateprompt",
+      "bottomnav_bottomnav",
+      "builder_builder",
       "components_weightstepper",
       "components_weightstepper_btnstyle",
       "components_weightstepper_props",
@@ -81,14 +85,14 @@
       "components_workoutdetailsheet_formatduration",
       "components_workoutdetailsheet_props",
       "components_workoutdetailsheet_workoutdetailsheet",
-      "index_bodyweightentry",
-      "lib_numerals",
-      "lib_numerals_towestern",
-      "lib_theme",
+      "home_home",
+      "layout_layout",
+      "library_library",
       "onboarding_onboarding",
       "screens_onboarding",
       "screens_onboarding_herostep",
       "screens_onboarding_namestep",
+      "screens_onboarding_onboarding",
       "screens_onboarding_readystep",
       "screens_onboarding_slidestyle",
       "screens_onboarding_slidetransition",
@@ -101,24 +105,27 @@
       "screens_settings_fieldlabel",
       "screens_settings_inputstyle",
       "screens_settings_section",
+      "screens_settings_settings",
       "screens_settings_spinnericon",
       "screens_settings_statcard",
       "screens_settings_stepperbtn",
       "screens_settings_syncview",
       "settings_settings",
-      "sheet_sheet",
       "src_app",
+      "src_app_animatedroutes",
+      "src_app_app",
+      "src_app_autosync",
+      "src_app_pagefade",
       "src_app_tab_order",
       "src_main",
       "store_useappstore",
       "store_useappstore_appstore",
-      "theme_anim",
-      "theme_colors",
-      "theme_font",
-      "theme_radius",
-      "theme_z",
+      "store_useappstore_useappstore",
+      "store_usesyncstore_usesyncstore",
+      "toaster_toaster",
+      "types_index_bodyweightentry",
       "updateprompt_updateprompt",
-      "useappstore_useappstore"
+      "workoutcard_workoutcard"
     ],
     "2": [
       "components_activitydetailsheet",
@@ -137,12 +144,12 @@
       "components_streakchip_props",
       "components_streakchip_streakchip",
       "components_toaster",
+      "components_toaster_toaster",
       "data_activities",
+      "data_activities_activity_types",
       "data_activities_activityemoji",
       "data_activities_activitytype",
       "data_activities_getactivitytype",
-      "home_home",
-      "index_activitylog",
       "lib_active",
       "lib_active_activeactivities",
       "lib_active_activelogs",
@@ -152,11 +159,11 @@
       "lib_activityformat_fmtactivitydistance",
       "lib_activityformat_fmtactivityduration",
       "lib_activityformat_fmtactivitypace",
-      "progress_progress",
       "screens_home",
       "screens_home_computestreak",
       "screens_home_formatvolume",
       "screens_home_greeting",
+      "screens_home_home",
       "screens_home_planrow",
       "screens_home_planrowprops",
       "screens_progress",
@@ -164,16 +171,16 @@
       "screens_progress_formatduration",
       "screens_progress_itemvariants",
       "screens_progress_listvariants",
+      "screens_progress_progress",
       "store_useactivitystore",
       "store_useactivitystore_activitystore",
+      "store_useactivitystore_useactivitystore",
       "store_usetoaststore",
       "store_usetoaststore_showoptions",
       "store_usetoaststore_toaststore",
-      "toaster_toaster",
+      "store_usetoaststore_usetoaststore",
       "types_index_activityintensity",
-      "useactivitystore_useactivitystore",
-      "usesyncstore_usesyncstore",
-      "usetoaststore_usetoaststore"
+      "types_index_activitylog"
     ],
     "3": [
       "package",
@@ -214,7 +221,6 @@
       "package_version"
     ],
     "4": [
-      "activeworkout_activeworkout",
       "components_prcelebration",
       "components_prcelebration_colors",
       "components_prcelebration_prcelebration",
@@ -237,6 +243,7 @@
       "lib_push_supported",
       "lib_push_urlbase64touint8array",
       "screens_activeworkout",
+      "screens_activeworkout_activeworkout",
       "screens_activeworkout_bigbtnstyle",
       "screens_activeworkout_fmtwarmupweight",
       "screens_activeworkout_formatelapsed",
@@ -248,65 +255,38 @@
       "screens_activeworkout_warmupstep"
     ],
     "5": [
-      "activities_data",
-      "appletouchicon_ios_logo",
-      "claudemd_project_guide",
-      "concept_e1rm_epley",
-      "concept_lww_sync",
-      "concept_mev_mrv",
-      "concept_progressive_overload",
-      "concept_pwa",
-      "concept_vapid_push",
-      "deploy_ci_workflow",
-      "exercises_data",
-      "favicon_dumbbell_icon",
-      "icons_svg_sprite",
-      "indexhtml_app_shell",
-      "main_app_entry",
-      "musclevolume_tracker",
-      "programs_data",
-      "push_notifications_lib",
-      "pwa192_app_icon",
-      "pwa512_app_icon",
-      "pwa512maskable_app_icon",
-      "readme_project_overview",
-      "theme_design_system",
-      "useactivitystore_store",
-      "useappstore_store",
-      "usebuilderstore_store",
-      "uselibrarystore_store",
-      "usesyncstore_store",
-      "usetoaststore_store",
-      "useworkoutstore_store",
-      "worker_api_entrypoint"
-    ],
-    "6": [
       "claude_lift",
       "src_worker",
       "src_worker_b64url",
       "src_worker_b64urlstr",
       "src_worker_corsheaders",
+      "src_worker_env",
       "src_worker_err",
       "src_worker_fetch",
+      "src_worker_generatecode",
+      "src_worker_handleapi",
       "src_worker_hasstrid",
       "src_worker_isallowedorigin",
       "src_worker_isstr",
       "src_worker_json",
+      "src_worker_ratelimited",
       "src_worker_readjson",
+      "src_worker_reminderscheduler",
       "src_worker_reminderscheduler_alarm",
       "src_worker_reminderscheduler_constructor",
+      "src_worker_reminderscheduler_fetch",
       "src_worker_reminderscheduler_fire",
+      "src_worker_sendpush",
+      "src_worker_signvapid",
       "src_worker_vapidkey",
       "worker_default",
-      "worker_env",
       "worker_generatecode",
       "worker_handleapi",
       "worker_ratelimited",
-      "worker_reminderscheduler",
       "worker_sendpush",
       "worker_signvapid"
     ],
-    "7": [
+    "6": [
       "tsconfig_app",
       "tsconfig_app_compileroptions",
       "tsconfig_app_compileroptions_allowimportingtsextensions",
@@ -328,27 +308,28 @@
       "tsconfig_app_exclude",
       "tsconfig_app_include"
     ],
-    "8": [
+    "7": [
       "components_builderitem",
       "components_builderitem_builderitem",
       "components_builderitem_microbtnstyle",
       "components_builderitem_props",
-      "index_builderitem",
-      "index_customplan",
-      "store_useactivitystore_pushsync",
-      "store_usebuilderstore",
-      "store_usebuilderstore_autosync",
-      "store_usebuilderstore_builderstore",
-      "store_usesyncstore",
-      "store_usesyncstore_mergeactivities",
-      "store_usesyncstore_mergebodyweight",
-      "store_usesyncstore_mergehistory",
-      "store_usesyncstore_mergelogs",
-      "store_usesyncstore_mergeplans",
-      "store_usesyncstore_syncstore",
-      "usebuilderstore_usebuilderstore"
+      "components_musclevolumetracker",
+      "components_musclevolumetracker_musclevolumetracker",
+      "data_exercises_getexercisebyid",
+      "exercises_getexercisebyid",
+      "lib_musclevolume",
+      "lib_musclevolume_muscle_targets",
+      "lib_musclevolume_muscle_to_category",
+      "lib_musclevolume_muscletarget",
+      "lib_musclevolume_status_color",
+      "lib_musclevolume_trailingweeksets",
+      "lib_musclevolume_volumestatus",
+      "musclevolume_trailingweeksets",
+      "musclevolume_volumestatustype",
+      "musclevolumetracker_musclevolumetracker",
+      "progress_progress"
     ],
-    "9": [
+    "8": [
       "tsconfig_node",
       "tsconfig_node_compileroptions",
       "tsconfig_node_compileroptions_allowimportingtsextensions",
@@ -368,9 +349,39 @@
       "tsconfig_node_compileroptions_verbatimmodulesyntax",
       "tsconfig_node_include"
     ],
+    "9": [
+      "store_useactivitystore_pushsync",
+      "store_usebuilderstore",
+      "store_usebuilderstore_autosync",
+      "store_usebuilderstore_builderstore",
+      "store_usebuilderstore_usebuilderstore",
+      "store_usesyncstore",
+      "store_usesyncstore_mergeactivities",
+      "store_usesyncstore_mergebodyweight",
+      "store_usesyncstore_mergehistory",
+      "store_usesyncstore_mergelogs",
+      "store_usesyncstore_mergeplans",
+      "store_usesyncstore_syncstore",
+      "types_index_builderitem",
+      "types_index_customplan"
+    ],
     "10": [
-      "bottomnav_bottomnav",
+      "app_pagefade",
+      "components_sheet",
+      "components_sheet_sheet",
+      "components_sheet_sheetprops",
+      "components_updateprompt",
+      "components_updateprompt_updateprompt",
+      "lib_theme",
+      "lib_theme_anim",
+      "lib_theme_colors",
+      "lib_theme_font",
+      "lib_theme_radius",
+      "lib_theme_z"
+    ],
+    "11": [
       "components_bottomnav",
+      "components_bottomnav_bottomnav",
       "components_bottomnav_buildicon",
       "components_bottomnav_homeicon",
       "components_bottomnav_libraryicon",
@@ -379,111 +390,116 @@
       "components_bottomnav_settingsicon",
       "components_bottomnav_tabs",
       "components_layout",
-      "layout_layout"
-    ],
-    "11": [
-      "components_musclevolumetracker",
-      "lib_musclevolume",
-      "lib_musclevolume_muscle_to_category",
-      "musclevolume_muscletarget",
-      "musclevolume_statuscolor",
-      "musclevolume_trailingweeksets",
-      "musclevolume_volumestatus",
-      "musclevolumetracker_musclevolumetracker"
+      "components_layout_layout"
     ],
     "12": [
+      "appletouchicon_ios_logo",
+      "favicon_dumbbell_icon",
+      "icons_svg_sprite",
+      "indexhtml_app_shell",
+      "main_app_entry",
+      "pwa192_app_icon",
+      "pwa512_app_icon",
+      "pwa512maskable_app_icon"
+    ],
+    "13": [
       "components_linechart",
       "components_linechart_chartpoint",
       "components_linechart_fmt",
       "components_linechart_linechart",
       "components_linechart_props"
     ],
-    "13": [
+    "14": [
       "components_heatmapgrid",
       "components_heatmapgrid_getopacity",
       "components_heatmapgrid_heatmapgrid",
       "components_heatmapgrid_props"
     ],
-    "14": [
+    "15": [
       "claude_launch",
       "claude_launch_configurations",
       "claude_launch_version"
     ],
-    "15": [
+    "16": [
       "claude_settings",
       "claude_settings_hooks",
       "claude_settings_hooks_pretooluse"
     ],
-    "16": [
+    "17": [
       "tsconfig",
       "tsconfig_files",
       "tsconfig_references"
     ],
-    "17": [
-      "activities_activities"
-    ],
     "18": [
-      "eslint_config"
+      "push_notifications_lib",
+      "readme_project_overview"
     ],
     "19": [
-      "public_push_sw"
+      "activities_activities"
     ],
     "20": [
+      "deploy_ci_workflow"
+    ],
+    "21": [
+      "eslint_config"
+    ],
+    "22": [
+      "public_push_sw"
+    ],
+    "23": [
       "vite_config"
     ]
   },
   "cohesion": {
-    "0": 0.0855094726062468,
-    "1": 0.059506531204644414,
+    "0": 0.07155399473222125,
+    "1": 0.0531986531986532,
     "2": 0.08345428156748912,
     "3": 0.05555555555555555,
     "4": 0.10887096774193548,
-    "5": 0.12043010752688173,
-    "6": 0.18840579710144928,
-    "7": 0.1,
-    "8": 0.16993464052287582,
-    "9": 0.1111111111111111,
-    "10": 0.2,
-    "11": 0.6071428571428571,
-    "12": 0.5,
+    "5": 0.12643678160919541,
+    "6": 0.1,
+    "7": 0.1695906432748538,
+    "8": 0.1111111111111111,
+    "9": 0.23076923076923078,
+    "10": 0.22727272727272727,
+    "11": 0.18181818181818182,
+    "12": 0.2857142857142857,
     "13": 0.5,
-    "14": 0.6666666666666666,
+    "14": 0.5,
     "15": 0.6666666666666666,
     "16": 0.6666666666666666,
-    "17": 1.0,
+    "17": 0.6666666666666666,
     "18": 1.0,
     "19": 1.0,
-    "20": 1.0
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0
   },
   "gods": [
     {
-      "id": "useworkoutstore_useworkoutstore",
+      "id": "store_useworkoutstore_useworkoutstore",
       "label": "useWorkoutStore",
-      "degree": 29
+      "degree": 32
     },
     {
-      "id": "useappstore_useappstore",
+      "id": "store_useappstore_useappstore",
       "label": "useAppStore",
-      "degree": 24
+      "degree": 28
     },
     {
-      "id": "claudemd_project_guide",
-      "label": "CLAUDE.md Project Guide",
-      "degree": 22
+      "id": "store_usesyncstore_usesyncstore",
+      "label": "useSyncStore",
+      "degree": 19
     },
     {
-      "id": "tsconfig_app_compileroptions",
-      "label": "compilerOptions",
-      "degree": 17
-    },
-    {
-      "id": "index_workoutlog",
+      "id": "types_index_workoutlog",
       "label": "WorkoutLog",
       "degree": 17
     },
     {
-      "id": "usesyncstore_usesyncstore",
-      "label": "useSyncStore",
+      "id": "tsconfig_app_compileroptions",
+      "label": "compilerOptions",
       "degree": 17
     },
     {
@@ -492,80 +508,118 @@
       "degree": 16
     },
     {
-      "id": "index_activitylog",
+      "id": "store_uselibrarystore_uselibrarystore",
+      "label": "useLibraryStore",
+      "degree": 15
+    },
+    {
+      "id": "store_usetoaststore_usetoaststore",
+      "label": "useToastStore",
+      "degree": 14
+    },
+    {
+      "id": "types_index_activitylog",
       "label": "ActivityLog",
       "degree": 13
     },
     {
-      "id": "usetoaststore_usetoaststore",
-      "label": "useToastStore",
-      "degree": 13
-    },
-    {
-      "id": "exercises_getexercisebyid",
-      "label": "getExerciseById",
-      "degree": 13
+      "id": "data_exercises_getexercisebyid",
+      "label": "getExerciseById()",
+      "degree": 12
     }
   ],
   "surprises": [
     {
-      "source": "SVG Icon Sprite Sheet",
-      "target": "index.html App Shell",
+      "source": "Lift PWA Project",
+      "target": "MUSCLE_TARGETS",
       "source_files": [
-        "public/icons.svg",
-        "index.html"
-      ],
-      "confidence": "AMBIGUOUS",
-      "relation": "references",
-      "why": "ambiguous connection - not explicitly stated in source; crosses file types (doc \u2194 image); connects across different repos/directories"
-    },
-    {
-      "source": "CLAUDE.md Project Guide",
-      "target": "Activities Static Data (activities.ts)",
-      "source_files": [
-        "CLAUDE.md",
-        "src/data/activities.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "references",
-      "why": "crosses file types (doc \u2194 code); connects across different repos/directories; peripheral node `Activities Static Data (activities.ts)` unexpectedly reaches hub `CLAUDE.md Project Guide`"
-    },
-    {
-      "source": "CLAUDE.md Project Guide",
-      "target": "Exercises Static Data (exercises.ts)",
-      "source_files": [
-        "CLAUDE.md",
-        "src/data/exercises.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "references",
-      "why": "crosses file types (doc \u2194 code); connects across different repos/directories; peripheral node `Exercises Static Data (exercises.ts)` unexpectedly reaches hub `CLAUDE.md Project Guide`"
-    },
-    {
-      "source": "CLAUDE.md Project Guide",
-      "target": "Muscle Volume Tracker (muscleVolume.ts)",
-      "source_files": [
-        "CLAUDE.md",
+        "/home/user/nippard-lift/CLAUDE.md",
         "src/lib/muscleVolume.ts"
       ],
       "confidence": "EXTRACTED",
       "relation": "references",
-      "why": "crosses file types (doc \u2194 code); connects across different repos/directories; peripheral node `Muscle Volume Tracker (muscleVolume.ts)` unexpectedly reaches hub `CLAUDE.md Project Guide`"
+      "why": "crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
     },
     {
-      "source": "CLAUDE.md Project Guide",
-      "target": "Featured Programs Static Data (programs.ts)",
+      "source": "Lift PWA Project",
+      "target": "useSyncStore",
       "source_files": [
-        "CLAUDE.md",
-        "src/data/programs.ts"
+        "/home/user/nippard-lift/CLAUDE.md",
+        "src/store/useSyncStore.ts"
       ],
       "confidence": "EXTRACTED",
       "relation": "references",
-      "why": "crosses file types (doc \u2194 code); connects across different repos/directories; peripheral node `Featured Programs Static Data (programs.ts)` unexpectedly reaches hub `CLAUDE.md Project Guide`"
+      "why": "crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Toaster",
+      "target": "useToastStore",
+      "source_files": [
+        "/home/user/nippard-lift/src/components/Toaster.tsx",
+        "src/store/useToastStore.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `Toaster` unexpectedly reaches hub `useToastStore`"
+    },
+    {
+      "source": "Lift PWA Project",
+      "target": "useWorkoutStore",
+      "source_files": [
+        "/home/user/nippard-lift/CLAUDE.md",
+        "src/store/useWorkoutStore.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "WorkoutCard",
+      "target": "WorkoutLog",
+      "source_files": [
+        "/home/user/nippard-lift/src/components/WorkoutCard.tsx",
+        "src/types/index.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `WorkoutCard` unexpectedly reaches hub `WorkoutLog`"
     }
   ],
-  "tokens": {
-    "input": 170728,
-    "output": 23535
-  }
+  "questions": [
+    {
+      "type": "ambiguous_edge",
+      "question": "What is the exact relationship between `useSyncStore` and `ReminderScheduler`?",
+      "why": "Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low."
+    },
+    {
+      "type": "ambiguous_edge",
+      "question": "What is the exact relationship between `index.html App Shell` and `SVG Icon Sprite Sheet`?",
+      "why": "Edge tagged AMBIGUOUS (relation: references) - confidence is low."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `useSyncStore` connect `Community 1` to `Community 0`, `Community 9`, `Community 2`, `Community 5`?",
+      "why": "High betweenness centrality (0.099) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `ReminderScheduler` connect `Community 5` to `Community 1`?",
+      "why": "High betweenness centrality (0.085) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `useWorkoutStore` connect `Community 0` to `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 7`, `Community 9`, `Community 11`?",
+      "why": "High betweenness centrality (0.082) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `useWorkoutStore` (e.g. with `ActiveWorkout` and `Home`) actually correct?",
+      "why": "`useWorkoutStore` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `useAppStore` (e.g. with `Home` and `Onboarding`) actually correct?",
+      "why": "`useAppStore` has 3 INFERRED edges - model-reasoned connections that need verification."
+    }
+  ]
 }
