@@ -53,5 +53,5 @@ export const muscleColor: Record<string, string> = {
   adductors: '#23993F',
   abs: '#64D2FF',
   obliques: '#5BC4F0',
-  neck: '#8A8680',
+  neck: '#A8A49E',
 }

@@ -36,7 +36,7 @@ export default function LineChart({ data, unit = '', color = '#C8A96E', height =
       <div style={{
         height,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#8A8680', fontSize: 13, fontStyle: 'italic',
+        color: '#A8A49E', fontSize: 13, fontStyle: 'italic',
         fontFamily: '"Outfit", system-ui, sans-serif',
       }}>
         No data yet
@@ -133,7 +133,7 @@ export default function LineChart({ data, unit = '', color = '#C8A96E', height =
           {/* x-axis labels: first & last */}
           <text
             x={padX} y={height - 6} textAnchor="start"
-            fontSize="10" fill="#8A8680"
+            fontSize="10" fill="#A8A49E"
             fontFamily='"Outfit", system-ui, sans-serif'
           >
             {data[0].label}
@@ -141,7 +141,7 @@ export default function LineChart({ data, unit = '', color = '#C8A96E', height =
           {data.length > 1 && (
             <text
               x={w - padX} y={height - 6} textAnchor="end"
-              fontSize="10" fill="#8A8680"
+              fontSize="10" fill="#A8A49E"
               fontFamily='"Outfit", system-ui, sans-serif'
             >
               {data[data.length - 1].label}

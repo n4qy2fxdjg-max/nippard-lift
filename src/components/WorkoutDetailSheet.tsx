@@ -48,11 +48,12 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
             <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={onClose}
+              aria-label="Close"
               style={{
-                width: 32, height: 32,
+                width: 44, height: 44,
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '50%', color: '#8A8680', cursor: 'pointer',
+                borderRadius: '50%', color: '#A8A49E', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, marginTop: 4,
               }}
@@ -63,7 +64,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
             </motion.button>
           </div>
           <p style={{
-            fontSize: 13, color: '#8A8680', marginBottom: 18,
+            fontSize: 13, color: '#A8A49E', marginBottom: 18,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             {format(parseISO(log.date), 'EEEE, MMM d, yyyy')}
@@ -88,7 +89,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
                   {s.value}
                 </div>
                 <div style={{
-                  fontSize: 10, color: '#8A8680', marginTop: 4,
+                  fontSize: 11, color: '#A8A49E', marginTop: 4,
                   fontFamily: '"Outfit", system-ui, sans-serif',
                   textTransform: 'uppercase', letterSpacing: '1px',
                 }}>
@@ -100,8 +101,8 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
 
           {/* Exercises */}
           <p style={{
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
+            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1.5px', color: '#A8A49E', marginBottom: 14,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             Exercises
@@ -128,7 +129,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
                           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" fill="#C8A96E" />
                         </svg>
                         <span style={{
-                          fontSize: 10, color: '#C8A96E', fontWeight: 700,
+                          fontSize: 11, color: '#C8A96E', fontWeight: 700,
                           fontFamily: '"Outfit", system-ui, sans-serif',
                           textTransform: 'uppercase', letterSpacing: '0.5px',
                         }}>
@@ -148,7 +149,7 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
                       }}>
                         {fmtWeight(set.weight)} × {set.reps}
                         {set.rpe != null && (
-                          <span style={{ color: '#8A8680', marginLeft: 5 }}>
+                          <span style={{ color: '#A8A49E', marginLeft: 5 }}>
                             @{set.rpe}
                           </span>
                         )}

@@ -151,7 +151,7 @@ export default function Home() {
             <div>
               <p style={{
                 fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-                letterSpacing: '1.5px', color: '#8A8680',
+                letterSpacing: '1.5px', color: '#A8A49E',
                 fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 10,
               }}>
                 {today}
@@ -160,7 +160,7 @@ export default function Home() {
                 fontFamily: '"DM Serif Display", Georgia, serif',
                 fontSize: 40, color: '#F0EDE8', lineHeight: 1.1, letterSpacing: '-0.5px',
               }}>
-                <em style={{ fontStyle: 'italic', color: '#8A8680', fontSize: 26, display: 'block', lineHeight: 1.3, marginBottom: 2 }}>
+                <em style={{ fontStyle: 'italic', color: '#A8A49E', fontSize: 26, display: 'block', lineHeight: 1.3, marginBottom: 2 }}>
                   {prefix},
                 </em>
                 {name}.
@@ -181,7 +181,8 @@ export default function Home() {
         {/* Stats row */}
         <div style={{ display: 'flex', gap: 10, padding: '0 24px', marginBottom: 28 }}>
           {[
-            { label: 'this week', value: stats.thisWeek, unit: 'workouts' },
+            // Counts lifting workouts AND logged activities — label accordingly
+            { label: 'this week', value: stats.thisWeek, unit: 'sessions' },
             { label: 'volume', value: stats.volume, unit: stats.volumeUnit },
             { label: 'total', value: stats.totalSessions, unit: 'sessions' },
           ].map((s) => (
@@ -216,8 +217,8 @@ export default function Home() {
                 {s.unit}
               </div>
               <div style={{
-                fontSize: 10,
-                color: '#8A8680',
+                fontSize: 11,
+                color: '#A8A49E',
                 marginTop: 1,
                 fontFamily: '"Outfit", system-ui, sans-serif',
                 textTransform: 'uppercase',
@@ -236,14 +237,14 @@ export default function Home() {
         <div style={{ marginBottom: 36 }}>
           <div style={{ padding: '0 24px', marginBottom: 14, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                 Programmes
               </p>
-              <em style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'rgba(138,134,128,0.5)' }}>
+              <em style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'rgba(168,164,158,0.5)' }}>
                 featured
               </em>
             </div>
-            <p style={{ fontSize: 11, color: 'rgba(138,134,128,0.6)', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+            <p style={{ fontSize: 11, color: 'rgba(168,164,158,0.6)', fontFamily: '"Outfit", system-ui, sans-serif' }}>
               {featuredPrograms.length} plans
             </p>
           </div>
@@ -262,7 +263,7 @@ export default function Home() {
         {/* My Plans */}
         <div style={{ padding: '0 24px', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
               My Plans
             </p>
             {plans.length > 0 && (
@@ -274,7 +275,7 @@ export default function Home() {
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  color: editMode ? '#C8A96E' : '#8A8680',
+                  color: editMode ? '#C8A96E' : '#A8A49E',
                   fontFamily: '"Outfit", system-ui, sans-serif',
                   background: 'none',
                   border: 'none',
@@ -289,7 +290,7 @@ export default function Home() {
 
           {plans.length === 0 ? (
             <div style={{ padding: '24px 20px', borderRadius: 16, border: '1px dashed rgba(255,255,255,0.08)', textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
                 Build your first custom plan below
               </p>
             </div>
@@ -345,7 +346,7 @@ export default function Home() {
               </div>
               <div style={{
                 fontSize: 13,
-                color: '#8A8680',
+                color: '#A8A49E',
                 marginTop: 3,
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}>
@@ -391,7 +392,7 @@ export default function Home() {
               <div style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 20, color: '#F0EDE8', lineHeight: 1.2 }}>
                 Log a session
               </div>
-              <div style={{ fontSize: 13, color: '#8A8680', marginTop: 3, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              <div style={{ fontSize: 13, color: '#A8A49E', marginTop: 3, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                 Running, walking, tennis, stairs…
               </div>
             </div>
@@ -411,11 +412,11 @@ export default function Home() {
         {recentItems.length > 0 && (
           <div style={{ padding: '0 24px', marginTop: 4 }}>
             <p style={{
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '1.5px',
-              color: '#8A8680',
+              color: '#A8A49E',
               fontFamily: '"Outfit", system-ui, sans-serif',
               marginBottom: 14,
             }}>
@@ -431,7 +432,7 @@ export default function Home() {
                   cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
                 }
                 const chevron = (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#8A8680', flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#A8A49E', flexShrink: 0 }}>
                     <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )
@@ -444,7 +445,7 @@ export default function Home() {
                         <div style={{ fontSize: 14, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                           {log.planName}
                         </div>
-                        <div style={{ fontSize: 12, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                        <div style={{ fontSize: 12, color: '#A8A49E', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                           {format(new Date(log.date), 'EEE, d MMM')}
                         </div>
                       </div>
@@ -454,7 +455,7 @@ export default function Home() {
                             {Math.round(log.durationSec / 60)} min
                           </div>
                           {log.personalRecords?.length > 0 && (
-                            <div style={{ fontSize: 10, color: '#34C759', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            <div style={{ fontSize: 11, color: '#34C759', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                               {log.personalRecords.length} PR
                             </div>
                           )}
@@ -474,7 +475,7 @@ export default function Home() {
                         <div style={{ fontSize: 14, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {act.name}
                         </div>
-                        <div style={{ fontSize: 12, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                        <div style={{ fontSize: 12, color: '#A8A49E', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                           {format(new Date(act.date), 'EEE, d MMM')}
                         </div>
                       </div>
@@ -550,7 +551,7 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
         {/* Drag handle in edit mode */}
         {editMode && (
           <div style={{
-            color: '#8A8680',
+            color: '#A8A49E',
             display: 'flex',
             alignItems: 'center',
             cursor: 'grab',
@@ -583,7 +584,7 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
           <p style={{ fontSize: 15, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif' }}>
             {plan.name}
           </p>
-          <p style={{ fontSize: 12, color: '#8A8680', marginTop: 3, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+          <p style={{ fontSize: 12, color: '#A8A49E', marginTop: 3, fontFamily: '"Outfit", system-ui, sans-serif' }}>
             {plan.items.length} exercise{plan.items.length !== 1 ? 's' : ''}
           </p>
         </button>
@@ -592,8 +593,9 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
         {editMode ? (
           <button
             onClick={onDelete}
+            aria-label="Delete plan"
             style={{
-              width: 32, height: 32, borderRadius: 12,
+              width: 44, height: 44, borderRadius: 12,
               background: 'rgba(255,69,58,0.12)',
               border: '1px solid rgba(255,69,58,0.25)',
               color: '#FF453A',
@@ -612,7 +614,7 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
             <motion.div
               animate={{ rotate: expanded ? 90 : 0 }}
               transition={{ duration: 0.18 }}
-              style={{ display: 'flex', alignItems: 'center', color: '#8A8680' }}
+              style={{ display: 'flex', alignItems: 'center', color: '#A8A49E' }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -621,8 +623,9 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
             {/* Play button starts the workout */}
             <button
               onClick={(e) => { e.stopPropagation(); onStart() }}
+              aria-label="Start workout"
               style={{
-                width: 36, height: 36, borderRadius: 12,
+                width: 44, height: 44, borderRadius: 12,
                 background: '#C8A96E',
                 border: 'none',
                 cursor: 'pointer',
@@ -672,8 +675,8 @@ function PlanRow({ plan, expanded, editMode, unit, onToggle, onStart, onDelete }
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
                       <span style={{
-                        fontSize: 10,
-                        color: '#8A8680',
+                        fontSize: 11,
+                        color: '#A8A49E',
                         fontFamily: '"Outfit", system-ui, sans-serif',
                         fontWeight: 600,
                         minWidth: 16,

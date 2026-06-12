@@ -72,7 +72,7 @@ export default function Settings() {
             fontFamily: '"DM Serif Display", Georgia, serif',
             fontSize: 40, color: '#F0EDE8', lineHeight: 1.1, letterSpacing: '-0.5px',
           }}>
-            <em style={{ fontStyle: 'italic', color: '#8A8680', fontSize: 26, display: 'block', lineHeight: 1.3, marginBottom: 2 }}>
+            <em style={{ fontStyle: 'italic', color: '#A8A49E', fontSize: 26, display: 'block', lineHeight: 1.3, marginBottom: 2 }}>
               Your
             </em>
             Settings.
@@ -110,7 +110,7 @@ export default function Settings() {
                     borderRadius: 16, cursor: 'pointer',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                     fontSize: 18, fontWeight: 700,
-                    color: unit === u ? '#C8A96E' : '#8A8680',
+                    color: unit === u ? '#C8A96E' : '#A8A49E',
                     transition: 'all 0.18s ease',
                     WebkitTapHighlightColor: 'transparent',
                   }}
@@ -171,7 +171,7 @@ export default function Settings() {
 
         {/* ── Sync ────────────────────────────────────────────────────── */}
         <Section label="Sync">
-          <p style={{ fontSize: 14, color: '#8A8680', marginBottom: 20, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 14, color: '#A8A49E', marginBottom: 20, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
             Share your history across devices. One code, everything in sync.
           </p>
 
@@ -206,7 +206,7 @@ export default function Settings() {
                   borderRadius: 16, padding: '20px',
                   marginBottom: 12,
                 }}>
-                  <p style={{ fontSize: 10, color: '#8A8680', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                  <p style={{ fontSize: 11, color: '#A8A49E', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                     Your sync code
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -232,7 +232,7 @@ export default function Settings() {
                     </motion.button>
                   </div>
                   {lastSyncAt && (
-                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                    <p style={{ fontSize: 11, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                       Last synced {format(new Date(lastSyncAt), 'MMM d, h:mm a')}
                     </p>
                   )}
@@ -308,7 +308,7 @@ export default function Settings() {
             {syncView === 'creating' && (
               <motion.div key="creating" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <BackButton onClick={() => setSyncView('idle')} />
-                <p style={{ fontSize: 14, color: '#8A8680', marginBottom: 24, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
+                <p style={{ fontSize: 14, color: '#A8A49E', marginBottom: 24, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
                   Your workout history will upload and you'll get a unique code to share.
                 </p>
                 <motion.button
@@ -326,7 +326,7 @@ export default function Settings() {
             {syncView === 'joining' && (
               <motion.div key="joining" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <BackButton onClick={() => { setSyncView('idle'); setCodeInput(''); clearError() }} />
-                <p style={{ fontSize: 14, color: '#8A8680', marginBottom: 20, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
+                <p style={{ fontSize: 14, color: '#A8A49E', marginBottom: 20, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6 }}>
                   Enter the code from the other device.
                 </p>
                 <input
@@ -351,7 +351,7 @@ export default function Settings() {
                   style={{
                     ...ctaBtn,
                     background: codeInput.trim() ? '#C8A96E' : '#1A1A1A',
-                    color: codeInput.trim() ? '#0C0C0C' : '#8A8680',
+                    color: codeInput.trim() ? '#0C0C0C' : '#A8A49E',
                     opacity: isSyncing ? 0.6 : 1,
                   }}
                 >
@@ -389,8 +389,8 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   return (
     <div style={{ padding: '0 24px', marginBottom: 36 }}>
       <p style={{
-        fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-        letterSpacing: '1.5px', color: '#8A8680',
+        fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+        letterSpacing: '1.5px', color: '#A8A49E',
         fontFamily: '"Outfit", system-ui, sans-serif',
         marginBottom: 16,
       }}>
@@ -449,7 +449,7 @@ function BodyweightCard({
           }}>
             {display}
           </span>
-          <span style={{ fontSize: 14, color: '#8A8680', marginLeft: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+          <span style={{ fontSize: 14, color: '#A8A49E', marginLeft: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
             {unit}
           </span>
         </div>
@@ -481,7 +481,7 @@ function BodyweightCard({
 
       {latestDate && (
         <p style={{
-          fontSize: 11, color: '#8A8680', marginTop: 10, textAlign: 'center',
+          fontSize: 11, color: '#A8A49E', marginTop: 10, textAlign: 'center',
           fontFamily: '"Outfit", system-ui, sans-serif',
         }}>
           Last logged {format(parseISO(latestDate), 'MMM d')}
@@ -511,7 +511,7 @@ function StatCard({ label, value, wide }: { label: string; value: string; wide?:
       borderRadius: 16, padding: '16px',
       gridColumn: wide ? '1 / -1' : undefined,
     }}>
-      <p style={{ fontSize: 10, color: '#8A8680', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+      <p style={{ fontSize: 11, color: '#A8A49E', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
         {label}
       </p>
       <p style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8', letterSpacing: '-0.5px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
@@ -526,7 +526,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       style={{
-        background: 'none', border: 'none', color: '#8A8680', cursor: 'pointer',
+        background: 'none', border: 'none', color: '#A8A49E', cursor: 'pointer',
         fontSize: 13, fontFamily: '"Outfit", system-ui, sans-serif',
         padding: '0 0 16px', display: 'flex', alignItems: 'center', gap: 6,
         WebkitTapHighlightColor: 'transparent',

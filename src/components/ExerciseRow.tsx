@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function ExerciseRow({ exercise, onClick }: Props) {
-  const accentColor = muscleColor[exercise.primaryMuscle as MuscleGroup] ?? '#8A8680'
+  const accentColor = muscleColor[exercise.primaryMuscle as MuscleGroup] ?? '#A8A49E'
 
   return (
     <div
@@ -51,7 +51,7 @@ export default function ExerciseRow({ exercise, onClick }: Props) {
         </p>
         <p style={{
           fontSize: 12,
-          color: '#8A8680',
+          color: '#A8A49E',
           marginTop: 3,
           fontFamily: '"Outfit", system-ui, sans-serif',
         }}>
@@ -62,7 +62,7 @@ export default function ExerciseRow({ exercise, onClick }: Props) {
       </div>
 
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <path d="M9 6l6 6-6 6" stroke="#8A8680" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 6l6 6-6 6" stroke="#A8A49E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   )

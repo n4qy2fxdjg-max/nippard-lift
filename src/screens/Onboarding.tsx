@@ -142,7 +142,7 @@ export default function Onboarding() {
             onClick={() => goTo(step - 1)}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: '#8A8680', fontSize: 14,
+              color: '#A8A49E', fontSize: 14,
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}
           >
@@ -196,7 +196,7 @@ function HeroStep() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        style={{ fontSize: 16, color: '#8A8680', lineHeight: 1.6, maxWidth: 280, margin: '0 auto' }}
+        style={{ fontSize: 16, color: '#A8A49E', lineHeight: 1.6, maxWidth: 280, margin: '0 auto' }}
       >
         Science-based training. Every session tracked. Every rep counts.
       </motion.p>
@@ -222,7 +222,7 @@ function NameStep({ name, setName, inputRef }: {
       }}>
         What should we call you?
       </h2>
-      <p style={{ fontSize: 15, color: '#8A8680', marginBottom: 32, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 15, color: '#A8A49E', marginBottom: 32, lineHeight: 1.5 }}>
         We'll use this to personalise your experience.
       </p>
       <input
@@ -243,7 +243,7 @@ function NameStep({ name, setName, inputRef }: {
         onFocus={(e) => { e.target.style.borderColor = 'rgba(200,169,110,0.5)' }}
         onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)' }}
       />
-      <p style={{ fontSize: 12, color: '#8A8680', marginTop: 10 }}>
+      <p style={{ fontSize: 12, color: '#A8A49E', marginTop: 10 }}>
         Leave blank and we'll call you "You"
       </p>
     </div>
@@ -264,7 +264,7 @@ function UnitStep({ unit, setUnit }: { unit: 'kg' | 'lb'; setUnit: (u: 'kg' | 'l
       }}>
         Your preferred unit?
       </h2>
-      <p style={{ fontSize: 15, color: '#8A8680', marginBottom: 32, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 15, color: '#A8A49E', marginBottom: 32, lineHeight: 1.5 }}>
         Used for weight tracking across the app. You can change this later.
       </p>
       <div style={{ display: 'flex', gap: 12 }}>
@@ -280,7 +280,7 @@ function UnitStep({ unit, setUnit }: { unit: 'kg' | 'lb'; setUnit: (u: 'kg' | 'l
               borderRadius: 16, cursor: 'pointer',
               fontFamily: '"Outfit", system-ui, sans-serif',
               fontSize: 22, fontWeight: 700,
-              color: unit === u ? '#C8A96E' : '#8A8680',
+              color: unit === u ? '#C8A96E' : '#A8A49E',
               transition: 'all 0.18s ease',
             }}
           >
@@ -316,7 +316,7 @@ function ReadyStep({ name, unit }: { name: string; unit: 'kg' | 'lb' }) {
       }}>
         Ready, {displayName}.
       </h2>
-      <p style={{ fontSize: 15, color: '#8A8680', marginBottom: 28, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 15, color: '#A8A49E', marginBottom: 28, lineHeight: 1.5 }}>
         57 exercises · 6 programmes · weights in {unit}
       </p>
 

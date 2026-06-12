@@ -116,7 +116,7 @@ export default function PRCelebration({ show, headline, onDone }: Props) {
               {headline}
             </h2>
             <p style={{
-              fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif',
+              fontSize: 13, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif',
             }}>
               A new personal best — keep it up.
             </p>

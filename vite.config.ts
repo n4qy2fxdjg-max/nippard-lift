@@ -20,6 +20,28 @@ export default defineConfig({
       workbox: {
         // Pull in the push/notificationclick handlers (background reminders)
         importScripts: ['push-sw.js'],
+        // Cache the Google Fonts stylesheet + woff2 files so the brand
+        // typography (DM Serif Display / Outfit) survives offline launches
+        // instead of silently falling back to Georgia/system sans.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Lift',

@@ -68,7 +68,7 @@ export default function UpdatePrompt() {
             <p style={{ fontSize: 13.5, fontWeight: 600, color: '#F0EDE8', lineHeight: 1.2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
               Update available
             </p>
-            <p style={{ fontSize: 11.5, color: '#8A8680', marginTop: 1, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+            <p style={{ fontSize: 11.5, color: '#A8A49E', marginTop: 1, fontFamily: '"Outfit", system-ui, sans-serif' }}>
               A new version of Lift is ready.
             </p>
           </div>
@@ -90,8 +90,8 @@ export default function UpdatePrompt() {
             onClick={() => setNeedRefresh(false)}
             aria-label="Dismiss"
             style={{
-              flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.06)', border: 'none', color: '#8A8680',
+              flexShrink: 0, width: 44, height: 44, margin: '-9px -9px -9px 0', borderRadius: '50%',
+              background: 'none', border: 'none', color: '#A8A49E',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
             }}

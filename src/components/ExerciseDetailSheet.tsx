@@ -61,12 +61,13 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
               <motion.button
                 whileTap={{ scale: 0.85 }}
                 onClick={onClose}
+                aria-label="Close"
                 style={{
-                  width: 32, height: 32,
+                  width: 44, height: 44,
                   background: 'rgba(255,255,255,0.06)',
                   border: '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '50%',
-                  color: '#8A8680',
+                  color: '#A8A49E',
                   cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
@@ -90,7 +91,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
               <span style={{
                 fontSize: 11, fontWeight: 600, padding: '4px 10px',
                 borderRadius: 999, background: '#1E1E1E',
-                color: '#8A8680', border: '1px solid rgba(255,255,255,0.07)',
+                color: '#A8A49E', border: '1px solid rgba(255,255,255,0.07)',
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}>
                 {exercise.defaultSets} × {exercise.defaultReps}
@@ -98,7 +99,7 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
               <span style={{
                 fontSize: 11, fontWeight: 600, padding: '4px 10px',
                 borderRadius: 999, background: '#1E1E1E',
-                color: '#8A8680', border: '1px solid rgba(255,255,255,0.07)',
+                color: '#A8A49E', border: '1px solid rgba(255,255,255,0.07)',
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}>
                 {exercise.restLabel} rest
@@ -109,8 +110,8 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
           {/* Form Cues */}
           <div style={{ marginBottom: 28 }}>
             <p style={{
-              fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.5px',
-              color: '#8A8680', marginBottom: 14,
+              fontSize: 11, textTransform: 'uppercase', letterSpacing: '1.5px',
+              color: '#A8A49E', marginBottom: 14,
               fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600,
             }}>
               Form Cues
@@ -140,8 +141,8 @@ export default function ExerciseDetailSheet({ exercise, onClose }: Props) {
           {/* Progress Chart */}
           <div style={{ marginBottom: 28 }}>
             <p style={{
-              fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.5px',
-              color: '#8A8680', marginBottom: 14,
+              fontSize: 11, textTransform: 'uppercase', letterSpacing: '1.5px',
+              color: '#A8A49E', marginBottom: 14,
               fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600,
             }}>
               Progressive Overload

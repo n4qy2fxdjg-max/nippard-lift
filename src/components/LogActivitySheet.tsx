@@ -110,7 +110,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexShrink: 0 }}>
               <button onClick={() => setSelected(null)} aria-label="Back"
-                style={{ background: 'none', border: 'none', color: '#8A8680', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                style={{ background: 'none', border: 'none', color: '#A8A49E', cursor: 'pointer', padding: 0, display: 'flex' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               <span style={{ fontSize: 22 }}>{selected.emoji}</span>
@@ -156,7 +156,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
                           flex: 1, padding: '9px 0', borderRadius: 12,
                           background: sel ? 'rgba(200,169,110,0.15)' : '#1A1A1A',
                           border: sel ? '1px solid rgba(200,169,110,0.5)' : '1px solid rgba(255,255,255,0.07)',
-                          color: sel ? '#C8A96E' : '#8A8680', fontSize: 13, fontWeight: sel ? 700 : 400,
+                          color: sel ? '#C8A96E' : '#A8A49E', fontSize: 13, fontWeight: sel ? 700 : 400,
                           textTransform: 'capitalize', cursor: 'pointer',
                           fontFamily: '"Outfit", system-ui, sans-serif', WebkitTapHighlightColor: 'transparent',
                         }}>
@@ -192,7 +192,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
               style={{
                 flexShrink: 0, marginTop: 10, width: '100%', height: 50, borderRadius: 16,
                 background: canSave ? '#C8A96E' : '#1A1A1A',
-                color: canSave ? '#0C0C0C' : '#8A8680',
+                color: canSave ? '#0C0C0C' : '#A8A49E',
                 border: canSave ? 'none' : '1px solid rgba(255,255,255,0.07)',
                 fontSize: 16, fontWeight: 700, cursor: canSave ? 'pointer' : 'not-allowed',
                 fontFamily: '"Outfit", system-ui, sans-serif', WebkitTapHighlightColor: 'transparent',
@@ -210,7 +210,7 @@ export default function LogActivitySheet({ open, onClose }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: '#8A8680', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+      <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: '#A8A49E', marginBottom: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
         {label}
       </p>
       {children}
@@ -238,7 +238,7 @@ function NumInput({ value, onChange, placeholder, suffix, decimal, width }: {
         size={1}
         style={{ flex: 1, minWidth: 0, width: '100%', background: 'none', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 18, fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif', padding: '11px 0', WebkitAppearance: 'none' }}
       />
-      <span style={{ fontSize: 12, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', flexShrink: 0 }}>{suffix}</span>
+      <span style={{ fontSize: 12, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif', flexShrink: 0 }}>{suffix}</span>
     </div>
   )
 }

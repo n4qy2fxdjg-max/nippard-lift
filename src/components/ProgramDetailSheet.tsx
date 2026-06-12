@@ -134,7 +134,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                     background: program.tagColor + '18',
                     border: `1px solid ${program.tagColor}38`,
                     borderRadius: 12, padding: '2px 8px',
-                    fontSize: 10, fontWeight: 700, letterSpacing: '1.2px',
+                    fontSize: 11, fontWeight: 700, letterSpacing: '1.2px',
                     color: program.tagColor, textTransform: 'uppercase',
                     fontFamily: '"Outfit", system-ui, sans-serif',
                     marginBottom: 8,
@@ -144,20 +144,21 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                   <h3 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 28, color: '#F0EDE8', lineHeight: 1.1 }}>
                     {program.name}
                   </h3>
-                  <p style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 13, fontStyle: 'italic', color: '#8A8680', marginTop: 4 }}>
+                  <p style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 13, fontStyle: 'italic', color: '#A8A49E', marginTop: 4 }}>
                     {items.length} exercises · {program.estimatedMinutes}m · drag to reorder
                   </p>
                 </div>
                 <motion.button
                   whileTap={{ scale: 0.85 }}
                   onClick={onClose}
+                  aria-label="Close"
                   style={{
-                    width: 32, height: 32,
+                    width: 44, height: 44,
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '50%', color: '#8A8680', cursor: 'pointer',
+                    borderRadius: '50%', color: '#A8A49E', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, marginTop: 4,
+                    flexShrink: 0,
                   }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
@@ -176,7 +177,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                 {items.map((item) => {
                   const ex = getExerciseById(item.exerciseId)
                   if (!ex) return null
-                  const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+                  const mColor = muscleColors[ex.primaryMuscle] ?? '#A8A49E'
                   const mLabel = muscleLabels[ex.primaryMuscle] ?? ex.primaryMuscle
 
                   return (
@@ -211,10 +212,10 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                           {ex.name}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ background: mColor + '18', border: `1px solid ${mColor}35`, borderRadius: 12, padding: '1px 6px', fontSize: 10, fontWeight: 500, color: mColor, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          <span style={{ background: mColor + '18', border: `1px solid ${mColor}35`, borderRadius: 12, padding: '1px 6px', fontSize: 11, fontWeight: 500, color: mColor, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                             {mLabel}
                           </span>
-                          <span style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          <span style={{ fontSize: 11, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                             {item.sets} × {item.reps}
                           </span>
                         </div>
@@ -224,11 +225,12 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                       <motion.button
                         whileTap={{ scale: 0.85 }}
                         onClick={(e) => { e.stopPropagation(); handleSubstitute(item) }}
+                        aria-label="Swap exercise"
                         style={{
                           background: '#1E1E1E',
                           border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: 12, padding: '6px 10px',
-                          fontSize: 11, color: '#8A8680',
+                          borderRadius: 12, padding: '0 12px', minHeight: 44,
+                          fontSize: 12, color: '#A8A49E',
                           cursor: 'pointer', flexShrink: 0,
                           fontFamily: '"Outfit", system-ui, sans-serif',
                           display: 'flex', alignItems: 'center', gap: 4,
@@ -282,9 +284,9 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                   style={{
                     flex: 1,
                     background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
-                    color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
+                    color: pickerGroup === key ? '#0C0C0C' : '#A8A49E',
                     border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: 12, padding: '8px 0',
+                    borderRadius: 12, padding: '12px 0',
                     fontSize: 12, fontWeight: pickerGroup === key ? 700 : 400,
                     cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
                     WebkitTapHighlightColor: 'transparent',
@@ -309,7 +311,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
             <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16 }}>
               {filteredExercises.map((ex) => {
                 const isCurrent = ex.id === substituteFor.exerciseId
-                const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+                const mColor = muscleColors[ex.primaryMuscle] ?? '#A8A49E'
                 return (
                   <motion.div
                     key={ex.id}
@@ -329,14 +331,14 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                       <p style={{ fontSize: 14, fontWeight: 500, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {ex.name}
                       </p>
-                      <p style={{ fontSize: 11, color: '#8A8680', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      <p style={{ fontSize: 11, color: '#A8A49E', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                         {ex.defaultSets} sets · {ex.defaultReps} reps
                       </p>
                     </div>
                     <span style={{
-                      background: isCurrent ? 'rgba(138,134,128,0.12)' : mColor + '18',
-                      color: isCurrent ? '#8A8680' : mColor,
-                      border: isCurrent ? '1px solid rgba(138,134,128,0.2)' : `1px solid ${mColor}35`,
+                      background: isCurrent ? 'rgba(168,164,158,0.12)' : mColor + '18',
+                      color: isCurrent ? '#A8A49E' : mColor,
+                      border: isCurrent ? '1px solid rgba(168,164,158,0.2)' : `1px solid ${mColor}35`,
                       borderRadius: 12, padding: '3px 9px',
                       fontSize: 11, fontWeight: 500,
                       fontFamily: '"Outfit", system-ui, sans-serif',
@@ -359,9 +361,9 @@ function chipStyle(active: boolean): React.CSSProperties {
   return {
     flexShrink: 0,
     background: active ? '#F0EDE8' : '#1E1E1E',
-    color: active ? '#0C0C0C' : '#8A8680',
+    color: active ? '#0C0C0C' : '#A8A49E',
     border: active ? 'none' : '1px solid rgba(255,255,255,0.07)',
-    borderRadius: 12, padding: '6px 14px',
+    borderRadius: 12, padding: '11px 14px',
     fontSize: 12, fontWeight: active ? 700 : 400,
     cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
     WebkitTapHighlightColor: 'transparent',

@@ -6,7 +6,7 @@
   --color-elevated: #1E1E1E;
   --color-border: rgba(255,255,255,0.08);
   --color-text: #F0EDE8;
-  --color-muted: #8A8680;
+  --color-muted: #A8A49E;
   --color-gold: #C8A96E;
   --color-gold-dim: rgba(200,169,110,0.15);
   --color-red: #FF453A;
@@ -33,9 +33,11 @@ html, body {
   overscroll-behavior: none;
 }
 
+/* 520px clears every iPhone viewport (17 Pro Max = 440pt) so the app fills the
+   screen on device; keep in sync with maxAppWidth in src/lib/theme.ts. */
 #root {
   width: 100%;
-  max-width: 430px;
+  max-width: 520px;
   margin: 0 auto;
   min-height: 100svh;
   position: relative;

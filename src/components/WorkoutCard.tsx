@@ -56,7 +56,7 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
             border: `1px solid ${program.tagColor}40`,
             borderRadius: 12,
             padding: '4px 10px',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: '1.2px',
             color: program.tagColor,
@@ -84,7 +84,7 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
           fontFamily: '"DM Serif Display", Georgia, serif',
           fontSize: 14,
           fontStyle: 'italic',
-          color: '#8A8680',
+          color: '#A8A49E',
           marginBottom: 14,
           lineHeight: 1.4,
         }}>
@@ -115,8 +115,8 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
           })}
           {muscles.length > 4 && (
             <span style={{
-              background: 'rgba(138,134,128,0.14)',
-              color: '#8A8680',
+              background: 'rgba(168,164,158,0.14)',
+              color: '#A8A49E',
               borderRadius: 12,
               padding: '4px 10px',
               fontSize: 11,

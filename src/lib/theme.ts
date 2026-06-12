@@ -15,7 +15,7 @@ export const colors = {
   elevated: '#1E1E1E',
   sheet: 'rgba(18,18,18,0.98)', // single bottom-sheet surface (frosted)
   text: '#F0EDE8',
-  muted: '#8A8680',
+  muted: '#A8A49E',
   gold: '#C8A96E',
   green: '#34C759',
   red: '#FF453A', // iOS dark-mode systemRed — single source (was split #FF3B30/#FF453A)
@@ -31,6 +31,12 @@ export const z = {
   fullscreen: 200, // ActiveWorkout, Onboarding
   dialog: 300,     // confirm dialogs layered above everything
 } as const
+
+// Width cap for the app column and every fixed-position element (nav, sheets).
+// Must comfortably exceed the widest iPhone viewport (iPhone 17 Pro Max: 440pt)
+// so the app fills the screen edge-to-edge on device, while still framing the
+// layout on desktop. Keep in sync with #root max-width in index.css.
+export const maxAppWidth = 520
 
 // Motion presets — one source for the app's animation feel.
 export const anim = {

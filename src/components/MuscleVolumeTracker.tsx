@@ -31,17 +31,17 @@ export default function MuscleVolumeTracker() {
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <p style={{
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '1.5px', color: '#8A8680',
+            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1.5px', color: '#A8A49E',
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             Weekly Volume
           </p>
-          <em style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'rgba(138,134,128,0.5)' }}>
+          <em style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'rgba(168,164,158,0.5)' }}>
             last 7 days
           </em>
         </div>
-        <p style={{ fontSize: 11, color: 'rgba(138,134,128,0.6)', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+        <p style={{ fontSize: 11, color: 'rgba(168,164,158,0.6)', fontFamily: '"Outfit", system-ui, sans-serif' }}>
           {onTrack}/{MUSCLE_TARGETS.length} at target
         </p>
       </div>
@@ -82,7 +82,7 @@ export default function MuscleVolumeTracker() {
                     <span style={{ fontSize: 14, fontWeight: 700, color, letterSpacing: '-0.3px' }}>
                       {sets}
                     </span>
-                    <span style={{ fontSize: 11, color: '#8A8680' }}>
+                    <span style={{ fontSize: 11, color: '#A8A49E' }}>
                       {' '}/ {t.min}–{t.max}
                     </span>
                   </span>
@@ -132,7 +132,7 @@ export default function MuscleVolumeTracker() {
           ] as const).map(([key, label]) => (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS_COLOR[key] }} />
-              <span style={{ fontSize: 10, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.2px' }}>
+              <span style={{ fontSize: 11, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '0.2px' }}>
                 {label}
               </span>
             </div>

@@ -51,7 +51,7 @@ export default function HeatmapGrid({ logDates }: Props) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <span style={{ fontSize: 9, color: '#8A8680', lineHeight: 1 }}>{l}</span>
+              <span style={{ fontSize: 9, color: '#A8A49E', lineHeight: 1 }}>{l}</span>
             </div>
           ))}
         </div>
@@ -62,7 +62,7 @@ export default function HeatmapGrid({ logDates }: Props) {
             {/* Month label */}
             <div style={{ height: 14, display: 'flex', alignItems: 'center' }}>
               {(wi === 0 || format(week[0], 'M') !== format(weeks[wi - 1][0], 'M')) ? (
-                <span style={{ fontSize: 9, color: '#8A8680', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 9, color: '#A8A49E', whiteSpace: 'nowrap' }}>
                   {format(week[0], 'MMM')}
                 </span>
               ) : null}

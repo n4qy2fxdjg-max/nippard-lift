@@ -19,7 +19,7 @@ export default function OverloadChart({ history }: Props) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#8A8680',
+        color: '#A8A49E',
         fontSize: 13,
         fontStyle: 'italic',
         fontFamily: '"Outfit", system-ui, sans-serif',
@@ -37,7 +37,7 @@ export default function OverloadChart({ history }: Props) {
   return (
     <div>
       <p style={{
-        fontSize: 11, color: '#8A8680', marginBottom: 8,
+        fontSize: 11, color: '#A8A49E', marginBottom: 8,
         textTransform: 'uppercase', letterSpacing: '0.8px',
         fontFamily: '"Outfit", system-ui, sans-serif',
       }}>

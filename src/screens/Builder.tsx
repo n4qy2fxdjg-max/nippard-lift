@@ -169,7 +169,7 @@ export default function Builder() {
             <em style={{ fontStyle: 'italic', color: '#C8A96E' }}>routine</em>
           </h1>
           <p style={{
-            fontSize: 12, color: '#8A8680', marginTop: 6,
+            fontSize: 12, color: '#A8A49E', marginTop: 6,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             {plans.length} saved
@@ -215,7 +215,7 @@ export default function Builder() {
         {/* Exercise list label */}
         {items.length > 0 && (
           <label style={{
-            fontSize: 11, color: '#8A8680', fontWeight: 600,
+            fontSize: 11, color: '#A8A49E', fontWeight: 600,
             textTransform: 'uppercase', letterSpacing: '0.8px',
             display: 'block', marginBottom: 10,
             fontFamily: '"Outfit", system-ui, sans-serif',
@@ -234,7 +234,7 @@ export default function Builder() {
           {items.map((item) => {
             const ex = getExerciseById(item.exerciseId)
             if (!ex) return null
-            const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+            const mColor = muscleColors[ex.primaryMuscle] ?? '#A8A49E'
             const mLabel = muscleLabel[ex.primaryMuscle] ?? ex.primaryMuscle
 
             return (
@@ -291,7 +291,7 @@ export default function Builder() {
                     }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                      <path d="M18 6L6 18M6 6l12 12" stroke="#8A8680" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M18 6L6 18M6 6l12 12" stroke="#A8A49E" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </motion.button>
                 </div>
@@ -315,7 +315,7 @@ export default function Builder() {
                         fontFamily: '"Outfit", system-ui, sans-serif',
                       }}>
                         {item[field]}
-                        <span style={{ fontSize: 10, fontWeight: 400, color: '#8A8680', marginLeft: 3 }}>
+                        <span style={{ fontSize: 11, fontWeight: 400, color: '#A8A49E', marginLeft: 3 }}>
                           {field}
                         </span>
                       </div>
@@ -374,7 +374,7 @@ export default function Builder() {
                     ) : (
                       <>
                         {fmtWeight(item.weightKg, unit)}
-                        <span style={{ fontSize: 10, fontWeight: 400, color: '#8A8680', marginLeft: 3 }}>{unit}</span>
+                        <span style={{ fontSize: 11, fontWeight: 400, color: '#A8A49E', marginLeft: 3 }}>{unit}</span>
                       </>
                     )}
                   </div>
@@ -401,7 +401,7 @@ export default function Builder() {
             borderRadius: 16,
             padding: items.length === 0 ? '32px 20px' : '14px 20px',
             fontSize: 14,
-            color: '#8A8680',
+            color: '#A8A49E',
             fontFamily: '"Outfit", system-ui, sans-serif',
             cursor: 'pointer',
             display: 'flex',
@@ -422,7 +422,7 @@ export default function Builder() {
               }}>
                 Add your first exercise
               </p>
-              <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              <p style={{ fontSize: 13, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                 Tap to browse the exercise library
               </p>
             </div>
@@ -461,7 +461,7 @@ export default function Builder() {
                 style={{
                   flex: 1, height: 52,
                   background: canSave ? '#F0EDE8' : '#1A1A1A',
-                  color: canSave ? '#0C0C0C' : '#8A8680',
+                  color: canSave ? '#0C0C0C' : '#A8A49E',
                   border: canSave ? 'none' : '1px solid rgba(255,255,255,0.07)',
                   borderRadius: 16,
                   fontSize: 14, fontWeight: 700,
@@ -514,7 +514,7 @@ export default function Builder() {
                 style={{
                   flex: 1,
                   background: pickerGroup === key ? '#F0EDE8' : '#1E1E1E',
-                  color: pickerGroup === key ? '#0C0C0C' : '#8A8680',
+                  color: pickerGroup === key ? '#0C0C0C' : '#A8A49E',
                   border: pickerGroup === key ? 'none' : '1px solid rgba(255,255,255,0.07)',
                   borderRadius: 12,
                   padding: '8px 0',
@@ -562,7 +562,7 @@ export default function Builder() {
           }}>
             {filteredExercises.map((ex) => {
               const already = items.some((i) => i.exerciseId === ex.id)
-              const mColor = muscleColors[ex.primaryMuscle] ?? '#8A8680'
+              const mColor = muscleColors[ex.primaryMuscle] ?? '#A8A49E'
               return (
                 <motion.div
                   key={ex.id}
@@ -588,17 +588,17 @@ export default function Builder() {
                       {ex.name}
                     </p>
                     <p style={{
-                      fontSize: 12, color: '#8A8680', marginTop: 2,
+                      fontSize: 12, color: '#A8A49E', marginTop: 2,
                       fontFamily: '"Outfit", system-ui, sans-serif',
                     }}>
                       {ex.defaultSets} sets · {ex.defaultReps} reps
                     </p>
                   </div>
                   <span style={{
-                    background: already ? 'rgba(138,134,128,0.12)' : mColor + '18',
-                    color: already ? '#8A8680' : mColor,
+                    background: already ? 'rgba(168,164,158,0.12)' : mColor + '18',
+                    color: already ? '#A8A49E' : mColor,
                     border: already
-                      ? '1px solid rgba(138,134,128,0.2)'
+                      ? '1px solid rgba(168,164,158,0.2)'
                       : `1px solid ${mColor}35`,
                     borderRadius: 12,
                     padding: '3px 9px',
@@ -625,7 +625,7 @@ const pillBtnStyle: React.CSSProperties = {
   background: 'none',
   border: 'none',
   fontSize: 18,
-  color: '#8A8680',
+  color: '#A8A49E',
   cursor: 'pointer',
   lineHeight: 1,
   WebkitTapHighlightColor: 'transparent',
@@ -636,7 +636,7 @@ function chipStyle(active: boolean): React.CSSProperties {
   return {
     flexShrink: 0,
     background: active ? '#F0EDE8' : '#1E1E1E',
-    color: active ? '#0C0C0C' : '#8A8680',
+    color: active ? '#0C0C0C' : '#A8A49E',
     border: active ? 'none' : '1px solid rgba(255,255,255,0.07)',
     borderRadius: 12,
     padding: '6px 14px',

@@ -56,17 +56,18 @@ export default function ActivityDetailSheet({ activity, onClose }: Props) {
             <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={onClose}
+              aria-label="Close"
               style={{
-                width: 32, height: 32, background: 'rgba(255,255,255,0.06)',
+                width: 44, height: 44, background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: '50%',
-                color: '#8A8680', cursor: 'pointer', flexShrink: 0,
+                color: '#A8A49E', cursor: 'pointer', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
             </motion.button>
           </div>
-          <p style={{ fontSize: 13, color: '#8A8680', marginBottom: 20, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+          <p style={{ fontSize: 13, color: '#A8A49E', marginBottom: 20, fontFamily: '"Outfit", system-ui, sans-serif' }}>
             {format(parseISO(activity.date), 'EEEE, MMM d, yyyy')}
           </p>
 
@@ -80,7 +81,7 @@ export default function ActivityDetailSheet({ activity, onClose }: Props) {
                 <div style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 22, color: '#F0EDE8', lineHeight: 1.1, textTransform: 'capitalize' }}>
                   {s.value}
                 </div>
-                <div style={{ fontSize: 10, color: '#8A8680', marginTop: 5, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                <div style={{ fontSize: 11, color: '#A8A49E', marginTop: 5, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   {s.label}
                 </div>
               </div>
@@ -89,7 +90,7 @@ export default function ActivityDetailSheet({ activity, onClose }: Props) {
 
           {activity.note && (
             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#8A8680', marginBottom: 8, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A49E', marginBottom: 8, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                 Note
               </p>
               <p style={{ fontSize: 14, color: '#D4CFCA', lineHeight: 1.55, fontFamily: '"Outfit", system-ui, sans-serif' }}>

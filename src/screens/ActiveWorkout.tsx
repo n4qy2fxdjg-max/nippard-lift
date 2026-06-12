@@ -92,7 +92,16 @@ export default function ActiveWorkout() {
 
   // Acquire wake lock for the entire workout (not just rest)
   useEffect(() => {
-    if (!activeSession) { navigate('/'); return }
+    if (!activeSession) {
+      // Only bounce home when sitting on /active without a session (stale deep
+      // link). When the session just ended, this component is still mounted for
+      // its exit animation and the handler has already navigated elsewhere —
+      // redirecting here would override that destination. window.location is
+      // used deliberately: useLocation here returns the exit-pinned '/active'
+      // from the outgoing <Routes location={...}> copy, not the real URL.
+      if (window.location.pathname === '/active') navigate('/')
+      return
+    }
     if ('wakeLock' in navigator) {
       navigator.wakeLock.request('screen').then((lock) => { wakeLockRef.current = lock }).catch(() => {})
     }
@@ -185,14 +194,29 @@ export default function ActiveWorkout() {
 
   function handleComplete() {
     clearAllNotificationTimers()
-    completeSession()
+    // Navigate before clearing the session — once activeSession goes null the
+    // mount effect fires navigate('/'), which would override this destination.
     navigate('/progress?new=1')
+    completeSession()
   }
 
   function handleAbandon() {
     clearAllNotificationTimers()
     abandonSession()
     navigate('/')
+  }
+
+  // Sets logged so far — when ending early, these can be saved instead of
+  // thrown away (completeSession only records completed sets).
+  const totalCompletedSets = exercises.reduce(
+    (sum, e) => sum + e.sets.filter((s) => s.completed).length, 0
+  )
+
+  function handleFinishEarly() {
+    clearAllNotificationTimers()
+    // Same ordering constraint as handleComplete.
+    navigate('/progress?new=1')
+    completeSession()
   }
 
   function handleMarkSet() {
@@ -246,7 +270,7 @@ export default function ActiveWorkout() {
         borderBottom: '1px solid rgba(255,255,255,0.05)',
       }}>
         <div>
-          <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          <p style={{ fontSize: 11, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
             {activeSession.planName}
           </p>
           <p style={{ fontSize: 18, fontWeight: 700, color: '#C8A96E', fontVariantNumeric: 'tabular-nums', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
@@ -256,7 +280,8 @@ export default function ActiveWorkout() {
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={() => setShowAbandon(true)}
-          style={{ width: 38, height: 38, background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, color: '#8A8680', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          aria-label="End workout"
+          style={{ width: 44, height: 44, background: '#1E1E1E', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, color: '#A8A49E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -265,24 +290,33 @@ export default function ActiveWorkout() {
       </div>
 
       {/* Progress pills */}
-      <div style={{ display: 'flex', gap: 6, padding: '12px 20px', flexShrink: 0, overflowX: 'auto' }}>
-        {exercises.map((ex, i) => {
-          const exData = getExerciseById(ex.exerciseId)
-          const done = ex.sets.filter((s) => s.completed).length
-          const isActive = i === currentExIdx
-          const isComplete = done >= ex.targetSets
-          return (
-            <div key={i} style={{
-              padding: '5px 10px', borderRadius: 999, flexShrink: 0,
-              background: isActive ? 'rgba(200,169,110,0.12)' : isComplete ? 'rgba(52,199,89,0.08)' : '#161616',
-              border: isActive ? '1px solid rgba(200,169,110,0.3)' : isComplete ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,255,255,0.06)',
-            }}>
-              <span style={{ fontSize: 11, fontWeight: 500, color: isActive ? '#C8A96E' : isComplete ? '#34C759' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                {exData?.name.split(' ')[0] ?? '?'} {done}/{ex.targetSets}
-              </span>
-            </div>
-          )
-        })}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div className="scroll-x" style={{ display: 'flex', gap: 6, padding: '12px 20px' }}>
+          {exercises.map((ex, i) => {
+            const exData = getExerciseById(ex.exerciseId)
+            const done = ex.sets.filter((s) => s.completed).length
+            const isActive = i === currentExIdx
+            const isComplete = done >= ex.targetSets
+            return (
+              <div key={i} style={{
+                padding: '5px 10px', borderRadius: 999, flexShrink: 0,
+                background: isActive ? 'rgba(200,169,110,0.12)' : isComplete ? 'rgba(52,199,89,0.08)' : '#161616',
+                border: isActive ? '1px solid rgba(200,169,110,0.3)' : isComplete ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,255,255,0.06)',
+              }}>
+                <span style={{ fontSize: 11, fontWeight: 500, color: isActive ? '#C8A96E' : isComplete ? '#34C759' : '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                  {/* Two words, not one — "Cable Fly" vs "Cable Lateral" must stay distinguishable */}
+                  {exData?.name.split(' ').slice(0, 2).join(' ') ?? '?'} {done}/{ex.targetSets}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        {/* Right-edge fade hinting that the pill row scrolls */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, width: 28,
+          background: 'linear-gradient(to left, #0C0C0C, transparent)',
+          pointerEvents: 'none',
+        }} />
       </div>
 
       {/* Main content */}
@@ -301,14 +335,14 @@ export default function ActiveWorkout() {
               <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 36, color: '#F0EDE8', marginBottom: 10, lineHeight: 1.1 }}>
                 Workout<br />Complete.
               </h2>
-              <p style={{ fontSize: 13, color: '#8A8680', marginBottom: 16, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              <p style={{ fontSize: 13, color: '#A8A49E', marginBottom: 16, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                 {formatElapsed(elapsed)} · {exercises.reduce((sum, e) => sum + e.sets.filter(s => s.completed).length, 0)} sets
               </p>
               <p style={{ fontSize: 32, fontWeight: 700, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-1px' }}>
                 {exercises
                   .reduce((sum, e) => sum + e.sets.filter(s => s.completed).reduce((v, s) => v + s.weight * s.reps, 0), 0)
                   .toFixed(0)}
-                <span style={{ fontSize: 16, color: '#8A8680', letterSpacing: 0, marginLeft: 4 }}>
+                <span style={{ fontSize: 16, color: '#A8A49E', letterSpacing: 0, marginLeft: 4 }}>
                   {unit === 'lb' ? 'lbs' : 'kg'} lifted
                 </span>
               </p>
@@ -334,17 +368,17 @@ export default function ActiveWorkout() {
               <div style={{ marginBottom: 6 }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)',
+                  background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
                   borderRadius: 12, padding: '4px 10px', marginBottom: 14,
                 }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14v-4m0-4h.01" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14v-4m0-4h.01" stroke="#C8A96E" strokeWidth="2" strokeLinecap="round" />
                   </svg>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#FBBF24', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#C8A96E', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                     Warm-up · {warmupSetIdx + 1}/{warmupSets.length}
                   </span>
                 </div>
-                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#A8A49E', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
                 </p>
                 <h2 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 34, color: '#F0EDE8', lineHeight: 1.1, marginBottom: 6 }}>
@@ -360,16 +394,16 @@ export default function ActiveWorkout() {
                   return (
                     <div key={i} style={{
                       width: 40, height: 40, borderRadius: '50%',
-                      background: done ? 'rgba(251,191,36,0.15)' : active ? 'rgba(251,191,36,0.06)' : '#1E1E1E',
-                      border: done ? '1px solid rgba(251,191,36,0.4)' : active ? '2px solid rgba(251,191,36,0.5)' : '1px solid rgba(255,255,255,0.07)',
+                      background: done ? 'rgba(200,169,110,0.15)' : active ? 'rgba(200,169,110,0.06)' : '#1E1E1E',
+                      border: done ? '1px solid rgba(200,169,110,0.4)' : active ? '2px solid rgba(200,169,110,0.5)' : '1px solid rgba(255,255,255,0.07)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {done ? (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                          <path d="M5 12l5 5L20 7" stroke="#FBBF24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M5 12l5 5L20 7" stroke="#C8A96E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : (
-                        <span style={{ fontSize: 10, fontWeight: 600, color: active ? '#FBBF24' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: active ? '#C8A96E' : '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                           W{i + 1}
                         </span>
                       )}
@@ -400,19 +434,20 @@ export default function ActiveWorkout() {
 
               {/* Warmup weight (editable) + reps */}
               <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '16px 20px', marginBottom: 24 }}>
-                <p style={{ fontSize: 10, color: '#FBBF24', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 12, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                <p style={{ fontSize: 11, color: '#C8A96E', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 12, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   Target
                 </p>
                 <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 8 }}>weight</p>
+                    <p style={{ fontSize: 11, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 8 }}>weight</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <motion.button
                         whileTap={{ scale: 0.85 }}
                         onClick={() => { adjustWarmupWeight(-warmupStep(unit)) }}
                         style={warmupAdjBtn}
+                        aria-label="Decrease warm-up weight"
                       >
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#FBBF24" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#C8A96E" strokeWidth="1.75" strokeLinecap="round" /></svg>
                       </motion.button>
                       <span style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px', minWidth: 72, textAlign: 'center' }}>
                         {fmtWarmupWeight(currentWarmup.weightKg, unit)}
@@ -421,13 +456,14 @@ export default function ActiveWorkout() {
                         whileTap={{ scale: 0.85 }}
                         onClick={() => { adjustWarmupWeight(warmupStep(unit)) }}
                         style={warmupAdjBtn}
+                        aria-label="Increase warm-up weight"
                       >
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#FBBF24" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#C8A96E" strokeWidth="1.75" strokeLinecap="round" /></svg>
                       </motion.button>
                     </div>
                   </div>
                   <div>
-                    <p style={{ fontSize: 11, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 8 }}>reps</p>
+                    <p style={{ fontSize: 11, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif', marginBottom: 8 }}>reps</p>
                     <p style={{ fontSize: 28, fontWeight: 700, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
                       {currentWarmup.targetReps}
                     </p>
@@ -448,7 +484,7 @@ export default function ActiveWorkout() {
             >
               {/* Exercise name + PR chip */}
               <div style={{ marginBottom: 6 }}>
-                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#8A8680', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#A8A49E', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
@@ -495,15 +531,15 @@ export default function ActiveWorkout() {
               {/* Set counter + add/remove + circles + undo */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <p style={{ fontSize: 13, color: '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                  <p style={{ fontSize: 13, color: '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                     Set {setsCompleted + 1} of {currentEx?.targetSets} · {currentEx?.targetReps} reps
                   </p>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <motion.button whileTap={{ scale: 0.85 }} onClick={removeTargetSet} style={smallCtrlBtn} aria-label="Remove set">
-                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#A8A49E" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </motion.button>
                     <motion.button whileTap={{ scale: 0.85 }} onClick={addTargetSet} style={smallCtrlBtn} aria-label="Add set">
-                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#8A8680" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#A8A49E" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </motion.button>
                   </div>
                 </div>
@@ -523,7 +559,7 @@ export default function ActiveWorkout() {
                             <path d="M5 12l5 5L20 7" stroke="#0C0C0C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : (
-                          <span style={{ fontSize: 13, fontWeight: 600, color: active ? '#C8A96E' : '#8A8680', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: active ? '#C8A96E' : '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                             {i + 1}
                           </span>
                         )}
@@ -554,7 +590,7 @@ export default function ActiveWorkout() {
               {/* Weight + Reps side by side */}
               <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
                 <div style={{ flex: 1, background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '12px 14px' }}>
-                  <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                  <p style={{ fontSize: 11, color: '#A8A49E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                     Weight
                   </p>
                   <WeightStepper
@@ -563,17 +599,17 @@ export default function ActiveWorkout() {
                   />
                 </div>
                 <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '12px 14px', display: 'flex', flexDirection: 'column' }}>
-                  <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                  <p style={{ fontSize: 11, color: '#A8A49E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                     Reps
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                    <button onClick={() => { setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle}>
+                    <button onClick={() => { setReps(Math.max(1, reps - 1)) }} style={bigBtnStyle} aria-label="Decrease reps">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </button>
                     <span style={{ fontSize: 22, fontWeight: 700, color: '#F0EDE8', minWidth: 44, textAlign: 'center', fontFamily: '"Outfit", system-ui, sans-serif', letterSpacing: '-0.5px' }}>
                       {reps}
                     </span>
-                    <button onClick={() => { setReps(reps + 1) }} style={bigBtnStyle}>
+                    <button onClick={() => { setReps(reps + 1) }} style={bigBtnStyle} aria-label="Increase reps">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </button>
                   </div>
@@ -582,7 +618,7 @@ export default function ActiveWorkout() {
 
               {/* RPE selector — optional, tap a chip to log effort */}
               <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 10, color: '#8A8680', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
+                <p style={{ fontSize: 11, color: '#A8A49E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   RPE <span style={{ fontWeight: 400, letterSpacing: 0, textTransform: 'none' }}>(optional)</span>
                 </p>
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
@@ -594,11 +630,13 @@ export default function ActiveWorkout() {
                         whileTap={{ scale: 0.88 }}
                         onClick={() => { setRpe(sel ? undefined : v) }}
                         style={{
+                          minWidth: 44,
+                          minHeight: 44,
                           padding: '5px 10px',
-                          borderRadius: 10,
+                          borderRadius: 12,
                           border: sel ? '1px solid rgba(200,169,110,0.5)' : '1px solid rgba(255,255,255,0.07)',
                           background: sel ? 'rgba(200,169,110,0.15)' : '#161616',
-                          color: sel ? '#C8A96E' : '#8A8680',
+                          color: sel ? '#C8A96E' : '#A8A49E',
                           fontSize: 13, fontWeight: sel ? 700 : 400,
                           fontFamily: '"Outfit", system-ui, sans-serif',
                           cursor: 'pointer',
@@ -635,7 +673,7 @@ export default function ActiveWorkout() {
                         width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
                         background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.2)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 10, fontWeight: 700, color: '#C8A96E',
+                        fontSize: 11, fontWeight: 700, color: '#C8A96E',
                         fontFamily: '"Outfit", system-ui, sans-serif',
                       }}>
                         {i + 1}
@@ -659,7 +697,7 @@ export default function ActiveWorkout() {
             Save & Exit
           </motion.button>
         ) : isWarmup ? (
-          <motion.button whileTap={{ scale: 0.97 }} onClick={handleCompleteWarmup} style={{ ...primaryBtnStyle, background: '#FBBF24' }}>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={handleCompleteWarmup} style={primaryBtnStyle}>
             Done — Warm-up Set {warmupSetIdx + 1}
           </motion.button>
         ) : phase === 'exercise' ? (
@@ -704,19 +742,43 @@ export default function ActiveWorkout() {
               <h3 style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 24, color: '#F0EDE8', marginBottom: 8 }}>
                 End workout?
               </h3>
-              <p style={{ fontSize: 14, color: '#8A8680', marginBottom: 24, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.5 }}>
-                Your progress will not be saved.
-              </p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowAbandon(false)}
-                  style={{ flex: 1, height: 48, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 16, color: '#F0EDE8', fontSize: 14, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                  Keep Going
-                </motion.button>
-                <motion.button whileTap={{ scale: 0.97 }} onClick={handleAbandon}
-                  style={{ flex: 1, height: 48, background: '#FF453A', border: 'none', borderRadius: 16, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                  End
-                </motion.button>
-              </div>
+              {totalCompletedSets > 0 ? (
+                <>
+                  <p style={{ fontSize: 14, color: '#A8A49E', marginBottom: 24, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.5 }}>
+                    You've logged {totalCompletedSets} set{totalCompletedSets !== 1 ? 's' : ''}. Save your progress, or discard the session?
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleFinishEarly}
+                      style={{ height: 48, background: '#C8A96E', border: 'none', borderRadius: 16, color: '#0C0C0C', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      Finish & Save
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleAbandon}
+                      style={{ height: 48, background: 'rgba(255,69,58,0.12)', border: '1px solid rgba(255,69,58,0.3)', borderRadius: 16, color: '#FF453A', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      Discard Workout
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowAbandon(false)}
+                      style={{ height: 48, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 16, color: '#F0EDE8', fontSize: 14, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      Keep Going
+                    </motion.button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 14, color: '#A8A49E', marginBottom: 24, fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.5 }}>
+                    Nothing logged yet — this session will be discarded.
+                  </p>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowAbandon(false)}
+                      style={{ flex: 1, height: 48, background: 'transparent', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 16, color: '#F0EDE8', fontSize: 14, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      Keep Going
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleAbandon}
+                      style={{ flex: 1, height: 48, background: '#FF453A', border: 'none', borderRadius: 16, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      End
+                    </motion.button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -726,8 +788,8 @@ export default function ActiveWorkout() {
 }
 
 const warmupAdjBtn: React.CSSProperties = {
-  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-  background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)',
+  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+  background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
 }

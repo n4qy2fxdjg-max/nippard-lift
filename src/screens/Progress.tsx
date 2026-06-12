@@ -150,7 +150,7 @@ export default function Progress() {
                 </p>
                 {logs[0].personalRecords.length > 0 && (
                   <p style={{
-                    fontSize: 12, color: '#8A8680', marginTop: 2,
+                    fontSize: 12, color: '#A8A49E', marginTop: 2,
                     fontFamily: '"Outfit", system-ui, sans-serif',
                   }}>
                     {logs[0].personalRecords.length} personal record{logs[0].personalRecords.length > 1 ? 's' : ''}
@@ -164,8 +164,8 @@ export default function Progress() {
         {/* Weekly stats */}
         <div style={{ padding: '0 24px 32px' }}>
           <p style={{
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
+            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1.5px', color: '#A8A49E', marginBottom: 14,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             Last 7 Days
@@ -191,7 +191,7 @@ export default function Progress() {
                 <em style={{
                   fontFamily: '"DM Serif Display", Georgia, serif',
                   fontStyle: 'italic',
-                  fontSize: 13, color: '#8A8680', marginTop: 6, display: 'block',
+                  fontSize: 13, color: '#A8A49E', marginTop: 6, display: 'block',
                 }}>
                   sessions
                 </em>
@@ -209,7 +209,7 @@ export default function Progress() {
                   <em style={{
                     fontFamily: '"DM Serif Display", Georgia, serif',
                     fontStyle: 'italic',
-                    fontSize: 12, color: '#8A8680', marginTop: 4, display: 'block',
+                    fontSize: 12, color: '#A8A49E', marginTop: 4, display: 'block',
                   }}>
                     volume
                   </em>
@@ -224,7 +224,7 @@ export default function Progress() {
                   <em style={{
                     fontFamily: '"DM Serif Display", Georgia, serif',
                     fontStyle: 'italic',
-                    fontSize: 12, color: '#8A8680', marginTop: 4, display: 'block',
+                    fontSize: 12, color: '#A8A49E', marginTop: 4, display: 'block',
                   }}>
                     avg session
                   </em>
@@ -237,8 +237,8 @@ export default function Progress() {
         {/* Heatmap */}
         <div style={{ padding: '0 24px 32px' }}>
           <p style={{
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
+            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1.5px', color: '#A8A49E', marginBottom: 14,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             Activity
@@ -257,8 +257,8 @@ export default function Progress() {
         {bodyweightData.length > 0 && (
           <div style={{ padding: '0 24px 32px' }}>
             <p style={{
-              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '1.5px', color: '#8A8680', marginBottom: 14,
+              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '1.5px', color: '#A8A49E', marginBottom: 14,
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}>
               Bodyweight
@@ -281,14 +281,14 @@ export default function Progress() {
             marginBottom: 14,
           }}>
             <p style={{
-              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '1.5px', color: '#8A8680',
+              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '1.5px', color: '#A8A49E',
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}>
               History
             </p>
             <p style={{
-              fontSize: 11, color: 'rgba(138,134,128,0.6)',
+              fontSize: 11, color: 'rgba(168,164,158,0.6)',
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}>
               {historyItems.length} session{historyItems.length !== 1 ? 's' : ''}
@@ -298,11 +298,11 @@ export default function Progress() {
           {historyItems.length === 0 && (
             <div style={{ padding: '40px 0 32px', textAlign: 'center' }}>
               <svg width="40" height="32" viewBox="0 0 40 32" fill="none" style={{ marginBottom: 16, opacity: 0.2 }}>
-                <rect x="0" y="20" width="6" height="12" rx="2" fill="#8A8680" />
-                <rect x="9" y="12" width="6" height="20" rx="2" fill="#8A8680" />
-                <rect x="18" y="6" width="6" height="26" rx="2" fill="#8A8680" />
-                <rect x="27" y="14" width="6" height="18" rx="2" fill="#8A8680" />
-                <rect x="34" y="2" width="6" height="30" rx="2" fill="#8A8680" />
+                <rect x="0" y="20" width="6" height="12" rx="2" fill="#A8A49E" />
+                <rect x="9" y="12" width="6" height="20" rx="2" fill="#A8A49E" />
+                <rect x="18" y="6" width="6" height="26" rx="2" fill="#A8A49E" />
+                <rect x="27" y="14" width="6" height="18" rx="2" fill="#A8A49E" />
+                <rect x="34" y="2" width="6" height="30" rx="2" fill="#A8A49E" />
               </svg>
               <p style={{
                 fontSize: 15, fontWeight: 600, color: '#F0EDE8', marginBottom: 6,
@@ -311,7 +311,7 @@ export default function Progress() {
                 Nothing logged yet
               </p>
               <p style={{
-                fontSize: 13, color: '#8A8680',
+                fontSize: 13, color: '#A8A49E',
                 fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6,
               }}>
                 Finish a workout or log a session to see it here
@@ -350,14 +350,14 @@ export default function Progress() {
                             <p style={{ fontSize: 15, fontWeight: 600, color: '#F0EDE8', fontFamily: '"Outfit", system-ui, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {act.name}
                             </p>
-                            <p style={{ fontSize: 12, color: '#8A8680', marginTop: 4, fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                            <p style={{ fontSize: 12, color: '#A8A49E', marginTop: 4, fontFamily: '"Outfit", system-ui, sans-serif' }}>
                               {format(parseISO(act.date), 'EEE, MMM d')}
                               <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
                               {activitySubtitle(act)}
                             </p>
                           </div>
                         </div>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#8A8680', flexShrink: 0 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: '#A8A49E', flexShrink: 0 }}>
                           <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </motion.button>
@@ -409,7 +409,7 @@ export default function Progress() {
                             {log.planName}
                           </p>
                           <p style={{
-                            fontSize: 12, color: '#8A8680', marginTop: 4,
+                            fontSize: 12, color: '#A8A49E', marginTop: 4,
                             fontFamily: '"Outfit", system-ui, sans-serif',
                           }}>
                             {format(parseISO(log.date), 'EEE, MMM d')}
@@ -443,7 +443,7 @@ export default function Progress() {
                             transition={{ type: 'spring', stiffness: 300, damping: 26 }}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                              <path d="M6 9l6 6 6-6" stroke="#8A8680" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M6 9l6 6 6-6" stroke="#A8A49E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </motion.div>
 
@@ -453,7 +453,7 @@ export default function Progress() {
                             onClick={(e) => { e.stopPropagation(); handleDeleteLog(log) }}
                             style={{
                               background: 'none', border: 'none',
-                              color: 'rgba(138,134,128,0.6)', cursor: 'pointer',
+                              color: 'rgba(168,164,158,0.6)', cursor: 'pointer',
                               padding: 4,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}
@@ -508,7 +508,7 @@ export default function Progress() {
                                           <span
                                             key={si}
                                             style={{
-                                              fontSize: 11, color: '#8A8680',
+                                              fontSize: 11, color: '#A8A49E',
                                               fontFamily: '"Outfit", system-ui, sans-serif',
                                               background: 'rgba(255,255,255,0.04)',
                                               borderRadius: 12, padding: '2px 7px',

@@ -116,7 +116,7 @@ export default function Library() {
             Library
           </h1>
           <p style={{
-            fontSize: 11, color: '#8A8680',
+            fontSize: 11, color: '#A8A49E',
             fontFamily: '"Outfit", system-ui, sans-serif',
             paddingBottom: 4,
           }}>
@@ -129,7 +129,7 @@ export default function Library() {
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <svg
               width="16" height="16" viewBox="0 0 24 24" fill="none"
-              style={{ position: 'absolute', left: 14, color: '#8A8680', pointerEvents: 'none' }}
+              style={{ position: 'absolute', left: 14, color: '#A8A49E', pointerEvents: 'none' }}
             >
               <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
               <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -155,12 +155,14 @@ export default function Library() {
             {searching && (
               <button
                 onClick={() => setQuery('')}
+                aria-label="Clear search"
                 style={{
-                  position: 'absolute', right: 8,
-                  width: 26, height: 26, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.06)', border: 'none',
-                  color: '#8A8680', cursor: 'pointer',
+                  position: 'absolute', right: 0,
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'none', border: 'none',
+                  color: '#A8A49E', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
@@ -187,7 +189,7 @@ export default function Library() {
                   ? '1px solid rgba(200,169,110,0.35)'
                   : '1px solid rgba(255,255,255,0.07)',
                 background: group === key ? 'rgba(200,169,110,0.1)' : 'transparent',
-                color: group === key ? '#C8A96E' : '#8A8680',
+                color: group === key ? '#C8A96E' : '#A8A49E',
                 fontSize: 13,
                 fontWeight: group === key ? 600 : 400,
                 cursor: 'pointer',
@@ -214,7 +216,7 @@ export default function Library() {
                 ? '1px solid rgba(52,199,89,0.4)'
                 : '1px solid rgba(255,255,255,0.07)',
               background: trainedOnly ? 'rgba(52,199,89,0.1)' : 'transparent',
-              color: trainedOnly ? '#34C759' : '#8A8680',
+              color: trainedOnly ? '#34C759' : '#A8A49E',
               fontSize: 13,
               fontWeight: trainedOnly ? 600 : 400,
               cursor: 'pointer',
@@ -239,7 +241,7 @@ export default function Library() {
               padding: '4px 12px', borderRadius: 999,
               border: muscleCategory === null ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.05)',
               background: muscleCategory === null ? 'rgba(200,169,110,0.08)' : 'transparent',
-              color: muscleCategory === null ? '#C8A96E' : '#8A8680',
+              color: muscleCategory === null ? '#C8A96E' : '#A8A49E',
               fontSize: 11, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
               fontFamily: '"Outfit", system-ui, sans-serif',
             }}
@@ -254,7 +256,7 @@ export default function Library() {
                 padding: '4px 12px', borderRadius: 999,
                 border: muscleCategory === label ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.05)',
                 background: muscleCategory === label ? 'rgba(200,169,110,0.08)' : 'transparent',
-                color: muscleCategory === label ? '#C8A96E' : '#8A8680',
+                color: muscleCategory === label ? '#C8A96E' : '#A8A49E',
                 fontSize: 11, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}
@@ -278,7 +280,7 @@ export default function Library() {
               No matches
             </p>
             <p style={{
-              fontSize: 13, color: '#8A8680',
+              fontSize: 13, color: '#A8A49E',
               fontFamily: '"Outfit", system-ui, sans-serif', lineHeight: 1.6,
             }}>
               Nothing matches "{query.trim()}". Try a shorter term.

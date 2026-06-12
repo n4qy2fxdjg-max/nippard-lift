@@ -81,7 +81,7 @@ export default function WeightStepper({ weight, onChange }: Props) {
           </span>
         )}
         {!editing && (
-          <span style={{ fontSize: 12, color: '#8A8680', marginLeft: 3 }}>{unit}</span>
+          <span style={{ fontSize: 12, color: '#A8A49E', marginLeft: 3 }}>{unit}</span>
         )}
       </div>
 

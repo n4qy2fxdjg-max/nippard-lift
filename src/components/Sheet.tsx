@@ -1,6 +1,6 @@
 import { motion, AnimatePresence, useDragControls, type PanInfo } from 'framer-motion'
 import { createPortal } from 'react-dom'
-import { colors, z, anim } from '../lib/theme'
+import { colors, z, anim, maxAppWidth } from '../lib/theme'
 
 interface SheetProps {
   open: boolean
@@ -58,7 +58,7 @@ export default function Sheet({ open, onClose, children, accent, level = 0 }: Sh
               position: 'fixed',
               bottom: 0,
               left: 0, right: 0,
-              margin: '0 auto', maxWidth: 430,
+              margin: '0 auto', maxWidth: maxAppWidth,
               background: colors.sheet,
               backdropFilter: 'blur(40px)',
               WebkitBackdropFilter: 'blur(40px)',

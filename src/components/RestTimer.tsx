@@ -37,10 +37,10 @@ export default function RestTimer({ remaining, total, startAt, onSkip }: Props) 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
       <p style={{
-        fontSize: 10,
+        fontSize: 11,
         textTransform: 'uppercase',
         letterSpacing: '2px',
-        color: '#8A8680',
+        color: '#A8A49E',
         fontFamily: '"Outfit", system-ui, sans-serif',
         fontWeight: 600,
       }}>
@@ -83,8 +83,8 @@ export default function RestTimer({ remaining, total, startAt, onSkip }: Props) 
             {mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : secs}
           </span>
           <span style={{
-            fontSize: 10,
-            color: '#8A8680',
+            fontSize: 11,
+            color: '#A8A49E',
             fontFamily: '"Outfit", system-ui, sans-serif',
             textTransform: 'uppercase',
             letterSpacing: '1px',
@@ -100,9 +100,10 @@ export default function RestTimer({ remaining, total, startAt, onSkip }: Props) 
           background: 'none',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 16,
-          color: '#8A8680',
-          fontSize: 13,
+          color: '#A8A49E',
+          fontSize: 14,
           fontWeight: 500,
+          minHeight: 48,
           padding: '12px 32px',
           cursor: 'pointer',
           fontFamily: '"Outfit", system-ui, sans-serif',

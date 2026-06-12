@@ -65,7 +65,7 @@ export default function InstallPrompt() {
             Add Lift to your Home Screen
           </p>
           <p style={{
-            fontSize: 12.5, color: '#8A8680', lineHeight: 1.5,
+            fontSize: 12.5, color: '#A8A49E', lineHeight: 1.5,
             fontFamily: '"Outfit", system-ui, sans-serif',
           }}>
             Tap <span style={{ color: '#C8A96E', fontWeight: 600 }}>Share</span>, then
@@ -79,10 +79,10 @@ export default function InstallPrompt() {
           onClick={dismiss}
           aria-label="Dismiss"
           style={{
-            position: 'absolute', top: 10, right: 10,
-            width: 26, height: 26, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)', border: 'none',
-            color: '#8A8680', cursor: 'pointer',
+            position: 'absolute', top: 2, right: 2,
+            width: 40, height: 40, borderRadius: '50%',
+            background: 'none', border: 'none',
+            color: '#A8A49E', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             WebkitTapHighlightColor: 'transparent',
           }}
