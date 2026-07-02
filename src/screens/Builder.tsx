@@ -194,6 +194,10 @@ export default function Builder() {
             value={planName}
             onChange={(e) => setPlanName(e.target.value)}
             placeholder="e.g. Push A"
+            autoCapitalize="words"
+            autoCorrect="off"
+            enterKeyHint="done"
+            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
             style={{
               width: '100%',
               background: '#161616',
@@ -280,11 +284,13 @@ export default function Builder() {
                   <motion.button
                     whileTap={{ scale: 0.82 }}
                     onClick={() => removeItem(item.uid)}
+                    aria-label="Remove exercise"
                     style={{
                       background: '#1E1E1E',
                       border: 'none',
                       borderRadius: 12,
-                      width: 30, height: 30,
+                      width: 44, height: 44,
+                      margin: '-7px -7px 0 0',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       cursor: 'pointer', flexShrink: 0,
                       WebkitTapHighlightColor: 'transparent',
@@ -362,11 +368,14 @@ export default function Builder() {
                         onBlur={commitWeightEdit}
                         onKeyDown={(e) => { if (e.key === 'Enter') commitWeightEdit() }}
                         inputMode="decimal"
+                        enterKeyHint="done"
                         style={{
-                          width: 56, textAlign: 'center',
+                          width: 64, textAlign: 'center',
                           background: 'transparent', border: 'none',
                           borderBottom: '2px solid #C8A96E',
-                          color: '#C8A96E', fontSize: 14, fontWeight: 600,
+                          // 16px minimum — anything smaller makes iOS Safari
+                          // auto-zoom the whole page on focus.
+                          color: '#C8A96E', fontSize: 16, fontWeight: 600,
                           outline: 'none',
                           fontFamily: '"Outfit", system-ui, sans-serif',
                         }}

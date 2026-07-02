@@ -129,6 +129,11 @@ export const useSyncStore = create<SyncStore>()(
 
           // 3. Pull and merge
           await get().pullSync()
+
+          // 4. Upload the merged set — without this, data that existed only on
+          // the joining device stays local (invisible to other devices) until
+          // some later unrelated push happens to fire.
+          await get().pushSync()
         } catch (e: any) {
           set({ isSyncing: false, syncError: e.message })
           throw e
@@ -155,7 +160,17 @@ export const useSyncStore = create<SyncStore>()(
           if (!res.ok) throw new Error(`Sync upload failed (${res.status})`)
           set({ lastSyncAt: Date.now(), isSyncing: false, syncError: null })
         } catch (e: any) {
+          // Surface the failure where it happens — pushSync fires automatically
+          // after finishing a workout etc., and Settings (the only place that
+          // renders syncError) may not be opened for days. Toast only on the
+          // transition into the error state so auto-retries don't spam.
+          const alreadyFailing = get().syncError != null
           set({ isSyncing: false, syncError: e?.message ?? 'Sync upload failed' })
+          if (!alreadyFailing) {
+            import('./useToastStore').then(({ useToastStore }) => {
+              useToastStore.getState().show({ message: 'Sync failed — changes saved on this device' })
+            })
+          }
         }
       },
 

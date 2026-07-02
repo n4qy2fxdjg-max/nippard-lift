@@ -71,10 +71,17 @@ export default function HeatmapGrid({ logDates }: Props) {
             {week.map((day, di) => {
               const count = countForDay(day)
               const isFuture = day > today
+              const label = isFuture
+                ? undefined
+                : `${format(day, 'MMM d')}: ${count} workout${count !== 1 ? 's' : ''}`
               return (
                 <div
                   key={di}
-                  title={`${format(day, 'MMM d')}: ${count} workout${count !== 1 ? 's' : ''}`}
+                  // title is hover-only (invisible on touch) — the aria-label
+                  // makes each cell readable under VoiceOver.
+                  title={label}
+                  role={label ? 'img' : undefined}
+                  aria-label={label}
                   style={{
                     width: '100%',
                     height: CELL,

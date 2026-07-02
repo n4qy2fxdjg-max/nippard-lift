@@ -2,6 +2,9 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
+import { exercises } from '../data/exercises'
+import { featuredPrograms } from '../data/programs'
+import { useKeyboardInset } from '../lib/useKeyboardInset'
 
 const STEPS = 4
 
@@ -20,6 +23,7 @@ export default function Onboarding() {
   const [name, setName] = useState('')
   const [unit, setUnit] = useState<'kg' | 'lb'>('kg')
   const inputRef = useRef<HTMLInputElement>(null)
+  const keyboardInset = useKeyboardInset()
 
   function goTo(next: number) {
     setDir(next > step ? 1 : -1)
@@ -68,7 +72,7 @@ export default function Onboarding() {
               transition={slideTransition}
               style={slideStyle}
             >
-              <HeroStep />
+              <div style={slideInner}><HeroStep /></div>
             </motion.div>
           )}
           {step === 1 && (
@@ -83,7 +87,7 @@ export default function Onboarding() {
               style={slideStyle}
               onAnimationComplete={() => inputRef.current?.focus()}
             >
-              <NameStep name={name} setName={setName} inputRef={inputRef} />
+              <div style={slideInner}><NameStep name={name} setName={setName} inputRef={inputRef} /></div>
             </motion.div>
           )}
           {step === 2 && (
@@ -97,7 +101,7 @@ export default function Onboarding() {
               transition={slideTransition}
               style={slideStyle}
             >
-              <UnitStep unit={unit} setUnit={setUnit} />
+              <div style={slideInner}><UnitStep unit={unit} setUnit={setUnit} /></div>
             </motion.div>
           )}
           {step === 3 && (
@@ -111,16 +115,19 @@ export default function Onboarding() {
               transition={slideTransition}
               style={slideStyle}
             >
-              <ReadyStep name={name} unit={unit} />
+              <div style={slideInner}><ReadyStep name={name} unit={unit} /></div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Footer CTA */}
+      {/* Footer CTA — lifted above the iOS keyboard (the name step auto-focuses
+          its input, which would otherwise bury the Continue button). */}
       <div style={{
         padding: `20px 32px max(32px, env(safe-area-inset-bottom))`,
         display: 'flex', flexDirection: 'column', gap: 12,
+        marginBottom: keyboardInset,
+        transition: 'margin-bottom 0.25s ease',
       }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
@@ -154,11 +161,21 @@ export default function Onboarding() {
   )
 }
 
+// Scrollable, with the content centred via auto margins — `justify-content:
+// center` on an overflowing flex column clips the top edge, which cut off the
+// name step + keyboard and the six-card grid in landscape.
 const slideStyle: React.CSSProperties = {
   position: 'absolute', inset: 0,
   display: 'flex', flexDirection: 'column',
-  alignItems: 'center', justifyContent: 'center',
-  padding: '0 32px',
+  alignItems: 'center',
+  overflowY: 'auto',
+  padding: '48px 32px 16px',
+}
+
+const slideInner: React.CSSProperties = {
+  margin: 'auto',
+  width: '100%',
+  display: 'flex', flexDirection: 'column', alignItems: 'center',
 }
 
 /* ── Step 0: Hero ── */
@@ -231,6 +248,10 @@ function NameStep({ name, setName, inputRef }: {
         onChange={(e) => setName(e.target.value)}
         placeholder="Your name"
         maxLength={24}
+        autoCapitalize="words"
+        autoCorrect="off"
+        enterKeyHint="done"
+        onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
         style={{
           width: '100%', padding: '14px 16px',
           background: '#161616',
@@ -317,7 +338,7 @@ function ReadyStep({ name, unit }: { name: string; unit: 'kg' | 'lb' }) {
         Ready, {displayName}.
       </h2>
       <p style={{ fontSize: 15, color: '#A8A49E', marginBottom: 28, lineHeight: 1.5 }}>
-        57 exercises · 6 programmes · weights in {unit}
+        {exercises.length} exercises · {featuredPrograms.length} programmes · weights in {unit}
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>

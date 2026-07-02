@@ -138,6 +138,9 @@ export default function Library() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search exercises…"
+              autoCorrect="off"
+              enterKeyHint="search"
+              onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
               style={{
                 width: '100%',
                 padding: '11px 38px 11px 40px',

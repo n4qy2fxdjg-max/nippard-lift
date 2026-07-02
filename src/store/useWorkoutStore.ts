@@ -298,7 +298,16 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const session = get().activeSession
         if (!session) return
 
-        const durationSec = Math.floor((Date.now() - session.startedAt) / 1000)
+        // End the clock at the last logged set (+ a short cooldown) rather than
+        // "now" — the session persists across backgrounding, so a workout left
+        // open for hours would otherwise record a multi-hour duration and skew
+        // the avg-session stat.
+        const lastSetTs = session.exercises.reduce(
+          (max, e) => e.sets.reduce((m, s) => Math.max(m, s.timestamp ?? 0), max),
+          0
+        )
+        const endTs = lastSetTs > 0 ? Math.min(Date.now(), lastSetTs + 3 * 60 * 1000) : Date.now()
+        const durationSec = Math.max(0, Math.floor((endTs - session.startedAt) / 1000))
         const today = format(new Date(), 'yyyy-MM-dd')
         const recordSession = useLibraryStore.getState().recordSession
         const prevHistory = useLibraryStore.getState().weightHistory
@@ -397,9 +406,16 @@ export const useWorkoutStore = create<WorkoutStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return
-        // Discard stale sessions (older than 6 h)
+        // Discard stale sessions (older than 6 h) — and say so, instead of the
+        // user's logged sets silently vanishing. Delayed so the Toaster is
+        // mounted by the time it fires.
         if (state.activeSession && Date.now() - state.activeSession.startedAt > 6 * 60 * 60 * 1000) {
           state.activeSession = null
+          setTimeout(() => {
+            import('./useToastStore').then(({ useToastStore }) => {
+              useToastStore.getState().show({ message: 'Previous workout expired and was discarded' })
+            })
+          }, 800)
         }
         // Prune tombstones older than 90 days to bound storage growth
         const NINETY_DAYS = 90 * 24 * 60 * 60 * 1000

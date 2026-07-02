@@ -122,7 +122,17 @@ export default function LogActivitySheet({ open, onClose }: Props) {
             <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 13, paddingBottom: 4 }}>
               {selected.id === 'other' && (
                 <Field label="Name">
-                  <input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Padel" maxLength={28} style={inputStyle} />
+                  <input
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    placeholder="e.g. Padel"
+                    maxLength={28}
+                    autoCapitalize="words"
+                    autoCorrect="off"
+                    enterKeyHint="done"
+                    onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                    style={inputStyle}
+                  />
                 </Field>
               )}
 
@@ -181,7 +191,15 @@ export default function LogActivitySheet({ open, onClose }: Props) {
               </div>
 
               <Field label="Note">
-                <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional" maxLength={120} style={inputStyle} />
+                <input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Optional"
+                  maxLength={120}
+                  enterKeyHint="done"
+                  onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                  style={inputStyle}
+                />
               </Field>
             </div>
 
@@ -235,6 +253,8 @@ function NumInput({ value, onChange, placeholder, suffix, decimal, width }: {
         }}
         placeholder={placeholder}
         inputMode={decimal ? 'decimal' : 'numeric'}
+        enterKeyHint="done"
+        onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
         size={1}
         style={{ flex: 1, minWidth: 0, width: '100%', background: 'none', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 18, fontWeight: 600, fontFamily: '"Outfit", system-ui, sans-serif', padding: '11px 0', WebkitAppearance: 'none' }}
       />

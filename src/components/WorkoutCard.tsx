@@ -29,6 +29,10 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
       whileTap={{ scale: 0.985 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open ${program.name} routine`}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen() } }}
       style={{
         width: '100%',
         background: '#161616',
@@ -128,22 +132,23 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
           )}
         </div>
 
-        {/* CTA button */}
-        <button style={{
+        {/* CTA affordance — a styled div, not a <button>: the whole card is the
+            interactive element, and a real button nested inside it is invalid
+            for assistive tech (two overlapping controls for one action). */}
+        <div style={{
           width: '100%',
           background: '#F0EDE8',
-          border: 'none',
           borderRadius: 16,
           padding: '13px',
           fontSize: 15,
           fontWeight: 600,
           color: '#0C0C0C',
-          cursor: 'pointer',
+          textAlign: 'center',
           fontFamily: '"Outfit", system-ui, sans-serif',
           letterSpacing: '0.2px',
         }}>
           {lastDate ? `Last ${format(parseISO(lastDate), 'MMM d')} · View` : 'View Routine'}
-        </button>
+        </div>
       </div>
     </motion.div>
   )

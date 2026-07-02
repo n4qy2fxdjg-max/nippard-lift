@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
 import { useSyncStore } from '../store/useSyncStore'
 import { useWorkoutStore } from '../store/useWorkoutStore'
+import { formatVolume } from '../lib/format'
 import { format, parseISO } from 'date-fns'
 
 type SyncView = 'idle' | 'creating' | 'joining'
@@ -89,6 +90,10 @@ export default function Settings() {
               defaultValue={userName}
               placeholder="Your name"
               maxLength={24}
+              autoCapitalize="words"
+              autoCorrect="off"
+              enterKeyHint="done"
+              onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
               style={inputStyle}
               onFocus={(e) => { e.target.style.borderColor = 'rgba(200,169,110,0.5)' }}
               onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.09)' }}
@@ -189,7 +194,7 @@ export default function Settings() {
               }}
             >
               {syncError}
-              <button onClick={clearError} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF453A', padding: 0 }}>
+              <button onClick={clearError} aria-label="Dismiss error" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF453A', padding: 14, margin: -14, flexShrink: 0, display: 'flex' }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
               </button>
             </motion.div>
@@ -334,6 +339,12 @@ export default function Settings() {
                   onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); clearError() }}
                   placeholder="e.g. ZAI4-K29P"
                   maxLength={9}
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  autoComplete="off"
+                  spellCheck={false}
+                  enterKeyHint="go"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
                   style={{
                     ...inputStyle,
                     fontSize: 26, fontWeight: 700,
@@ -367,14 +378,7 @@ export default function Settings() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <StatCard label="Workouts" value={String(logs.length)} />
             <StatCard label="Total Sets" value={String(totalSets)} />
-            <StatCard
-              label="Volume Lifted"
-              value={unit === 'lb'
-                ? `${Math.round(totalVolume * 2.20462).toLocaleString()} lb`
-                : `${totalVolume.toLocaleString()} kg`
-              }
-              wide
-            />
+            <StatCard label="Volume Lifted" value={formatVolume(totalVolume, unit)} wide />
           </div>
         </Section>
 
@@ -411,9 +415,22 @@ function BodyweightCard({
 }) {
   const [draftKg, setDraftKg] = useState<number>(latestKg ?? 70)
   const [logged, setLogged] = useState(false)
+  // Text being typed directly into the value; null when not editing.
+  const [editText, setEditText] = useState<string | null>(null)
+
+  // Track the latest logged weight (sync pull, fresh log) instead of only
+  // seeding once — otherwise the stepper shows a stale draft forever.
+  // Derive-during-render (same pattern as PageFade in App.tsx) rather than an
+  // effect, per react-hooks/set-state-in-effect.
+  const [seenLatestKg, setSeenLatestKg] = useState(latestKg)
+  if (latestKg !== seenLatestKg) {
+    setSeenLatestKg(latestKg)
+    if (latestKg != null) setDraftKg(latestKg)
+  }
 
   const step = unit === 'lb' ? LB_TO_KG : 0.5
   const adjust = (dir: 1 | -1) => {
+    setEditText(null)
     setDraftKg((kg) => Math.max(20, Math.min(300, parseFloat((kg + dir * step).toFixed(4)))))
     setLogged(false)
   }
@@ -421,6 +438,18 @@ function BodyweightCard({
   const display = unit === 'lb'
     ? Math.round(draftKg * KG_TO_LB).toString()
     : (Math.round(draftKg * 2) / 2).toString()
+
+  function commitEditText() {
+    if (editText != null) {
+      const parsed = parseFloat(editText.replace(',', '.'))
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        const kg = unit === 'lb' ? parsed * LB_TO_KG : parsed
+        setDraftKg(Math.max(20, Math.min(300, parseFloat(kg.toFixed(4)))))
+        setLogged(false)
+      }
+    }
+    setEditText(null)
+  }
 
   function commit() {
     onLog(parseFloat(draftKg.toFixed(2)))
@@ -442,13 +471,27 @@ function BodyweightCard({
         >
           −
         </motion.button>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <span style={{
-            fontFamily: '"DM Serif Display", Georgia, serif',
-            fontSize: 38, color: '#F0EDE8', lineHeight: 1,
-          }}>
-            {display}
-          </span>
+        <div style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+          {/* Tap-to-type — 50 stepper taps from the default to a real bodyweight
+              was unusable. Steppers remain for fine-tuning. */}
+          <input
+            value={editText ?? display}
+            onFocus={(e) => { setEditText(display); requestAnimationFrame(() => e.target.select()) }}
+            onChange={(e) => setEditText(e.target.value.replace(/[^0-9.,]/g, ''))}
+            onBlur={commitEditText}
+            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+            inputMode="decimal"
+            enterKeyHint="done"
+            aria-label={`Bodyweight in ${unit}`}
+            size={1}
+            style={{
+              fontFamily: '"DM Serif Display", Georgia, serif',
+              fontSize: 38, color: '#F0EDE8', lineHeight: 1,
+              background: 'none', border: 'none', outline: 'none',
+              textAlign: 'right', width: `${Math.max((editText ?? display).length, 2)}ch`,
+              padding: 0, WebkitAppearance: 'none',
+            }}
+          />
           <span style={{ fontSize: 14, color: '#A8A49E', marginLeft: 6, fontFamily: '"Outfit", system-ui, sans-serif' }}>
             {unit}
           </span>

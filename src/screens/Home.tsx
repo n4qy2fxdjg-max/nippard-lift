@@ -20,18 +20,11 @@ import { useActivityStore } from '../store/useActivityStore'
 import { activeLogs, activePlans, activeActivities } from '../lib/active'
 import { activityEmoji } from '../data/activities'
 import { activitySubtitle } from '../lib/activityFormat'
+import { formatCompactNumber, formatDurationMin } from '../lib/format'
 import { isWithinInterval, subWeeks, parseISO, startOfDay, format } from 'date-fns'
 import type { Program, CustomPlan, WorkoutLog, ActivityLog } from '../types'
 
 const KG_TO_LB = 2.20462
-
-function formatVolume(n: number): string {
-  if (n < 1000) return n.toString()
-  // 16900 -> 16.9k, 1500 -> 1.5k, 12000 -> 12k (drop trailing .0)
-  const k = n / 1000
-  const rounded = k >= 100 ? Math.round(k).toString() : k.toFixed(1).replace(/\.0$/, '')
-  return `${rounded}k`
-}
 
 function greeting(name: string): { prefix: string; name: string } {
   const h = new Date().getHours()
@@ -105,7 +98,7 @@ export default function Home() {
     const volume = unit === 'lb' ? weeklyVolumeKg * KG_TO_LB : weeklyVolumeKg
     return {
       thisWeek: weekLogs.length + weekActivities.length,
-      volume: formatVolume(Math.round(volume)),
+      volume: formatCompactNumber(Math.round(volume)),
       volumeUnit: unit,
       totalSessions: logs.length + activities.length,
     }
@@ -452,7 +445,7 @@ export default function Home() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: 13, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
-                            {Math.round(log.durationSec / 60)} min
+                            {formatDurationMin(log.durationSec)}
                           </div>
                           {log.personalRecords?.length > 0 && (
                             <div style={{ fontSize: 11, color: '#34C759', marginTop: 2, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>

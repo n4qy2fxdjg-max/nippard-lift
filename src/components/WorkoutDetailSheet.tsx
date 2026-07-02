@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns'
 import type { WorkoutLog } from '../types'
 import { getExerciseById } from '../data/exercises'
 import { useAppStore } from '../store/useAppStore'
+import { formatVolume, formatDurationMin } from '../lib/format'
 import Sheet from './Sheet'
 
 const KG_TO_LB = 2.20462
@@ -12,22 +13,11 @@ interface Props {
   onClose: () => void
 }
 
-function formatDuration(secs: number): string {
-  const m = Math.floor(secs / 60)
-  if (m < 60) return `${m} min`
-  return `${Math.floor(m / 60)}h ${m % 60}m`
-}
-
 export default function WorkoutDetailSheet({ log, onClose }: Props) {
   const unit = useAppStore((s) => s.unit)
 
   const fmtWeight = (kg: number) =>
     unit === 'lb' ? `${Math.round(kg * KG_TO_LB)} lb` : `${kg} kg`
-
-  const fmtVolume = (kg: number) => {
-    const v = unit === 'lb' ? kg * KG_TO_LB : kg
-    return v >= 1000 ? `${(v / 1000).toFixed(1)}k ${unit}` : `${Math.round(v)} ${unit}`
-  }
 
   const totalSets = log
     ? log.exerciseResults.reduce((sum, e) => sum + e.sets.filter((s) => s.completed).length, 0)
@@ -73,8 +63,8 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
           {/* Stat row */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
             {[
-              { label: 'duration', value: formatDuration(log.durationSec) },
-              { label: 'volume', value: fmtVolume(log.totalVolume) },
+              { label: 'duration', value: formatDurationMin(log.durationSec) },
+              { label: 'volume', value: formatVolume(log.totalVolume, unit) },
               { label: 'sets', value: String(totalSets) },
             ].map((s) => (
               <div key={s.label} style={{

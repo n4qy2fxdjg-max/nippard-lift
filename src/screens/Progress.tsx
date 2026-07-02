@@ -13,15 +13,10 @@ import HeatmapGrid from '../components/HeatmapGrid'
 import LineChart from '../components/LineChart'
 import ActivityDetailSheet from '../components/ActivityDetailSheet'
 import { activeLogs, activeActivities } from '../lib/active'
+import { formatVolume, formatDurationMin } from '../lib/format'
 import { format, parseISO, subDays, startOfDay, isAfter } from 'date-fns'
 
 const KG_TO_LB = 2.20462
-
-function formatDuration(secs: number): string {
-  const m = Math.floor(secs / 60)
-  if (m < 60) return `${m}m`
-  return `${Math.floor(m / 60)}h ${m % 60}m`
-}
 
 function exerciseName(id: string): string {
   return exerciseList.find((e) => e.id === id)?.name ?? id
@@ -95,18 +90,6 @@ export default function Progress() {
     const avgDuration = sessions > 0 ? Math.round(totalDuration / sessions) : 0
     return { sessions, volume, avgDuration }
   }, [logs, activities])
-
-  function formatVolume(kg: number): string {
-    if (unit === 'lb') {
-      const lb = kg * 2.20462
-      return lb >= 1000
-        ? `${(lb / 1000).toFixed(1)}k lb`
-        : `${Math.round(lb).toLocaleString()} lb`
-    }
-    return kg >= 1000
-      ? `${(kg / 1000).toFixed(1)}t`
-      : `${Math.round(kg).toLocaleString()} kg`
-  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0C0C0C' }}>
@@ -204,7 +187,7 @@ export default function Progress() {
                     fontSize: 26, color: '#F0EDE8', lineHeight: 1,
                     fontFamily: '"DM Serif Display", Georgia, serif',
                   }}>
-                    {weeklyStats.volume > 0 ? formatVolume(weeklyStats.volume) : '—'}
+                    {weeklyStats.volume > 0 ? formatVolume(weeklyStats.volume, unit) : '—'}
                   </p>
                   <em style={{
                     fontFamily: '"DM Serif Display", Georgia, serif',
@@ -219,7 +202,7 @@ export default function Progress() {
                     fontSize: 26, color: '#F0EDE8', lineHeight: 1,
                     fontFamily: '"DM Serif Display", Georgia, serif',
                   }}>
-                    {weeklyStats.avgDuration > 0 ? formatDuration(weeklyStats.avgDuration) : '—'}
+                    {weeklyStats.avgDuration > 0 ? formatDurationMin(weeklyStats.avgDuration) : '—'}
                   </p>
                   <em style={{
                     fontFamily: '"DM Serif Display", Georgia, serif',
@@ -414,9 +397,9 @@ export default function Progress() {
                           }}>
                             {format(parseISO(log.date), 'EEE, MMM d')}
                             <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
-                            {formatDuration(log.durationSec)}
+                            {formatDurationMin(log.durationSec)}
                             <span style={{ margin: '0 5px', opacity: 0.5 }}>·</span>
-                            {formatVolume(log.totalVolume)}
+                            {formatVolume(log.totalVolume, unit)}
                           </p>
                           {log.personalRecords.length > 0 && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8 }}>
@@ -451,11 +434,14 @@ export default function Progress() {
                           <motion.button
                             whileTap={{ scale: 0.82 }}
                             onClick={(e) => { e.stopPropagation(); handleDeleteLog(log) }}
+                            aria-label="Delete workout"
                             style={{
                               background: 'none', border: 'none',
                               color: 'rgba(168,164,158,0.6)', cursor: 'pointer',
-                              padding: 4,
+                              width: 44, height: 44, padding: 0,
+                              margin: '-12px -12px -12px 0',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              WebkitTapHighlightColor: 'transparent',
                             }}
                           >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

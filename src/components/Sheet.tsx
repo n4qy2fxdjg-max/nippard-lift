@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useDragControls, type PanInfo } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { colors, z, anim, maxAppWidth } from '../lib/theme'
+import { useKeyboardInset } from '../lib/useKeyboardInset'
 
 interface SheetProps {
   open: boolean
@@ -17,10 +19,37 @@ interface SheetProps {
  * that had drifted apart (different backgrounds, backdrops, z-index, close
  * buttons). Drag-to-dismiss is wired to the handle only — via dragControls —
  * so it never fights a scrollable list inside the sheet.
+ *
+ * The panel lifts above the iOS software keyboard (visualViewport inset) so
+ * inputs and the footer CTA stay reachable, closes on Escape, and carries
+ * dialog semantics with focus moved in on open and restored on close.
  */
 export default function Sheet({ open, onClose, children, accent, level = 0 }: SheetProps) {
   const dragControls = useDragControls()
   const baseZ = z.sheetBackdrop + level * 2
+  const keyboardInset = useKeyboardInset()
+  const panelRef = useRef<HTMLDivElement>(null)
+  const restoreFocusRef = useRef<HTMLElement | null>(null)
+
+  // Close on Escape (hardware keyboards / iPad).
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  // Move focus into the dialog on open; restore it on close so VoiceOver
+  // doesn't land in the obscured page behind the overlay.
+  useEffect(() => {
+    if (open) {
+      restoreFocusRef.current = document.activeElement as HTMLElement | null
+      panelRef.current?.focus({ preventScroll: true })
+    } else {
+      restoreFocusRef.current?.focus?.({ preventScroll: true })
+      restoreFocusRef.current = null
+    }
+  }, [open])
 
   return createPortal(
     <AnimatePresence>
@@ -32,16 +61,25 @@ export default function Sheet({ open, onClose, children, accent, level = 0 }: Sh
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
+            aria-hidden="true"
             style={{
               position: 'fixed', inset: 0,
               background: 'rgba(0,0,0,0.65)',
               backdropFilter: 'blur(6px)',
               WebkitBackdropFilter: 'blur(6px)',
               zIndex: baseZ,
+              // Swallow pan gestures so they can't chain into the page scroll
+              // underneath (iOS scroll bleed-through).
+              touchAction: 'none',
+              overscrollBehavior: 'contain',
             }}
           />
           <motion.div
             key="sheet-panel"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -56,7 +94,9 @@ export default function Sheet({ open, onClose, children, accent, level = 0 }: Sh
             }}
             style={{
               position: 'fixed',
-              bottom: 0,
+              // Lift above the software keyboard — iOS doesn't shrink the
+              // layout viewport, so a plain bottom: 0 panel gets covered.
+              bottom: keyboardInset,
               left: 0, right: 0,
               margin: '0 auto', maxWidth: maxAppWidth,
               background: colors.sheet,
@@ -67,10 +107,13 @@ export default function Sheet({ open, onClose, children, accent, level = 0 }: Sh
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 -20px 60px rgba(0,0,0,0.4)',
               // Flush to the bottom (covers the nav) rather than floating above it;
               // pad for the home indicator so content/footers clear it.
-              maxHeight: 'calc(100svh - 56px)',
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              maxHeight: `calc(100svh - 56px - ${keyboardInset}px)`,
+              paddingBottom: keyboardInset > 0 ? 0 : 'env(safe-area-inset-bottom, 0px)',
+              transition: 'bottom 0.25s ease, max-height 0.25s ease',
               display: 'flex', flexDirection: 'column',
               overflow: 'hidden',
+              overscrollBehavior: 'contain',
+              outline: 'none',
               zIndex: baseZ + 1,
             }}
           >
