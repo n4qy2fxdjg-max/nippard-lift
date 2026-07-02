@@ -70,6 +70,7 @@ export default function ActiveWorkout() {
     adjustWeight,
     adjustWarmupWeight,
     skipRest,
+    skipExercise,
     tickRest,
     completeSession,
     abandonSession,
@@ -245,6 +246,19 @@ export default function ActiveWorkout() {
   function handleSkipRest() {
     clearRestTimer()
     skipRest()
+  }
+
+  function handleSkipExercise() {
+    // Skipping the final exercise with nothing logged anywhere would land on
+    // the Done screen with an empty workout to save — route to the end-workout
+    // dialog instead (its "nothing logged" variant offers discard).
+    const isLast = currentExIdx >= exercises.length - 1
+    if (isLast && totalCompletedSets === 0) {
+      setShowAbandon(true)
+      return
+    }
+    clearSetReminder()
+    skipExercise()
   }
 
   return (
@@ -705,6 +719,27 @@ export default function ActiveWorkout() {
             Complete Set {setsCompleted + 1}
           </motion.button>
         ) : null}
+
+        {/* Skip exercise — equipment taken / out of time. Logged sets are kept. */}
+        {(isWarmup || phase === 'exercise') && (
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={handleSkipExercise}
+            style={{
+              width: '100%', minHeight: 44, marginTop: 6,
+              background: 'none', border: 'none',
+              color: '#A8A49E', fontSize: 14, fontWeight: 500,
+              cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            Skip exercise
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M5 5l7 7-7 7M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </motion.button>
+        )}
       </div>
 
       {/* PR celebration */}

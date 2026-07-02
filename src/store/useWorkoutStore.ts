@@ -37,6 +37,7 @@ interface WorkoutStore {
   adjustWeight: (exerciseId: string, delta: number) => void
   adjustWarmupWeight: (delta: number) => void
   skipRest: () => void
+  skipExercise: () => void
   tickRest: () => void
   completeSession: () => void
   abandonSession: () => void
@@ -267,6 +268,34 @@ export const useWorkoutStore = create<WorkoutStore>()(
             phase: nextHasWarmup ? 'warmup' : 'exercise',
             restRemaining: 0,
             warmupSetIdx: 0,
+          },
+        })
+      },
+
+      // Move past the current exercise without finishing its sets (equipment
+      // taken, out of time). Any sets already logged on it are kept — only
+      // completed sets are recorded at completeSession. On the last exercise
+      // this ends the session (phase 'done').
+      skipExercise: () => {
+        const session = get().activeSession
+        if (!session || session.phase === 'done') return
+        const nextIdx = session.currentExIdx + 1
+        if (nextIdx >= session.exercises.length) {
+          set({ activeSession: { ...session, phase: 'done', restRemaining: 0 } })
+          return
+        }
+        const nextEx = session.exercises[nextIdx]
+        const nextHasWarmup =
+          (nextEx.warmupSets?.length ?? 0) > 0 &&
+          !(nextEx.warmupSets?.every((w) => w.completed))
+        set({
+          activeSession: {
+            ...session,
+            currentExIdx: nextIdx,
+            currentSetIdx: 0,
+            phase: nextHasWarmup ? 'warmup' : 'exercise',
+            warmupSetIdx: 0,
+            restRemaining: 0,
           },
         })
       },
