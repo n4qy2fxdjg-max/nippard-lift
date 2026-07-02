@@ -37,7 +37,7 @@ interface WorkoutStore {
   adjustWeight: (exerciseId: string, delta: number) => void
   adjustWarmupWeight: (delta: number) => void
   skipRest: () => void
-  skipExercise: () => void
+  jumpToExercise: (idx: number) => void
   tickRest: () => void
   completeSession: () => void
   abandonSession: () => void
@@ -151,16 +151,27 @@ export const useWorkoutStore = create<WorkoutStore>()(
         )
 
         const allSetsForEx = updatedSets.length >= ex.targetSets
-        const isLastExercise = session.currentExIdx >= session.exercises.length - 1
         const restSecs = exercise?.restSeconds ?? 90
 
-        if (allSetsForEx && isLastExercise) {
+        // Exercises can be trained in any order (pill navigation), so "done"
+        // means every exercise is complete — not "the last one by index".
+        const isIncomplete = (e: SessionExercise) =>
+          e.sets.filter((s) => s.completed).length < e.targetSets
+
+        if (allSetsForEx && !updatedExercises.some(isIncomplete)) {
           set({ activeSession: { ...session, exercises: updatedExercises, phase: 'done' } })
           return
         }
 
         if (allSetsForEx) {
-          const nextExIdx = session.currentExIdx + 1
+          // Advance to the next incomplete exercise, wrapping past the end —
+          // an earlier exercise may have been left unfinished via the pills.
+          const n = updatedExercises.length
+          let nextExIdx = session.currentExIdx
+          for (let step = 1; step <= n; step++) {
+            const cand = (session.currentExIdx + step) % n
+            if (isIncomplete(updatedExercises[cand])) { nextExIdx = cand; break }
+          }
           // Whether the next exercise needs a warm-up is re-derived in
           // skipRest/tickRest when the rest period ends — no need to flag it here.
           set({
@@ -260,6 +271,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const nextEx = session.exercises[session.currentExIdx]
         const nextHasWarmup = session.phase === 'rest' &&
           session.currentSetIdx === 0 &&
+          nextEx?.sets.length === 0 && // no warm-up restart on a partially-trained exercise
           (nextEx?.warmupSets?.length ?? 0) > 0 &&
           !(nextEx.warmupSets?.every((w) => w.completed))
         set({
@@ -272,29 +284,24 @@ export const useWorkoutStore = create<WorkoutStore>()(
         })
       },
 
-      // Move past the current exercise without finishing its sets (equipment
-      // taken, out of time). Any sets already logged on it are kept — only
-      // completed sets are recorded at completeSession. On the last exercise
-      // this ends the session (phase 'done').
-      skipExercise: () => {
+      // Jump to any exercise (tapping its pill) — train in whatever order the
+      // gym allows. Resumes at its first incomplete warm-up if none of its
+      // working sets are logged yet; otherwise goes straight to working sets.
+      jumpToExercise: (idx) => {
         const session = get().activeSession
         if (!session || session.phase === 'done') return
-        const nextIdx = session.currentExIdx + 1
-        if (nextIdx >= session.exercises.length) {
-          set({ activeSession: { ...session, phase: 'done', restRemaining: 0 } })
-          return
-        }
-        const nextEx = session.exercises[nextIdx]
-        const nextHasWarmup =
-          (nextEx.warmupSets?.length ?? 0) > 0 &&
-          !(nextEx.warmupSets?.every((w) => w.completed))
+        if (idx < 0 || idx >= session.exercises.length || idx === session.currentExIdx) return
+        const ex = session.exercises[idx]
+        const warmups = ex.warmupSets ?? []
+        const needsWarmup =
+          warmups.length > 0 && !warmups.every((w) => w.completed) && ex.sets.length === 0
         set({
           activeSession: {
             ...session,
-            currentExIdx: nextIdx,
-            currentSetIdx: 0,
-            phase: nextHasWarmup ? 'warmup' : 'exercise',
-            warmupSetIdx: 0,
+            currentExIdx: idx,
+            currentSetIdx: ex.sets.length,
+            phase: needsWarmup ? 'warmup' : 'exercise',
+            warmupSetIdx: warmups.filter((w) => w.completed).length,
             restRemaining: 0,
           },
         })
@@ -308,6 +315,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         if (remaining === 0) {
           const nextEx = session.exercises[session.currentExIdx]
           const goWarmup = session.currentSetIdx === 0 &&
+            nextEx?.sets.length === 0 && // no warm-up restart on a partially-trained exercise
             (nextEx?.warmupSets?.length ?? 0) > 0 &&
             !(nextEx.warmupSets?.every((w) => w.completed))
           set({

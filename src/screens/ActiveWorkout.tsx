@@ -70,7 +70,7 @@ export default function ActiveWorkout() {
     adjustWeight,
     adjustWarmupWeight,
     skipRest,
-    skipExercise,
+    jumpToExercise,
     tickRest,
     completeSession,
     abandonSession,
@@ -248,17 +248,13 @@ export default function ActiveWorkout() {
     skipRest()
   }
 
-  function handleSkipExercise() {
-    // Skipping the final exercise with nothing logged anywhere would land on
-    // the Done screen with an empty workout to save — route to the end-workout
-    // dialog instead (its "nothing logged" variant offers discard).
-    const isLast = currentExIdx >= exercises.length - 1
-    if (isLast && totalCompletedSets === 0) {
-      setShowAbandon(true)
-      return
-    }
+  function handleJumpTo(idx: number) {
+    if (isDone || idx === currentExIdx) return
+    // Jumping cancels the current rest countdown and set reminder — their
+    // scheduled pushes would otherwise fire for the exercise we just left.
+    clearRestTimer()
     clearSetReminder()
-    skipExercise()
+    jumpToExercise(idx)
   }
 
   return (
@@ -303,25 +299,35 @@ export default function ActiveWorkout() {
         </motion.button>
       </div>
 
-      {/* Progress pills */}
+      {/* Progress pills — tappable: train exercises in any order */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div className="scroll-x" style={{ display: 'flex', gap: 6, padding: '12px 20px' }}>
+        <div className="scroll-x" style={{ display: 'flex', gap: 6, padding: '10px 20px' }}>
           {exercises.map((ex, i) => {
             const exData = getExerciseById(ex.exerciseId)
             const done = ex.sets.filter((s) => s.completed).length
             const isActive = i === currentExIdx
             const isComplete = done >= ex.targetSets
+            const name = exData?.name.split(' ').slice(0, 2).join(' ') ?? '?'
             return (
-              <div key={i} style={{
-                padding: '5px 10px', borderRadius: 999, flexShrink: 0,
-                background: isActive ? 'rgba(200,169,110,0.12)' : isComplete ? 'rgba(52,199,89,0.08)' : '#161616',
-                border: isActive ? '1px solid rgba(200,169,110,0.3)' : isComplete ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,255,255,0.06)',
-              }}>
+              <motion.button
+                key={i}
+                whileTap={isActive || isDone ? undefined : { scale: 0.94 }}
+                onClick={() => handleJumpTo(i)}
+                aria-label={`Go to ${exData?.name ?? 'exercise'}`}
+                aria-current={isActive ? 'true' : undefined}
+                style={{
+                  padding: '9px 12px', borderRadius: 999, flexShrink: 0, minHeight: 36,
+                  background: isActive ? 'rgba(200,169,110,0.12)' : isComplete ? 'rgba(52,199,89,0.08)' : '#161616',
+                  border: isActive ? '1px solid rgba(200,169,110,0.3)' : isComplete ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,255,255,0.06)',
+                  cursor: isActive || isDone ? 'default' : 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
                 <span style={{ fontSize: 11, fontWeight: 500, color: isActive ? '#C8A96E' : isComplete ? '#34C759' : '#A8A49E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
                   {/* Two words, not one — "Cable Fly" vs "Cable Lateral" must stay distinguishable */}
-                  {exData?.name.split(' ').slice(0, 2).join(' ') ?? '?'} {done}/{ex.targetSets}
+                  {name} {done}/{ex.targetSets}
                 </span>
-              </div>
+              </motion.button>
             )
           })}
         </div>
@@ -720,11 +726,12 @@ export default function ActiveWorkout() {
           </motion.button>
         ) : null}
 
-        {/* Skip exercise — equipment taken / out of time. Logged sets are kept. */}
-        {(isWarmup || phase === 'exercise') && (
+        {/* Finish whenever — saves logged sets; untrained exercises stay unrecorded.
+            Opens the end-workout dialog (Finish & Save / Discard / Keep Going). */}
+        {!isDone && (
           <motion.button
             whileTap={{ scale: 0.96 }}
-            onClick={handleSkipExercise}
+            onClick={() => setShowAbandon(true)}
             style={{
               width: '100%', minHeight: 44, marginTop: 6,
               background: 'none', border: 'none',
@@ -734,10 +741,10 @@ export default function ActiveWorkout() {
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            Skip exercise
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path d="M5 5l7 7-7 7M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+            Finish workout
           </motion.button>
         )}
       </div>
