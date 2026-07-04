@@ -34,6 +34,8 @@ interface WorkoutStore {
   undoLastSet: () => void
   addTargetSet: () => void
   removeTargetSet: () => void
+  addWarmupSet: () => void
+  removeWarmupSet: () => void
   adjustWeight: (exerciseId: string, delta: number) => void
   adjustWarmupWeight: (delta: number) => void
   skipRest: () => void
@@ -231,6 +233,47 @@ export const useWorkoutStore = create<WorkoutStore>()(
         if (ex.targetSets <= 1 || ex.targetSets <= completed) return
         const updatedExercises = session.exercises.map((e, i) =>
           i === session.currentExIdx ? { ...e, targetSets: e.targetSets - 1 } : e
+        )
+        set({ activeSession: { ...session, exercises: updatedExercises } })
+      },
+
+      // Drop the last (not-yet-completed) warm-up set — already feeling warm.
+      // Removing the one currently in front of you moves straight to working sets.
+      removeWarmupSet: () => {
+        const session = get().activeSession
+        if (!session || session.phase !== 'warmup') return
+        const ex = session.exercises[session.currentExIdx]
+        const warmups = ex.warmupSets ?? []
+        if (warmups.length === 0 || warmups[warmups.length - 1].completed) return
+        const trimmed = warmups.slice(0, -1)
+        const updatedExercises = session.exercises.map((e, i) =>
+          i === session.currentExIdx ? { ...e, warmupSets: trimmed } : e
+        )
+        const stillInWarmup = session.warmupSetIdx < trimmed.length
+        set({
+          activeSession: {
+            ...session,
+            exercises: updatedExercises,
+            phase: stillInWarmup ? 'warmup' : 'exercise',
+            warmupSetIdx: stillInWarmup ? session.warmupSetIdx : 0,
+          },
+        })
+      },
+
+      // Restore a removed warm-up set, refilled from the standard ramp for the
+      // current working weight. Capped at the ramp length (3), so this only
+      // undoes removals — it can't grow the warm-up beyond the default.
+      addWarmupSet: () => {
+        const session = get().activeSession
+        if (!session || session.phase !== 'warmup') return
+        const ex = session.exercises[session.currentExIdx]
+        const warmups = ex.warmupSets ?? []
+        const ramp = buildWarmupSets(ex.currentWeight, ex.exerciseId)
+        if (warmups.length >= ramp.length) return
+        const updatedExercises = session.exercises.map((e, i) =>
+          i === session.currentExIdx
+            ? { ...e, warmupSets: [...warmups, { ...ramp[warmups.length], completed: false }] }
+            : e
         )
         set({ activeSession: { ...session, exercises: updatedExercises } })
       },

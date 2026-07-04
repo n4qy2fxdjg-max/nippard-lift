@@ -67,6 +67,8 @@ export default function ActiveWorkout() {
     undoLastSet,
     addTargetSet,
     removeTargetSet,
+    addWarmupSet,
+    removeWarmupSet,
     adjustWeight,
     adjustWarmupWeight,
     skipRest,
@@ -386,17 +388,29 @@ export default function ActiveWorkout() {
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             >
               <div style={{ marginBottom: 6 }}>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
-                  borderRadius: 12, padding: '4px 10px', marginBottom: 14,
-                }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14v-4m0-4h.01" stroke="#C8A96E" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#C8A96E', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
-                    Warm-up · {warmupSetIdx + 1}/{warmupSets.length}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.2)',
+                    borderRadius: 12, padding: '4px 10px',
+                  }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14v-4m0-4h.01" stroke="#C8A96E" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#C8A96E', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+                      Warm-up · {warmupSetIdx + 1}/{warmupSets.length}
+                    </span>
+                  </div>
+                  {/* Fewer/more warm-up sets — removing the one in front of you
+                      goes straight to working sets */}
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={removeWarmupSet} style={smallCtrlBtn} aria-label="Remove warm-up set">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="#A8A49E" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={addWarmupSet} style={smallCtrlBtn} aria-label="Add warm-up set">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#A8A49E" strokeWidth="1.75" strokeLinecap="round" /></svg>
+                    </motion.button>
+                  </div>
                 </div>
                 <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1.8px', color: '#A8A49E', marginBottom: 10, fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
                   {currentExIdx + 1} / {exercises.length}
@@ -726,27 +740,6 @@ export default function ActiveWorkout() {
           </motion.button>
         ) : null}
 
-        {/* Finish whenever — saves logged sets; untrained exercises stay unrecorded.
-            Opens the end-workout dialog (Finish & Save / Discard / Keep Going). */}
-        {!isDone && (
-          <motion.button
-            whileTap={{ scale: 0.96 }}
-            onClick={() => setShowAbandon(true)}
-            style={{
-              width: '100%', minHeight: 44, marginTop: 6,
-              background: 'none', border: 'none',
-              color: '#A8A49E', fontSize: 14, fontWeight: 500,
-              cursor: 'pointer', fontFamily: '"Outfit", system-ui, sans-serif',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Finish workout
-          </motion.button>
-        )}
       </div>
 
       {/* PR celebration */}
