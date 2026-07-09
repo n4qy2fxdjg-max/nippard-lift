@@ -60,7 +60,8 @@ export default function Builder() {
   const [editingWeight, setEditingWeight] = useState<{ uid: string; val: string } | null>(null)
   const weightInputRef = useRef<HTMLInputElement>(null)
 
-  const weightStep = unit === 'lb' ? LB_TO_KG : 1.0
+  // One tap = one sensible plate change: 5 lb or 1 kg
+  const weightStep = unit === 'lb' ? 5 * LB_TO_KG : 1.0
 
   function commitWeightEdit() {
     if (!editingWeight) return

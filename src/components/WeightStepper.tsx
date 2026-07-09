@@ -19,7 +19,8 @@ export default function WeightStepper({ weight, onChange }: Props) {
     ? Math.round(weight * KG_TO_LB)
     : (weight % 1 === 0 ? weight : parseFloat(weight.toFixed(2)))
 
-  const step = unit === 'lb' ? LB_TO_KG : 1.0
+  // One tap = one sensible plate change: 5 lb or 1 kg
+  const step = unit === 'lb' ? 5 * LB_TO_KG : 1.0
 
   function adjust(delta: number) {
     onChange(Math.max(0, parseFloat((weight + delta).toFixed(4))))
