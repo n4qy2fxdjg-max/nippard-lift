@@ -40,6 +40,7 @@ interface WorkoutStore {
   adjustWarmupWeight: (delta: number) => void
   skipRest: () => void
   jumpToExercise: (idx: number) => void
+  addExerciseToSession: (exerciseId: string) => void
   tickRest: () => void
   completeSession: () => void
   abandonSession: () => void
@@ -323,6 +324,41 @@ export const useWorkoutStore = create<WorkoutStore>()(
             phase: nextHasWarmup ? 'warmup' : 'exercise',
             restRemaining: 0,
             warmupSetIdx: 0,
+          },
+        })
+      },
+
+      // Append an exercise to the running session and jump to it. Weight is
+      // the last one logged for that exercise (falling back to an empty-bar
+      // 20 kg), with the standard warm-up ramp when it's a compound. Also
+      // revives a session from the Done screen — "finished, but let me add
+      // one more thing".
+      addExerciseToSession: (exerciseId) => {
+        const session = get().activeSession
+        if (!session) return
+        const def = exerciseData.find((e) => e.id === exerciseId)
+        if (!def) return
+        const history = useLibraryStore.getState().weightHistory[exerciseId]
+        const weight = history && history.length > 0 ? history[history.length - 1].weight : 20
+        const warmupSets = buildWarmupSets(weight, exerciseId)
+        const newEx: SessionExercise = {
+          exerciseId,
+          targetSets: def.defaultSets,
+          targetReps: def.defaultReps,
+          currentWeight: weight,
+          sets: [],
+          warmupSets: warmupSets.length > 0 ? warmupSets : undefined,
+        }
+        const exercises = [...session.exercises, newEx]
+        set({
+          activeSession: {
+            ...session,
+            exercises,
+            currentExIdx: exercises.length - 1,
+            currentSetIdx: 0,
+            phase: warmupSets.length > 0 ? 'warmup' : 'exercise',
+            warmupSetIdx: 0,
+            restRemaining: 0,
           },
         })
       },

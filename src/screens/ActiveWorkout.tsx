@@ -8,6 +8,7 @@ import { getExerciseById } from '../data/exercises'
 import WeightStepper from '../components/WeightStepper'
 import RestTimer from '../components/RestTimer'
 import PRCelebration from '../components/PRCelebration'
+import ExercisePickerSheet from '../components/ExercisePickerSheet'
 import {
   requestNotificationPermission,
   scheduleRestDoneNotification,
@@ -73,6 +74,7 @@ export default function ActiveWorkout() {
     adjustWarmupWeight,
     skipRest,
     jumpToExercise,
+    addExerciseToSession,
     tickRest,
     completeSession,
     abandonSession,
@@ -80,6 +82,7 @@ export default function ActiveWorkout() {
 
   const [elapsed, setElapsed] = useState(0)
   const [showAbandon, setShowAbandon] = useState(false)
+  const [showAddExercise, setShowAddExercise] = useState(false)
   const [reps, setReps] = useState(8)
   const [rpe, setRpe] = useState<number | undefined>(undefined)
   const [prCelebration, setPrCelebration] = useState<string | null>(null)
@@ -259,6 +262,13 @@ export default function ActiveWorkout() {
     jumpToExercise(idx)
   }
 
+  function handleAddExercise(exerciseId: string) {
+    setShowAddExercise(false)
+    clearRestTimer()
+    clearSetReminder()
+    addExerciseToSession(exerciseId)
+  }
+
   return (
     <motion.div
       initial={{ y: '100%' }}
@@ -332,6 +342,25 @@ export default function ActiveWorkout() {
               </motion.button>
             )
           })}
+          {/* Add an exercise mid-workout */}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => setShowAddExercise(true)}
+            aria-label="Add exercise"
+            style={{
+              padding: '9px 12px', borderRadius: 999, flexShrink: 0, minHeight: 36,
+              background: '#161616',
+              border: '1px dashed rgba(200,169,110,0.35)',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 5,
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#C8A96E" strokeWidth="1.75" strokeLinecap="round" /></svg>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#C8A96E', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+              Add
+            </span>
+          </motion.button>
         </div>
         {/* Right-edge fade hinting that the pill row scrolls */}
         <div style={{
@@ -741,6 +770,14 @@ export default function ActiveWorkout() {
         ) : null}
 
       </div>
+
+      {/* Add-exercise picker — z above this full-screen route */}
+      <ExercisePickerSheet
+        open={showAddExercise}
+        onClose={() => setShowAddExercise(false)}
+        onPick={handleAddExercise}
+        zIndex={z.fullscreen + 10}
+      />
 
       {/* PR celebration */}
       <PRCelebration

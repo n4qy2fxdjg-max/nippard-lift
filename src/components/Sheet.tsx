@@ -12,6 +12,9 @@ interface SheetProps {
   accent?: string
   /** 0 = base sheet, 1 = a sheet stacked on top of another (e.g. the swap picker). */
   level?: number
+  /** Explicit stacking override — needed above full-screen routes (z.fullscreen),
+      which sit higher than the default sheet band. */
+  zIndex?: number
 }
 
 /**
@@ -24,9 +27,9 @@ interface SheetProps {
  * inputs and the footer CTA stay reachable, closes on Escape, and carries
  * dialog semantics with focus moved in on open and restored on close.
  */
-export default function Sheet({ open, onClose, children, accent, level = 0 }: SheetProps) {
+export default function Sheet({ open, onClose, children, accent, level = 0, zIndex }: SheetProps) {
   const dragControls = useDragControls()
-  const baseZ = z.sheetBackdrop + level * 2
+  const baseZ = zIndex ?? z.sheetBackdrop + level * 2
   const keyboardInset = useKeyboardInset()
   const panelRef = useRef<HTMLDivElement>(null)
   const restoreFocusRef = useRef<HTMLElement | null>(null)
