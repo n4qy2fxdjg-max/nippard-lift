@@ -500,7 +500,7 @@ export default function Progress() {
                                               borderRadius: 12, padding: '2px 7px',
                                             }}
                                           >
-                                            {w} × {set.reps}{set.rpe != null ? ` @${set.rpe}` : ''}
+                                            {w} × {set.reps}
                                           </span>
                                         )
                                       })}

@@ -28,7 +28,7 @@ interface WorkoutStore {
   activeSession: ActiveSession | null
   logs: WorkoutLog[]
   startSession: (planId: string, planName: string, sessionExercises: SessionExercise[]) => void
-  markSetComplete: (reps: number, rpe?: number) => void
+  markSetComplete: (reps: number) => void
   completeWarmupSet: () => void
   undoWarmupSet: () => void
   undoLastSet: () => void
@@ -139,7 +139,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         set({ activeSession: { ...session, exercises: updatedExercises, warmupSetIdx: prevIdx } })
       },
 
-      markSetComplete: (reps, rpe) => {
+      markSetComplete: (reps) => {
         const session = get().activeSession
         if (!session || session.phase !== 'exercise') return
 
@@ -149,7 +149,6 @@ export const useWorkoutStore = create<WorkoutStore>()(
           completed: true,
           weight: ex.currentWeight,
           reps,
-          rpe,
           timestamp: Date.now(),
         }
 

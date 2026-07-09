@@ -138,11 +138,6 @@ export default function WorkoutDetailSheet({ log, onClose }: Props) {
                         borderRadius: 12, padding: '5px 9px',
                       }}>
                         {fmtWeight(set.weight)} × {set.reps}
-                        {set.rpe != null && (
-                          <span style={{ color: '#A8A49E', marginLeft: 5 }}>
-                            @{set.rpe}
-                          </span>
-                        )}
                       </span>
                     ))}
                   </div>

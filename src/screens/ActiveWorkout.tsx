@@ -84,7 +84,6 @@ export default function ActiveWorkout() {
   const [showAbandon, setShowAbandon] = useState(false)
   const [showAddExercise, setShowAddExercise] = useState(false)
   const [reps, setReps] = useState(8)
-  const [rpe, setRpe] = useState<number | undefined>(undefined)
   const [prCelebration, setPrCelebration] = useState<string | null>(null)
   const celebratedRef = useRef<Set<number>>(new Set())
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -170,7 +169,6 @@ export default function ActiveWorkout() {
       const ex = getExerciseById(currentEx.exerciseId)
       setReps(ex ? parseInt(ex.defaultReps.split('–')[0]) : 8)
     }
-    setRpe(undefined) // reset RPE when exercise changes
   }, [activeSession?.currentExIdx])
 
   if (!activeSession) return null
@@ -240,8 +238,7 @@ export default function ActiveWorkout() {
         setPrCelebration(`${w} ${unit} × ${reps}`)
       }
     }
-    markSetComplete(reps, rpe)
-    setRpe(undefined) // reset after logging
+    markSetComplete(reps)
   }
 
   function handleCompleteWarmup() {
@@ -676,40 +673,6 @@ export default function ActiveWorkout() {
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="#F0EDE8" strokeWidth="1.75" strokeLinecap="round" /></svg>
                     </button>
                   </div>
-                </div>
-              </div>
-
-              {/* RPE selector — optional, tap a chip to log effort */}
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 11, color: '#A8A49E', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: '"Outfit", system-ui, sans-serif', fontWeight: 600 }}>
-                  RPE <span style={{ fontWeight: 400, letterSpacing: 0, textTransform: 'none' }}>(optional)</span>
-                </p>
-                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                  {[6, 7, 7.5, 8, 8.5, 9, 9.5, 10].map((v) => {
-                    const sel = rpe === v
-                    return (
-                      <motion.button
-                        key={v}
-                        whileTap={{ scale: 0.88 }}
-                        onClick={() => { setRpe(sel ? undefined : v) }}
-                        style={{
-                          minWidth: 44,
-                          minHeight: 44,
-                          padding: '5px 10px',
-                          borderRadius: 12,
-                          border: sel ? '1px solid rgba(200,169,110,0.5)' : '1px solid rgba(255,255,255,0.07)',
-                          background: sel ? 'rgba(200,169,110,0.15)' : '#161616',
-                          color: sel ? '#C8A96E' : '#A8A49E',
-                          fontSize: 13, fontWeight: sel ? 700 : 400,
-                          fontFamily: '"Outfit", system-ui, sans-serif',
-                          cursor: 'pointer',
-                          WebkitTapHighlightColor: 'transparent',
-                        }}
-                      >
-                        {v}
-                      </motion.button>
-                    )
-                  })}
                 </div>
               </div>
 

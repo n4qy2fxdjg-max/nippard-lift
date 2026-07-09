@@ -69,7 +69,6 @@ export interface SetResult {
   completed: boolean
   weight: number
   reps: number
-  rpe?: number
   timestamp?: number
 }
 
