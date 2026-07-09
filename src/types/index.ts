@@ -79,6 +79,13 @@ export interface WarmupSet {
   completed: boolean
 }
 
+/** A remembered warm-up configuration for an exercise (WarmupSet minus the
+    per-session completed flag) — reused as the ramp in future sessions. */
+export interface WarmupSetPref {
+  weightKg: number
+  targetReps: number
+}
+
 export interface SessionExercise {
   exerciseId: string
   targetSets: number

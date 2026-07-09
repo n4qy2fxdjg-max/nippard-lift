@@ -57,18 +57,23 @@ export const useWorkoutStore = create<WorkoutStore>()(
       startSession: (planId, planName, sessionExercises) => {
         // Pre-fill each exercise with the weight used last time (most recent
         // logged session for that exercise), falling back to the plan weight.
-        // Warm-up ramps are recomputed from the resolved working weight.
-        const history = useLibraryStore.getState().weightHistory
+        // A warm-up customised in a previous session (saved preference) wins;
+        // otherwise the ramp is recomputed from the resolved working weight.
+        const { weightHistory: history, warmupPrefs } = useLibraryStore.getState()
         const exercises = sessionExercises.map((ex) => {
           const entries = history[ex.exerciseId]
           const last = entries && entries.length > 0 ? entries[entries.length - 1].weight : undefined
-          if (last == null || last === ex.currentWeight) return ex
-          const warm = buildWarmupSets(last, ex.exerciseId)
-          return {
-            ...ex,
-            currentWeight: last,
-            warmupSets: warm.length > 0 ? warm : ex.warmupSets,
+          const currentWeight = last ?? ex.currentWeight
+          const pref = warmupPrefs[ex.exerciseId]
+          let warmupSets = ex.warmupSets
+          if (pref && pref.length > 0) {
+            warmupSets = pref.map((p) => ({ ...p, completed: false }))
+          } else if (last != null && last !== ex.currentWeight) {
+            const warm = buildWarmupSets(last, ex.exerciseId)
+            if (warm.length > 0) warmupSets = warm
           }
+          if (currentWeight === ex.currentWeight && warmupSets === ex.warmupSets) return ex
+          return { ...ex, currentWeight, warmupSets }
         })
 
         const firstEx = exercises[0]
@@ -261,19 +266,25 @@ export const useWorkoutStore = create<WorkoutStore>()(
         })
       },
 
-      // Restore a removed warm-up set, refilled from the standard ramp for the
-      // current working weight. Capped at the ramp length (3), so this only
-      // undoes removals — it can't grow the warm-up beyond the default.
+      // Restore a removed warm-up set — refilled from the saved warm-up
+      // preference when one exists, else from the standard ramp for the
+      // current working weight. Capped at the longer of the two, so this only
+      // undoes removals — it can't grow the warm-up beyond its baseline.
       addWarmupSet: () => {
         const session = get().activeSession
         if (!session || session.phase !== 'warmup') return
         const ex = session.exercises[session.currentExIdx]
         const warmups = ex.warmupSets ?? []
+        const pref = useLibraryStore.getState().warmupPrefs[ex.exerciseId]
         const ramp = buildWarmupSets(ex.currentWeight, ex.exerciseId)
-        if (warmups.length >= ramp.length) return
+        const baseline = pref && pref.length > 0 ? pref : ramp
+        const source = warmups.length < baseline.length
+          ? baseline[warmups.length]
+          : warmups.length < ramp.length ? ramp[warmups.length] : null
+        if (!source) return
         const updatedExercises = session.exercises.map((e, i) =>
           i === session.currentExIdx
-            ? { ...e, warmupSets: [...warmups, { ...ramp[warmups.length], completed: false }] }
+            ? { ...e, warmupSets: [...warmups, { weightKg: source.weightKg, targetReps: source.targetReps, completed: false }] }
             : e
         )
         set({ activeSession: { ...session, exercises: updatedExercises } })
@@ -340,7 +351,10 @@ export const useWorkoutStore = create<WorkoutStore>()(
         if (!def) return
         const history = useLibraryStore.getState().weightHistory[exerciseId]
         const weight = history && history.length > 0 ? history[history.length - 1].weight : 20
-        const warmupSets = buildWarmupSets(weight, exerciseId)
+        const pref = useLibraryStore.getState().warmupPrefs[exerciseId]
+        const warmupSets = pref && pref.length > 0
+          ? pref.map((p) => ({ ...p, completed: false }))
+          : buildWarmupSets(weight, exerciseId)
         const newEx: SessionExercise = {
           exerciseId,
           targetSets: def.defaultSets,
@@ -428,6 +442,24 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const recordSession = useLibraryStore.getState().recordSession
         const prevHistory = useLibraryStore.getState().weightHistory
         const personalRecords: string[] = []
+
+        // Remember customised warm-ups for next time. Save only when the
+        // config differs from the auto-ramp (a saved default would freeze the
+        // weights instead of scaling with the working weight); clear the
+        // preference when it's back to matching the default. Removing ALL
+        // warm-up sets is treated as situational ("already warm today") and
+        // doesn't overwrite a saved preference.
+        const { setWarmupPref, clearWarmupPref } = useLibraryStore.getState()
+        session.exercises.forEach((ex) => {
+          const ramp = buildWarmupSets(ex.currentWeight, ex.exerciseId)
+          if (ramp.length === 0) return // exercise doesn't take warm-ups
+          const current = (ex.warmupSets ?? []).map((w) => ({ weightKg: w.weightKg, targetReps: w.targetReps }))
+          const matchesDefault =
+            current.length === ramp.length &&
+            current.every((c, i) => Math.abs(c.weightKg - ramp[i].weightKg) < 0.01 && c.targetReps === ramp[i].targetReps)
+          if (matchesDefault) clearWarmupPref(ex.exerciseId)
+          else if (current.length > 0) setWarmupPref(ex.exerciseId, current)
+        })
 
         let totalVolume = 0
         const exerciseResults = session.exercises.map((ex) => {
