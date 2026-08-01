@@ -21,12 +21,16 @@ export const useLibraryStore = create<LibraryStore>()(
       recordSession: (exerciseId, date, weight, reps, sets) => {
         const e1rm = parseFloat((weight * (1 + reps / 30)).toFixed(1))
         const entry: WeightHistoryEntry = { date, weight, reps, sets, e1rm }
-        set((state) => ({
-          weightHistory: {
-            ...state.weightHistory,
-            [exerciseId]: [...(state.weightHistory[exerciseId] ?? []), entry],
-          },
-        }))
+        set((state) => {
+          // Keep entries in date order. A session recovered after the fact is
+          // dated when it was trained, so it can land before existing entries —
+          // and callers read the last entry as "the weight you used last time".
+          const prior = state.weightHistory[exerciseId] ?? []
+          let at = prior.length
+          while (at > 0 && prior[at - 1].date > date) at--
+          const next = [...prior.slice(0, at), entry, ...prior.slice(at)]
+          return { weightHistory: { ...state.weightHistory, [exerciseId]: next } }
+        })
       },
       getHistory: (exerciseId) => get().weightHistory[exerciseId] ?? [],
       setWarmupPref: (exerciseId, sets) =>

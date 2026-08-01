@@ -15,7 +15,7 @@ A Jeff Nippard-style progressive overload workout tracker, built as a PWA with o
 - **Custom plans** — drag-to-reorder, add/swap exercises mid-session
 - **Featured programmes** — Push / Pull / Legs / Upper / Lower / Full Body
 - **Cross-device sync** via a 9-character code (Workers + D1); last-write-wins per record, tombstone deletes that actually propagate
-- **Session recovery** — active session persisted to localStorage; reopening the app mid-workout picks up where you left off (sessions > 6 h auto-discarded)
+- **Session recovery** — active session persisted to localStorage; reopening the app mid-workout picks up where you left off. A session idle for more than 6 h stops being "in progress", but any sets logged in it are held for you to save or discard on the next launch, dated to the day you trained
 - **Screen wake lock** held for the full workout, re-acquired on visibility change
 - **Bodyweight log** with chart on the Progress tab
 - **PWA** — installable, works offline, iOS home-screen icon
