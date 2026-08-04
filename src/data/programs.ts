@@ -112,6 +112,23 @@ export const featuredPrograms: Program[] = [
   // Starting weights below are placeholders: once an exercise has history,
   // startSession pre-fills the weight you last used for it.
   {
+    id: 'day-a',
+    name: 'Day A',
+    subtitle: 'Quads · horizontal push & pull',
+    tag: 'a',
+    tagColor: '#F87171',
+    estimatedMinutes: 60,
+    exercises: [
+      { exerciseId: 'barbell-squat', sets: 3, reps: '5–8', weightKg: 100 },
+      { exerciseId: 'bench-press', sets: 3, reps: '6–8', weightKg: 80 },
+      { exerciseId: 'chest-supported-row', sets: 3, reps: '8–12', weightKg: 24 },
+      { exerciseId: 'seated-db-press', sets: 3, reps: '8–12', weightKg: 20 },
+      // "Bulgarian Split Squat or Leg Press" — swap for leg press if preferred
+      { exerciseId: 'bulgarian-split-squat', sets: 2, reps: '10–12', weightKg: 20 },
+      { exerciseId: 'overhead-tricep-ext', sets: 2, reps: '12–15', weightKg: 20 },
+    ],
+  },
+  {
     id: 'day-b',
     name: 'Day B',
     subtitle: 'Hams & calves · incline push · vertical pull',
