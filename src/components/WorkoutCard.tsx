@@ -83,6 +83,19 @@ export default function WorkoutCard({ program, lastDate, onOpen }: Props) {
           {program.name}
         </h3>
 
+        {/* Focus line — only on programmes whose name doesn't say what it trains */}
+        {program.subtitle && (
+          <p style={{
+            fontSize: 13,
+            color: '#F0EDE8',
+            marginBottom: 6,
+            lineHeight: 1.4,
+            fontFamily: '"Outfit", system-ui, sans-serif',
+          }}>
+            {program.subtitle}
+          </p>
+        )}
+
         {/* Subtitle */}
         <p style={{
           fontFamily: '"DM Serif Display", Georgia, serif',

@@ -11,7 +11,7 @@ export type MuscleGroup =
 
 export type Equipment = 'barbell' | 'dumbbell' | 'cable' | 'machine' | 'bodyweight' | 'smith'
 
-export type ProgramTag = 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full'
+export type ProgramTag = 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full' | 'b' | 'c' | 'd'
 
 export interface Exercise {
   id: string
@@ -38,6 +38,9 @@ export interface ProgramExercise {
 export interface Program {
   id: string
   name: string
+  /** Optional focus line shown under the name (e.g. lettered split days whose
+      names alone don't say what they train). */
+  subtitle?: string
   tag: ProgramTag
   tagColor: string
   estimatedMinutes: number

@@ -108,4 +108,65 @@ export const featuredPrograms: Program[] = [
       { exerciseId: 'overhead-tricep-ext', sets: 3, reps: '10–12', weightKg: 20 },
     ],
   },
+  // ── Lettered split days ─────────────────────────────────────────
+  // Starting weights below are placeholders: once an exercise has history,
+  // startSession pre-fills the weight you last used for it.
+  {
+    id: 'day-b',
+    name: 'Day B',
+    subtitle: 'Hams & calves · incline push · vertical pull',
+    tag: 'b',
+    tagColor: '#F472B6',
+    estimatedMinutes: 65,
+    exercises: [
+      { exerciseId: 'romanian-deadlift', sets: 3, reps: '6–10', weightKg: 80 },
+      { exerciseId: 'incline-db-press', sets: 3, reps: '8–12', weightKg: 28 },
+      // "Pull-up or Lat Pulldown" — swap in the detail sheet for weighted pull-ups
+      { exerciseId: 'lat-pulldown', sets: 3, reps: '8–12', weightKg: 60 },
+      { exerciseId: 'seated-leg-curl', sets: 2, reps: '10–15', weightKg: 40 },
+      { exerciseId: 'standing-calf-raise', sets: 3, reps: '10–15', weightKg: 60 },
+      { exerciseId: 'ez-bar-curl', sets: 3, reps: '8–12', weightKg: 25 },
+      // "Close-Grip Bench or Dips" — swap for dips if preferred
+      { exerciseId: 'close-grip-bench', sets: 2, reps: '8–12', weightKg: 70 },
+    ],
+  },
+  {
+    id: 'day-c',
+    name: 'Day C',
+    subtitle: 'Quads, calves & abs · shoulder-lead',
+    tag: 'c',
+    tagColor: '#818CF8',
+    estimatedMinutes: 70,
+    exercises: [
+      // "Hack Squat or Leg Press"
+      { exerciseId: 'hack-squat', sets: 3, reps: '8–12', weightKg: 100 },
+      { exerciseId: 'overhead-press', sets: 3, reps: '5–8', weightKg: 55 },
+      // "Machine Chest Press or Cable Fly"
+      { exerciseId: 'cable-chest-press', sets: 3, reps: '10–15', weightKg: 40 },
+      { exerciseId: 'db-lateral-raise', sets: 3, reps: '12–20', weightKg: 10 },
+      { exerciseId: 'seated-calf-raise', sets: 3, reps: '12–20', weightKg: 40 },
+      { exerciseId: 'incline-db-curl', sets: 3, reps: '10–12', weightKg: 14 },
+      { exerciseId: 'cable-crunch', sets: 3, reps: '10–15', weightKg: 30 },
+    ],
+  },
+  {
+    id: 'day-d',
+    name: 'Day D',
+    subtitle: 'Glutes, hams & abs · back-lead',
+    tag: 'd',
+    tagColor: '#A3E635',
+    estimatedMinutes: 75,
+    exercises: [
+      { exerciseId: 'hip-thrust', sets: 3, reps: '8–12', weightKg: 80 },
+      // "Weighted Pull-up or Neutral-Grip Pulldown"
+      { exerciseId: 'weighted-pullup', sets: 3, reps: '6–10', weightKg: 10 },
+      { exerciseId: 'seated-cable-row', sets: 3, reps: '8–12', weightKg: 55 },
+      { exerciseId: 'lying-leg-curl', sets: 3, reps: '8–12', weightKg: 40 },
+      { exerciseId: 'rear-delt-fly', sets: 3, reps: '12–20', weightKg: 15 },
+      { exerciseId: 'rope-pushdown', sets: 3, reps: '10–15', weightKg: 25 },
+      { exerciseId: 'hammer-curl', sets: 2, reps: '10–12', weightKg: 18 },
+      // Bodyweight — add load with the weight stepper if you use a belt
+      { exerciseId: 'hanging-leg-raise', sets: 3, reps: '10–15', weightKg: 0 },
+    ],
+  },
 ]
