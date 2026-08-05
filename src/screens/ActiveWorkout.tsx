@@ -170,7 +170,9 @@ export default function ActiveWorkout() {
   const repsEx = activeSession?.exercises[activeSession.currentExIdx]
   const repsDone = repsEx?.sets.filter((s) => s.completed).length ?? 0
   const repsKey = repsEx ? `${activeSession?.currentExIdx}:${repsDone}` : ''
-  const [seenRepsKey, setSeenRepsKey] = useState(repsKey)
+  // Seeded null, not repsKey: seeding it with the current key would make the
+  // very first render a no-op and leave reps stuck at the useState default.
+  const [seenRepsKey, setSeenRepsKey] = useState<string | null>(null)
   if (repsKey !== seenRepsKey) {
     setSeenRepsKey(repsKey)
     if (repsEx) {
