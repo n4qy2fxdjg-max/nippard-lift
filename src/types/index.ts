@@ -88,6 +88,12 @@ export interface WarmupSetPref {
   targetReps: number
 }
 
+/** One set as performed last time — replayed set-by-set in the next session. */
+export interface RememberedSet {
+  weight: number
+  reps: number
+}
+
 export interface SessionExercise {
   exerciseId: string
   targetSets: number

@@ -7,6 +7,7 @@ import { buildWarmupSets } from '../store/useWorkoutStore'
 import { useBuilderStore } from '../store/useBuilderStore'
 import { useToastStore } from '../store/useToastStore'
 import { featuredPrograms } from '../data/programs'
+import { useProgramStore, withOverride } from '../store/useProgramStore'
 import { getExerciseById } from '../data/exercises'
 import WorkoutCard from '../components/WorkoutCard'
 import StreakChip from '../components/StreakChip'
@@ -76,6 +77,14 @@ export default function Home() {
       onAction: () => restorePlan(plan),
     })
   }
+
+  // Featured programmes with any saved customisation (swapped/reordered
+  // exercises) applied, so cards and the detail sheet show the same list.
+  const programOverrides = useProgramStore((s) => s.overrides)
+  const programs = useMemo(
+    () => featuredPrograms.map((p) => withOverride(p, programOverrides)),
+    [programOverrides]
+  )
 
   const streak = useMemo(() => computeStreak([...logs, ...activities]), [logs, activities])
   const { prefix, name } = greeting(userName)
@@ -242,7 +251,7 @@ export default function Home() {
             </p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 24px' }}>
-            {featuredPrograms.map((p) => (
+            {programs.map((p) => (
               <WorkoutCard
                 key={p.id}
                 program={p}

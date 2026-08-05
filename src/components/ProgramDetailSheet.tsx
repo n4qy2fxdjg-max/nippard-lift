@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react'
 import { motion, Reorder } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkoutStore, buildWarmupSets } from '../store/useWorkoutStore'
+import { useProgramStore } from '../store/useProgramStore'
+import { featuredPrograms } from '../data/programs'
 import { getExercisesByGroup, getExerciseById } from '../data/exercises'
 import type { Program, ProgramExercise, BodyGroup, SessionExercise } from '../types'
 import Sheet from './Sheet'
@@ -25,6 +27,24 @@ type EditableItem = ProgramExercise & { uid: string }
 export default function ProgramDetailSheet({ program, onClose }: Props) {
   const navigate = useNavigate()
   const startSession = useWorkoutStore((s) => s.startSession)
+  const setOverride = useProgramStore((s) => s.setOverride)
+  const clearOverride = useProgramStore((s) => s.clearOverride)
+  const isCustomised = useProgramStore((s) => (program ? s.overrides[program.id] != null : false))
+
+  /** Persist the current exercise list so the change survives to next session. */
+  function persist(next: EditableItem[]) {
+    if (!program) return
+    setOverride(program.id, next.map((i) => ({
+      exerciseId: i.exerciseId, sets: i.sets, reps: i.reps, weightKg: i.weightKg,
+    })))
+  }
+
+  function handleReset() {
+    if (!program) return
+    clearOverride(program.id)
+    const base = featuredPrograms.find((p) => p.id === program.id)
+    if (base) setItems(base.exercises.map((ex, i) => ({ ...ex, uid: `${ex.exerciseId}-${i}` })))
+  }
 
   const initialItems = useMemo<EditableItem[]>(() => {
     if (!program) return []
@@ -93,11 +113,15 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
     if (!substituteFor) return
     const ex = getExerciseById(newExId)
     if (!ex) return
-    setItems((prev) => prev.map((i) =>
-      i.uid === substituteFor.uid
-        ? { ...i, exerciseId: newExId, reps: ex.defaultReps, sets: ex.defaultSets }
-        : i
-    ))
+    setItems((prev) => {
+      const next = prev.map((i) =>
+        i.uid === substituteFor.uid
+          ? { ...i, exerciseId: newExId, reps: ex.defaultReps, sets: ex.defaultSets }
+          : i
+      )
+      persist(next)
+      return next
+    })
     setSubstituteFor(null)
   }
 
@@ -147,6 +171,22 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
                   <p style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 13, fontStyle: 'italic', color: '#A8A49E', marginTop: 4 }}>
                     {items.length} exercises · {program.estimatedMinutes}m · drag to reorder
                   </p>
+                  {/* Escape hatch back to the built-in version — swaps and
+                      reorders are saved, so without this they'd be permanent. */}
+                  {isCustomised && (
+                    <button
+                      onClick={handleReset}
+                      style={{
+                        marginTop: 6, minHeight: 32, padding: '4px 0',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: 12, color: '#C8A96E', fontWeight: 600,
+                        fontFamily: '"Outfit", system-ui, sans-serif',
+                        WebkitTapHighlightColor: 'transparent',
+                      }}
+                    >
+                      Customised · Reset to default
+                    </button>
+                  )}
                 </div>
                 <motion.button
                   whileTap={{ scale: 0.85 }}
@@ -171,7 +211,7 @@ export default function ProgramDetailSheet({ program, onClose }: Props) {
               <Reorder.Group
                 axis="y"
                 values={items}
-                onReorder={setItems}
+                onReorder={(next: EditableItem[]) => { setItems(next); persist(next) }}
                 style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}
               >
                 {items.map((item) => {

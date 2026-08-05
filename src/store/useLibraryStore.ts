@@ -1,16 +1,20 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { WeightHistoryEntry, WarmupSetPref } from '../types'
+import type { WeightHistoryEntry, WarmupSetPref, RememberedSet } from '../types'
 
 interface LibraryStore {
   weightHistory: Record<string, WeightHistoryEntry[]>
   /** Customised warm-up ramps by exercise id, saved at workout completion and
       reused in future sessions. Device-local (not part of cross-device sync). */
   warmupPrefs: Record<string, WarmupSetPref[]>
+  /** Last session's working sets per exercise, in order — replayed set-by-set
+      (weight + reps) the next time that exercise comes up. */
+  lastSets: Record<string, RememberedSet[]>
   recordSession: (exerciseId: string, date: string, weight: number, reps: number, sets: number) => void
   getHistory: (exerciseId: string) => WeightHistoryEntry[]
   setWarmupPref: (exerciseId: string, sets: WarmupSetPref[]) => void
   clearWarmupPref: (exerciseId: string) => void
+  setLastSets: (exerciseId: string, sets: RememberedSet[]) => void
 }
 
 export const useLibraryStore = create<LibraryStore>()(
@@ -18,6 +22,7 @@ export const useLibraryStore = create<LibraryStore>()(
     (set, get) => ({
       weightHistory: {},
       warmupPrefs: {},
+      lastSets: {},
       recordSession: (exerciseId, date, weight, reps, sets) => {
         const e1rm = parseFloat((weight * (1 + reps / 30)).toFixed(1))
         const entry: WeightHistoryEntry = { date, weight, reps, sets, e1rm }
@@ -31,6 +36,8 @@ export const useLibraryStore = create<LibraryStore>()(
       getHistory: (exerciseId) => get().weightHistory[exerciseId] ?? [],
       setWarmupPref: (exerciseId, sets) =>
         set((state) => ({ warmupPrefs: { ...state.warmupPrefs, [exerciseId]: sets } })),
+      setLastSets: (exerciseId, sets) =>
+        set((state) => ({ lastSets: { ...state.lastSets, [exerciseId]: sets } })),
       clearWarmupPref: (exerciseId) =>
         set((state) => {
           if (!(exerciseId in state.warmupPrefs)) return state

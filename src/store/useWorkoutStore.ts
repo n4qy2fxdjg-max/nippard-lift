@@ -59,10 +59,15 @@ export const useWorkoutStore = create<WorkoutStore>()(
         // logged session for that exercise), falling back to the plan weight.
         // A warm-up customised in a previous session (saved preference) wins;
         // otherwise the ramp is recomputed from the resolved working weight.
-        const { weightHistory: history, warmupPrefs } = useLibraryStore.getState()
+        const { weightHistory: history, warmupPrefs, lastSets } = useLibraryStore.getState()
         const exercises = sessionExercises.map((ex) => {
           const entries = history[ex.exerciseId]
-          const last = entries && entries.length > 0 ? entries[entries.length - 1].weight : undefined
+          // Prefer last session's opening set — the actual weight set 1 was
+          // done at — over the best-set weight in weightHistory.
+          const remembered = lastSets[ex.exerciseId]
+          const last = remembered && remembered.length > 0
+            ? remembered[0].weight
+            : entries && entries.length > 0 ? entries[entries.length - 1].weight : undefined
           const currentWeight = last ?? ex.currentWeight
           const pref = warmupPrefs[ex.exerciseId]
           let warmupSets = ex.warmupSets
@@ -152,9 +157,20 @@ export const useWorkoutStore = create<WorkoutStore>()(
           timestamp: Date.now(),
         }
 
+        // Replay last session set-by-set: line the next set up at the weight
+        // it was done at last time — but only while the user is following that
+        // script. Once they deviate on a set, their weight carries forward
+        // instead of being yanked back to the remembered number.
+        const remembered = useLibraryStore.getState().lastSets[ex.exerciseId]
+        const followedScript =
+          remembered?.[ex.sets.length] != null &&
+          Math.abs(remembered[ex.sets.length].weight - ex.currentWeight) < 0.01
+        const nextRemembered = remembered?.[ex.sets.length + 1]
+        const nextWeight = followedScript && nextRemembered ? nextRemembered.weight : ex.currentWeight
+
         const updatedSets = [...ex.sets, result]
         const updatedExercises = session.exercises.map((e, i) =>
-          i === session.currentExIdx ? { ...e, sets: updatedSets } : e
+          i === session.currentExIdx ? { ...e, sets: updatedSets, currentWeight: nextWeight } : e
         )
 
         const allSetsForEx = updatedSets.length >= ex.targetSets
@@ -349,7 +365,10 @@ export const useWorkoutStore = create<WorkoutStore>()(
         const def = exerciseData.find((e) => e.id === exerciseId)
         if (!def) return
         const history = useLibraryStore.getState().weightHistory[exerciseId]
-        const weight = history && history.length > 0 ? history[history.length - 1].weight : 20
+        const remembered = useLibraryStore.getState().lastSets[exerciseId]
+        const weight = remembered && remembered.length > 0
+          ? remembered[0].weight
+          : history && history.length > 0 ? history[history.length - 1].weight : 20
         const pref = useLibraryStore.getState().warmupPrefs[exerciseId]
         const warmupSets = pref && pref.length > 0
           ? pref.map((p) => ({ ...p, completed: false }))
@@ -448,7 +467,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
         // preference when it's back to matching the default. Removing ALL
         // warm-up sets is treated as situational ("already warm today") and
         // doesn't overwrite a saved preference.
-        const { setWarmupPref, clearWarmupPref } = useLibraryStore.getState()
+        const { setWarmupPref, clearWarmupPref, setLastSets } = useLibraryStore.getState()
         session.exercises.forEach((ex) => {
           const ramp = buildWarmupSets(ex.currentWeight, ex.exerciseId)
           if (ramp.length === 0) return // exercise doesn't take warm-ups
@@ -466,6 +485,10 @@ export const useWorkoutStore = create<WorkoutStore>()(
           completedSets.forEach((s) => { totalVolume += s.weight * s.reps })
 
           if (completedSets.length > 0) {
+            // Remember this exercise's sets in order, so next session opens
+            // each set at the weight × reps it was actually done at.
+            setLastSets(ex.exerciseId, completedSets.map((s) => ({ weight: s.weight, reps: s.reps })))
+
             const bestSet = completedSets.reduce((best, s) => {
               const e1rm = s.weight * (1 + s.reps / 30)
               const bestE1rm = best.weight * (1 + best.reps / 30)

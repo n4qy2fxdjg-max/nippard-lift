@@ -60,6 +60,7 @@ export default function ActiveWorkout() {
   const navigate = useNavigate()
   const unit = useAppStore((s) => s.unit)
   const weightHistory = useLibraryStore((s) => s.weightHistory)
+  const lastSets = useLibraryStore((s) => s.lastSets)
   const {
     activeSession,
     markSetComplete,
@@ -161,15 +162,23 @@ export default function ActiveWorkout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSession?.phase, activeSession?.currentExIdx, activeSession?.exercises[activeSession?.currentExIdx ?? 0]?.sets.length])
 
-  // Update reps default when exercise changes
-  useEffect(() => {
-    if (!activeSession) return
-    const currentEx = activeSession.exercises[activeSession.currentExIdx]
-    if (currentEx) {
-      const ex = getExerciseById(currentEx.exerciseId)
-      setReps(ex ? parseInt(ex.defaultReps.split('–')[0]) : 8)
+  // Default the reps input for the set you're on: replay what you did on that
+  // same set last session, falling back to the exercise's default rep range.
+  // Keyed on exercise + sets-done so set 2 can differ from set 1. Derived
+  // during render (React's sanctioned pattern, as in App.tsx's PageFade)
+  // rather than in an effect, per react-hooks/set-state-in-effect.
+  const repsEx = activeSession?.exercises[activeSession.currentExIdx]
+  const repsDone = repsEx?.sets.filter((s) => s.completed).length ?? 0
+  const repsKey = repsEx ? `${activeSession?.currentExIdx}:${repsDone}` : ''
+  const [seenRepsKey, setSeenRepsKey] = useState(repsKey)
+  if (repsKey !== seenRepsKey) {
+    setSeenRepsKey(repsKey)
+    if (repsEx) {
+      const remembered = lastSets[repsEx.exerciseId]?.[repsDone]
+      const def = getExerciseById(repsEx.exerciseId)
+      setReps(remembered ? remembered.reps : (def ? parseInt(def.defaultReps.split('–')[0]) : 8))
     }
-  }, [activeSession?.currentExIdx])
+  }
 
   if (!activeSession) return null
 
