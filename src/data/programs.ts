@@ -1,6 +1,7 @@
 import type { Program } from '../types'
 
-export const featuredPrograms: Program[] = [
+// Classic splits — listed after the lettered days on the home page.
+const classicSplits: Program[] = [
   {
     id: 'push',
     name: 'Push Day',
@@ -108,9 +109,12 @@ export const featuredPrograms: Program[] = [
       { exerciseId: 'overhead-tricep-ext', sets: 3, reps: '10–12', weightKg: 20 },
     ],
   },
-  // ── Lettered split days ─────────────────────────────────────────
-  // Starting weights below are placeholders: once an exercise has history,
-  // startSession pre-fills the weight you last used for it.
+]
+
+// ── Lettered split days — the main rotation, shown first ────────────
+// Starting weights below are placeholders: once an exercise has history,
+// startSession pre-fills the weight you last used for it.
+const splitDays: Program[] = [
   {
     id: 'day-a',
     name: 'Day A',
@@ -187,3 +191,6 @@ export const featuredPrograms: Program[] = [
     ],
   },
 ]
+
+// Home-page order: Days A–D first, then the classic Push/Pull/Legs splits.
+export const featuredPrograms: Program[] = [...splitDays, ...classicSplits]
