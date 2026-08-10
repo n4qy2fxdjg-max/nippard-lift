@@ -24,6 +24,98 @@ export function buildWarmupSets(workingWeightKg: number, exerciseId: string): Wa
   ]
 }
 
+/** Auto-push to the cloud if sync is configured (dynamic import avoids a
+    circular dependency between the two stores). */
+function pushSyncSoon() {
+  import('./useSyncStore').then(({ useSyncStore }) => {
+    useSyncStore.getState().pushSync().catch(() => {})
+  })
+}
+
+/**
+ * Turn a session into a saved WorkoutLog and run the side effects that go with
+ * finishing: warm-up preferences, per-set memory, weight history and PRs.
+ * Shared by completeSession (you tapped Finish) and salvageSession (the app
+ * found an expired session and is rescuing its sets rather than binning them).
+ */
+function finalizeSession(session: ActiveSession): WorkoutLog {
+  // End the clock at the last logged set (+ a short cooldown) rather than
+  // "now" — the session persists across backgrounding, so a workout left
+  // open for hours would otherwise record a multi-hour duration and skew
+  // the avg-session stat.
+  const lastSetTs = session.exercises.reduce(
+    (max, e) => e.sets.reduce((m, s) => Math.max(m, s.timestamp ?? 0), max),
+    0
+  )
+  const endTs = lastSetTs > 0 ? Math.min(Date.now(), lastSetTs + 3 * 60 * 1000) : Date.now()
+  const durationSec = Math.max(0, Math.floor((endTs - session.startedAt) / 1000))
+  // Date the workout by when it STARTED, not "now" — a session salvaged the
+  // morning after belongs to the night you actually trained.
+  const date = format(new Date(session.startedAt), 'yyyy-MM-dd')
+
+  const { recordSession, weightHistory: prevHistory, setWarmupPref, clearWarmupPref, setLastSets } =
+    useLibraryStore.getState()
+  const personalRecords: string[] = []
+
+  // Remember customised warm-ups for next time. Save only when the config
+  // differs from the auto-ramp (a saved default would freeze the weights
+  // instead of scaling with the working weight); clear the preference when
+  // it's back to matching the default. Removing ALL warm-up sets is treated
+  // as situational ("already warm today") and doesn't overwrite a preference.
+  session.exercises.forEach((ex) => {
+    const ramp = buildWarmupSets(ex.currentWeight, ex.exerciseId)
+    if (ramp.length === 0) return // exercise doesn't take warm-ups
+    const current = (ex.warmupSets ?? []).map((w) => ({ weightKg: w.weightKg, targetReps: w.targetReps }))
+    const matchesDefault =
+      current.length === ramp.length &&
+      current.every((c, i) => Math.abs(c.weightKg - ramp[i].weightKg) < 0.01 && c.targetReps === ramp[i].targetReps)
+    if (matchesDefault) clearWarmupPref(ex.exerciseId)
+    else if (current.length > 0) setWarmupPref(ex.exerciseId, current)
+  })
+
+  let totalVolume = 0
+  const exerciseResults = session.exercises.map((ex) => {
+    const completedSets = ex.sets.filter((s) => s.completed)
+    completedSets.forEach((s) => { totalVolume += s.weight * s.reps })
+
+    if (completedSets.length > 0) {
+      // Remember this exercise's sets in order, so next session opens each
+      // set at the weight × reps it was actually done at.
+      setLastSets(ex.exerciseId, completedSets.map((s) => ({ weight: s.weight, reps: s.reps })))
+
+      const bestSet = completedSets.reduce((best, s) => {
+        const e1rm = s.weight * (1 + s.reps / 30)
+        const bestE1rm = best.weight * (1 + best.reps / 30)
+        return e1rm > bestE1rm ? s : best
+      })
+
+      const newE1rm = bestSet.weight * (1 + bestSet.reps / 30)
+      const prior = prevHistory[ex.exerciseId] ?? []
+      const prevBest = prior.reduce((max, h) => (h.e1rm > max ? h.e1rm : max), 0)
+
+      // Only a PR if there's prior history to beat — otherwise the first set
+      // on any exercise would always "PR" against a baseline of 0.
+      if (prior.length > 0 && newE1rm > prevBest) personalRecords.push(ex.exerciseId)
+
+      recordSession(ex.exerciseId, date, bestSet.weight, bestSet.reps, completedSets.length)
+    }
+
+    return { exerciseId: ex.exerciseId, sets: completedSets }
+  })
+
+  return {
+    id: nanoid(),
+    planId: session.planId,
+    planName: session.planName,
+    date,
+    durationSec,
+    totalVolume: Math.round(totalVolume),
+    exerciseResults,
+    personalRecords,
+    updatedAt: Date.now(),
+  }
+}
+
 interface WorkoutStore {
   activeSession: ActiveSession | null
   logs: WorkoutLog[]
@@ -43,6 +135,7 @@ interface WorkoutStore {
   addExerciseToSession: (exerciseId: string) => void
   tickRest: () => void
   completeSession: () => void
+  salvageSession: (session: ActiveSession) => void
   abandonSession: () => void
   deleteLog: (id: string) => void
   restoreLog: (log: WorkoutLog) => void
@@ -445,94 +538,17 @@ export const useWorkoutStore = create<WorkoutStore>()(
       completeSession: () => {
         const session = get().activeSession
         if (!session) return
-
-        // End the clock at the last logged set (+ a short cooldown) rather than
-        // "now" — the session persists across backgrounding, so a workout left
-        // open for hours would otherwise record a multi-hour duration and skew
-        // the avg-session stat.
-        const lastSetTs = session.exercises.reduce(
-          (max, e) => e.sets.reduce((m, s) => Math.max(m, s.timestamp ?? 0), max),
-          0
-        )
-        const endTs = lastSetTs > 0 ? Math.min(Date.now(), lastSetTs + 3 * 60 * 1000) : Date.now()
-        const durationSec = Math.max(0, Math.floor((endTs - session.startedAt) / 1000))
-        const today = format(new Date(), 'yyyy-MM-dd')
-        const recordSession = useLibraryStore.getState().recordSession
-        const prevHistory = useLibraryStore.getState().weightHistory
-        const personalRecords: string[] = []
-
-        // Remember customised warm-ups for next time. Save only when the
-        // config differs from the auto-ramp (a saved default would freeze the
-        // weights instead of scaling with the working weight); clear the
-        // preference when it's back to matching the default. Removing ALL
-        // warm-up sets is treated as situational ("already warm today") and
-        // doesn't overwrite a saved preference.
-        const { setWarmupPref, clearWarmupPref, setLastSets } = useLibraryStore.getState()
-        session.exercises.forEach((ex) => {
-          const ramp = buildWarmupSets(ex.currentWeight, ex.exerciseId)
-          if (ramp.length === 0) return // exercise doesn't take warm-ups
-          const current = (ex.warmupSets ?? []).map((w) => ({ weightKg: w.weightKg, targetReps: w.targetReps }))
-          const matchesDefault =
-            current.length === ramp.length &&
-            current.every((c, i) => Math.abs(c.weightKg - ramp[i].weightKg) < 0.01 && c.targetReps === ramp[i].targetReps)
-          if (matchesDefault) clearWarmupPref(ex.exerciseId)
-          else if (current.length > 0) setWarmupPref(ex.exerciseId, current)
-        })
-
-        let totalVolume = 0
-        const exerciseResults = session.exercises.map((ex) => {
-          const completedSets = ex.sets.filter((s) => s.completed)
-          completedSets.forEach((s) => { totalVolume += s.weight * s.reps })
-
-          if (completedSets.length > 0) {
-            // Remember this exercise's sets in order, so next session opens
-            // each set at the weight × reps it was actually done at.
-            setLastSets(ex.exerciseId, completedSets.map((s) => ({ weight: s.weight, reps: s.reps })))
-
-            const bestSet = completedSets.reduce((best, s) => {
-              const e1rm = s.weight * (1 + s.reps / 30)
-              const bestE1rm = best.weight * (1 + best.reps / 30)
-              return e1rm > bestE1rm ? s : best
-            })
-
-            const newE1rm = bestSet.weight * (1 + bestSet.reps / 30)
-            const prior = prevHistory[ex.exerciseId] ?? []
-            const prevBest = prior.reduce((max, h) => (h.e1rm > max ? h.e1rm : max), 0)
-
-            // Only a PR if there's prior history to beat — otherwise the first
-            // set on any exercise would always "PR" against a baseline of 0.
-            if (prior.length > 0 && newE1rm > prevBest) personalRecords.push(ex.exerciseId)
-
-            recordSession(
-              ex.exerciseId,
-              today,
-              bestSet.weight,
-              bestSet.reps,
-              completedSets.length
-            )
-          }
-
-          return { exerciseId: ex.exerciseId, sets: completedSets }
-        })
-
-        const log: WorkoutLog = {
-          id: nanoid(),
-          planId: session.planId,
-          planName: session.planName,
-          date: today,
-          durationSec,
-          totalVolume: Math.round(totalVolume),
-          exerciseResults,
-          personalRecords,
-          updatedAt: Date.now(),
-        }
-
+        const log = finalizeSession(session)
         set((s) => ({ logs: [log, ...s.logs], activeSession: null }))
+        pushSyncSoon()
+      },
 
-        // Auto-push sync if configured (dynamic import to avoid circular dep)
-        import('./useSyncStore').then(({ useSyncStore }) => {
-          useSyncStore.getState().pushSync().catch(() => {})
-        })
+      // Save an abandoned-but-expired session (see onRehydrateStorage) without
+      // it ever becoming the active session again.
+      salvageSession: (session) => {
+        const log = finalizeSession(session)
+        set((s) => ({ logs: [log, ...s.logs] }))
+        pushSyncSoon()
       },
 
       abandonSession: () => set({ activeSession: null }),
@@ -571,19 +587,30 @@ export const useWorkoutStore = create<WorkoutStore>()(
       partialize: (state) => ({
         logs: state.logs,
         // Persist the active session so iOS background kills don't lose the workout.
-        // We discard sessions older than 6 hours on rehydrate.
+        // Sessions older than 6 hours stop being "active" on rehydrate, but any
+        // sets they hold are saved rather than thrown away.
         activeSession: state.activeSession,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return
-        // Discard stale sessions (older than 6 h) — and say so, instead of the
-        // user's logged sets silently vanishing. Delayed so the Toaster is
-        // mounted by the time it fires.
-        if (state.activeSession && Date.now() - state.activeSession.startedAt > 6 * 60 * 60 * 1000) {
+        // A session older than 6 h isn't live any more — you finished training
+        // and never tapped Finish. Don't bin it: save whatever was logged as a
+        // completed workout, dated to the day it was actually performed.
+        // Deferred so the stores it writes to (and the Toaster) are mounted.
+        const stale = state.activeSession
+        if (stale && Date.now() - stale.startedAt > 6 * 60 * 60 * 1000) {
           state.activeSession = null
+          const setsDone = stale.exercises.reduce(
+            (n, e) => n + e.sets.filter((s) => s.completed).length, 0
+          )
           setTimeout(() => {
+            if (setsDone > 0) useWorkoutStore.getState().salvageSession(stale)
             import('./useToastStore').then(({ useToastStore }) => {
-              useToastStore.getState().show({ message: 'Previous workout expired and was discarded' })
+              useToastStore.getState().show({
+                message: setsDone > 0
+                  ? `Unfinished workout saved · ${setsDone} set${setsDone === 1 ? '' : 's'}`
+                  : 'Previous workout expired — nothing had been logged',
+              })
             })
           }, 800)
         }
