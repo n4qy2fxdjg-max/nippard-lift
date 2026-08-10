@@ -138,9 +138,8 @@ const splitDays: Program[] = [
     subtitle: 'Hams & calves · incline push · vertical pull',
     tag: 'b',
     tagColor: '#F472B6',
-    estimatedMinutes: 65,
+    estimatedMinutes: 55,
     exercises: [
-      { exerciseId: 'romanian-deadlift', sets: 3, reps: '6–10', weightKg: 80 },
       { exerciseId: 'incline-db-press', sets: 3, reps: '8–12', weightKg: 28 },
       // "Pull-up or Lat Pulldown" — swap in the detail sheet for weighted pull-ups
       { exerciseId: 'lat-pulldown', sets: 3, reps: '8–12', weightKg: 60 },
