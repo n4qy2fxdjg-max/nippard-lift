@@ -23,7 +23,7 @@
     "postinstall": "prisma generate",
     "db:provider:sqlite": "node scripts/db-provider.mjs sqlite",
     "db:provider:postgres": "node scripts/db-provider.mjs postgresql",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "node scripts/db-provider.mjs postgresql && prisma generate && prisma migrate deploy && tsx prisma/seed.ts && next build"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "7.10.0",
