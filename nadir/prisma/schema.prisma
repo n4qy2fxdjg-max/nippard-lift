@@ -1,0 +1,325 @@
+// NADIR data model.
+//
+// Portable by design: enums and JSON documents are stored as String columns so the
+// same schema runs on SQLite (local) and PostgreSQL (production) by changing only
+// the `provider` below (see README "Database setup").
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../lib/generated/prisma"
+  importFileExtension = ""
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// Reserved for future player accounts / remote hosting.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("HOST") // HOST | ADMIN | PLAYER
+  createdAt DateTime @default(now())
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  kind      String   @default("IMAGE") // IMAGE | AUDIO | SVG
+  url       String
+  mimeType  String?
+  width     Int?
+  height    Int?
+  alt       String?
+  createdAt DateTime @default(now())
+
+  questions  Question[]
+  boardItems BoardItem[]
+}
+
+/// A question is the unit the host plays. Its format decides how the board / pools are used.
+model Question {
+  id           String   @id @default(cuid())
+  category     String
+  text         String
+  instructions String   @default("")
+  format       String   @default("OPEN") // OPEN | BOARD | CLUES | LINKED | PICTURE | PARTIAL
+  difficulty   Int      @default(2) // 1 easy .. 5 hard
+  status       String   @default("DRAFT") // DRAFT | READY | USED | ARCHIVED
+  explanation  String   @default("")
+  source       String   @default("")
+  notes        String   @default("")
+  /// JSON: format-specific settings (board columns, linked pool labels, picture mode...)
+  settingsJson String   @default("{}")
+  /// Number of times this question has been played in a completed or active game.
+  usedCount    Int      @default(0)
+  mediaAssetId String?
+  mediaAsset   MediaAsset? @relation(fields: [mediaAssetId], references: [id])
+  surveyId     String?  @unique
+  survey       Survey?  @relation(fields: [surveyId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  answers        QuestionAnswer[]
+  boardItems     BoardItem[]
+  roundQuestions RoundQuestion[]
+  finalPrompts   FinalPrompt[]
+  gameAnswers    GameAnswer[]
+
+  @@index([category])
+  @@index([format, status])
+}
+
+model QuestionAnswer {
+  id          String   @id @default(cuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  /// 0 for most formats; LINKED questions use pool 0 (category A) and pool 1 (category B).
+  poolIndex   Int      @default(0)
+  canonical   String
+  /// JSON string[] of accepted spellings / variants.
+  aliasesJson String   @default("[]")
+  /// Survey score 0..100. Incorrect "answers" are kept only for documentation and never score < 100.
+  score       Int
+  correct     Boolean  @default(true)
+  explanation String   @default("")
+  /// For board-style formats: the board item this answer belongs to.
+  boardItemId String?
+  boardItem   BoardItem? @relation(fields: [boardItemId], references: [id], onDelete: SetNull)
+  sortOrder   Int      @default(0)
+
+  gameAnswers GameAnswer[]
+
+  @@index([questionId])
+}
+
+/// A selectable card on a board (possible-answer board, clue board, picture grid, partial/scrambled item).
+model BoardItem {
+  id           String   @id @default(cuid())
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  kind         String   @default("TEXT") // TEXT | CLUE | IMAGE | PARTIAL | SCRAMBLED
+  label        String   @default("")
+  /// CLUE: the clue text. PARTIAL/SCRAMBLED: the puzzle text shown to contestants.
+  clue         String   @default("")
+  mediaAssetId String?
+  mediaAsset   MediaAsset? @relation(fields: [mediaAssetId], references: [id])
+  /// true when the card has no correct answer attached (a decoy on a possible-answers board).
+  decoy        Boolean  @default(false)
+  sortOrder    Int      @default(0)
+
+  answers QuestionAnswer[]
+
+  @@index([questionId])
+}
+
+/// Final categories group 3-5 prompts (each prompt is an OPEN question with its own survey pool).
+model FinalCategory {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  status      String   @default("READY") // DRAFT | READY | USED | ARCHIVED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  prompts FinalPrompt[]
+}
+
+model FinalPrompt {
+  id         String        @id @default(cuid())
+  categoryId String
+  category   FinalCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  sortOrder  Int           @default(0)
+
+  @@index([categoryId])
+}
+
+model Survey {
+  id                  String   @id @default(cuid())
+  title               String
+  category            String   @default("")
+  questionText        String
+  instructions        String   @default("")
+  /// Public share token used in /survey/[token].
+  token               String   @unique
+  status              String   @default("DRAFT") // DRAFT | OPEN | CLOSED | PUBLISHED
+  participantLimit    Int      @default(100)
+  timerSeconds        Int      @default(100)
+  /// JSON: the admin-defined universe of accepted answers [{canonical, aliases[]}] (may be empty while collecting).
+  acceptedAnswersJson String   @default("[]")
+  /// JSON: { [normalizedRawAnswer]: canonical | null } manual merge map.
+  normalizationJson   String   @default("{}")
+  createdAt           DateTime @default(now())
+  openedAt            DateTime?
+  closedAt            DateTime?
+
+  participants SurveyParticipant[]
+  responses    SurveyResponse[]
+  question     Question?
+}
+
+model SurveyParticipant {
+  id            String    @id @default(cuid())
+  surveyId      String
+  survey        Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  /// Anonymous identifier held in the participant's browser cookie.
+  anonId        String
+  fingerprint   String    @default("")
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  invalidated   Boolean   @default(false)
+  invalidReason String    @default("")
+
+  responses SurveyResponse[]
+
+  @@unique([surveyId, anonId])
+}
+
+model SurveyResponse {
+  id               String            @id @default(cuid())
+  surveyId         String
+  survey           Survey            @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  participantId    String
+  participant      SurveyParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  rawAnswer        String
+  normalizedAnswer String
+  elapsedMs        Int               @default(0)
+  valid            Boolean           @default(true)
+  submittedAt      DateTime          @default(now())
+
+  @@index([surveyId])
+}
+
+/// The rolling jackpot bank carried from game to game (one row per currency).
+model Jackpot {
+  id         String   @id @default(cuid())
+  currency   String   @unique
+  amount     Int
+  lastGameId String?
+  updatedAt  DateTime @updatedAt
+}
+
+model Game {
+  id            String    @id @default(cuid())
+  name          String
+  roomCode      String    @unique
+  /// Secret the host browser presents to issue actions.
+  hostToken     String    @unique
+  status        String    @default("LOBBY") // LOBBY | LIVE | COMPLETED | ABANDONED
+  currency      String    @default("GBP")
+  /// JSON: GameConfig
+  configJson    String
+  /// JSON: full authoritative GameState snapshot (restored after refresh / restart).
+  stateJson     String
+  /// Monotonic version bumped on every applied action; clients re-fetch when it changes.
+  version       Int       @default(0)
+  winnerTeamId  String?
+  finalJackpot  Int?
+  jackpotWon    Boolean?
+  zeroCount     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  completedAt   DateTime?
+
+  teams   Team[]
+  rounds  Round[]
+  events  GameEvent[]
+  answers GameAnswer[]
+}
+
+model Team {
+  id              String  @id @default(cuid())
+  gameId          String
+  game            Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name            String
+  color           String  @default("#7dd3fc")
+  /// Secret handed to the phone that joined as this team.
+  token           String  @unique
+  sortOrder       Int     @default(0)
+  eliminatedRound Int?
+  finalPlacement  Int?
+
+  players Player[]
+  answers GameAnswer[]
+}
+
+model Player {
+  id        String @id @default(cuid())
+  teamId    String
+  team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  name      String
+  sortOrder Int    @default(0)
+}
+
+model Round {
+  id             String @id @default(cuid())
+  gameId         String
+  game           Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  index          Int
+  type           String // ELIMINATION | HEAD_TO_HEAD | FINAL
+  passes         Int    @default(1)
+  eliminateCount Int    @default(1)
+  bestOf         Int    @default(3)
+  configJson     String @default("{}")
+
+  questions RoundQuestion[]
+
+  @@unique([gameId, index])
+}
+
+model RoundQuestion {
+  id         String   @id @default(cuid())
+  roundId    String
+  round      Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+  passIndex  Int      @default(0)
+  role       String   @default("MAIN") // MAIN | TIEBREAK | RESERVE
+  sortOrder  Int      @default(0)
+
+  @@index([roundId])
+}
+
+/// One scored submission, written when the host locks an answer. Feeds history + analytics.
+model GameAnswer {
+  id              String   @id @default(cuid())
+  gameId          String
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  teamId          String
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question @relation(fields: [questionId], references: [id])
+  matchedAnswerId String?
+  matchedAnswer   QuestionAnswer? @relation(fields: [matchedAnswerId], references: [id], onDelete: SetNull)
+  stage           String   // ELIMINATION | TIEBREAK | HEAD_TO_HEAD | FINAL
+  roundIndex      Int
+  passIndex       Int      @default(0)
+  playerName      String   @default("")
+  submitted       String
+  score           Int
+  correct         Boolean
+  isZero          Boolean  @default(false)
+  overridden      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([gameId])
+  @@index([questionId])
+}
+
+/// Append-only audit log. `stateBeforeJson` lets the host undo any action.
+model GameEvent {
+  id              String   @id @default(cuid())
+  gameId          String
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  seq             Int
+  type            String
+  actor           String   @default("HOST") // HOST | TEAM | SYSTEM
+  payloadJson     String   @default("{}")
+  stateBeforeJson String?
+  undoable        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@unique([gameId, seq])
+}

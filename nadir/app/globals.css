@@ -1,0 +1,155 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   NADIR design tokens — "Midnight Observatory"
+   Deep navy-black environment, brass accent for the jackpot and the Ghost Answer,
+   cool cyan for data, rose for elimination. Display serif + geometric sans.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-ink-950: #05070f;
+  --color-ink-900: #080c18;
+  --color-ink-800: #0d1324;
+  --color-ink-700: #141c33;
+  --color-ink-600: #1c2644;
+  --color-ink-500: #2a365c;
+  --color-mist-100: #f3f5fb;
+  --color-mist-200: #d9deeb;
+  --color-mist-400: #9aa4c2;
+  --color-mist-500: #6f7a9b;
+  --color-brass-300: #f3dba0;
+  --color-brass-400: #e8c170;
+  --color-brass-500: #d2a24c;
+  --color-brass-600: #a87c2d;
+  --color-cyan-300: #a5e5ff;
+  --color-cyan-400: #6fd3ff;
+  --color-cyan-500: #39b7f0;
+  --color-rose-400: #ff6b81;
+  --color-rose-500: #e94b63;
+  --color-mint-400: #7be0b5;
+  --color-mint-500: #46c592;
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-sans: 'Manrope', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --shadow-glow-brass: 0 0 60px rgba(232, 193, 112, 0.35);
+  --shadow-glow-cyan: 0 0 40px rgba(111, 211, 255, 0.3);
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+:root {
+  color-scheme: dark;
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-strong: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.1);
+}
+
+html,
+body {
+  background: var(--color-ink-950);
+  color: var(--color-mist-100);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+body {
+  background-image:
+    radial-gradient(1200px 600px at 20% -10%, rgba(57, 110, 190, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, rgba(232, 193, 112, 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  letter-spacing: -0.01em;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 outline-none select-none;
+  @apply focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900;
+  @apply disabled:cursor-not-allowed disabled:opacity-40;
+}
+
+@utility glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-panel);
+}
+
+@layer components {
+  .glass-strong {
+    background: var(--glass-strong);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .hairline {
+    border-color: var(--line);
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.28em] text-mist-400;
+  }
+  .btn-primary {
+    @apply btn bg-brass-400 text-ink-950 hover:bg-brass-300 active:translate-y-px;
+  }
+  .btn-secondary {
+    @apply btn border border-white/15 bg-white/5 text-mist-100 hover:bg-white/10;
+  }
+  .btn-ghost {
+    @apply btn text-mist-200 hover:bg-white/5;
+  }
+  .btn-danger {
+    @apply btn border border-rose-500/40 bg-rose-500/15 text-rose-400 hover:bg-rose-500/25;
+  }
+  .btn-cyan {
+    @apply btn bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 hover:bg-cyan-500/30;
+  }
+  .input {
+    @apply w-full rounded-xl border border-white/12 bg-ink-800/80 px-3.5 py-2.5 text-mist-100 placeholder:text-mist-500 outline-none transition;
+    @apply focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-mist-400;
+  }
+  .card {
+    @apply glass rounded-2xl p-5;
+  }
+  .kbd {
+    @apply inline-flex min-w-[1.6rem] items-center justify-center rounded-md border border-white/15 bg-ink-800 px-1.5 py-0.5 font-mono text-[11px] text-mist-200;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Reduced motion: the components also check prefers-reduced-motion, this is the safety net. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Display (TV) scale: 1920×1080 is the design canvas; everything scales with vw. */
+.tv-root {
+  font-size: clamp(10px, 0.9vw, 24px);
+}
+
+::selection {
+  background: rgba(232, 193, 112, 0.35);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}

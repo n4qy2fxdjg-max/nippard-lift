@@ -1,0 +1,34 @@
+name: NADIR (quiz game)
+
+on:
+  push:
+    paths: ['nadir/**', '.github/workflows/nadir.yml']
+  pull_request:
+    paths: ['nadir/**', '.github/workflows/nadir.yml']
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nadir
+    env:
+      DATABASE_URL: file:./prisma/ci.db
+      NEXT_PUBLIC_ENABLE_DEBUG: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: nadir/package-lock.json
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: End-to-end
+        run: |
+          npx playwright install --with-deps chromium
+          PW_USE_BUNDLED=1 npx playwright test

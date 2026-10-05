@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+coverage/
+test-results/
+playwright-report/
+lib/generated/
+prisma/*.db
+prisma/*.db-journal
+.env
+.env.local
+*.log
+.DS_Store
+public/uploads/
