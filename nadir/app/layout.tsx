@@ -6,7 +6,10 @@ export const metadata: Metadata = {
   title: { default: 'NADIR', template: '%s · NADIR' },
   description: 'NADIR: the quiz where the rarest right answer wins. Find the answer nobody else knew.',
   applicationName: 'NADIR',
-  icons: { icon: '/icon.svg' },
+  icons: { icon: '/icon.svg', apple: '/apple-touch-icon.png' },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, title: 'NADIR', statusBarStyle: 'black-translucent' },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = { themeColor: '#05070f', width: 'device-width', initialScale: 1, viewportFit: 'cover' };

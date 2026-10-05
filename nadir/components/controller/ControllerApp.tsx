@@ -256,7 +256,7 @@ function ordinalWord(n: number) {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-6 pt-5">{children}</main>;
+  return <main className="safe-pad mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-6 pt-5">{children}</main>;
 }
 
 function Card({ title, body, tone }: { title: string; body: string; tone?: 'brass' }) {
